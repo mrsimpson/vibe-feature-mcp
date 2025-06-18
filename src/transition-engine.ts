@@ -6,12 +6,9 @@
  */
 
 import { createLogger } from './logger.js';
-import { 
-  type DevelopmentPhase, 
-  getTransitionInstructions, 
-  getContinuePhaseInstructions,
-  isModeledTransition 
-} from './state-machine.js';
+import { StateMachineLoader } from './state-machine-loader.js';
+import { DevelopmentPhase } from './state-machine-types.js';
+import path from 'path';
 
 const logger = createLogger('TransitionEngine');
 
@@ -31,6 +28,14 @@ export interface TransitionResult {
 }
 
 export class TransitionEngine {
+  private stateMachineLoader: StateMachineLoader;
+  
+  constructor(projectPath: string) {
+    this.stateMachineLoader = new StateMachineLoader();
+    this.stateMachineLoader.loadStateMachine(projectPath);
+    
+    logger.info('TransitionEngine initialized', { projectPath });
+  }
   
   /**
    * Analyze context and determine appropriate phase transition
@@ -56,7 +61,10 @@ export class TransitionEngine {
     
     if (suggestedPhase !== currentPhase) {
       // Phase transition detected
-      const transitionInfo = getTransitionInstructions(currentPhase, suggestedPhase);
+      const transitionInfo = this.stateMachineLoader.getTransitionInstructions(
+        currentPhase, 
+        suggestedPhase
+      );
       
       logger.info('Phase transition determined', {
         fromPhase: currentPhase,
@@ -73,7 +81,7 @@ export class TransitionEngine {
       };
     } else {
       // Continue in current phase
-      const instructions = getContinuePhaseInstructions(currentPhase);
+      const instructions = this.stateMachineLoader.getContinuePhaseInstructions(currentPhase);
       
       logger.debug('Continuing in current phase', { currentPhase });
       
@@ -100,7 +108,10 @@ export class TransitionEngine {
       reason 
     });
     
-    const transitionInfo = getTransitionInstructions(currentPhase, targetPhase);
+    const transitionInfo = this.stateMachineLoader.getTransitionInstructions(
+      currentPhase, 
+      targetPhase
+    );
     
     logger.info('Explicit phase transition processed', {
       fromPhase: currentPhase,

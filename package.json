@@ -18,6 +18,8 @@
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.0",
+    "@types/js-yaml": "4.0.9",
+    "js-yaml": "4.1.0",
     "sqlite3": "^5.1.7",
     "zod": "^3.22.4"
   },

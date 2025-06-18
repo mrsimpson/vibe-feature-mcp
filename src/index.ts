@@ -18,7 +18,7 @@ import { InstructionGenerator } from './instruction-generator.js';
 import { PlanManager } from './plan-manager.js';
 import { InteractionLogger } from './interaction-logger.js';
 import { createLogger } from './logger.js';
-import type { DevelopmentPhase } from './state-machine.js';
+import type { DevelopmentPhase } from './state-machine-types.js';
 
 const logger = createLogger('Server');
 
@@ -48,7 +48,7 @@ class VibeFeatureMCPServer {
     const projectPath = process.cwd(); // Get current working directory as project path
     this.database = new Database(projectPath);
     this.conversationManager = new ConversationManager(this.database);
-    this.transitionEngine = new TransitionEngine();
+    this.transitionEngine = new TransitionEngine(projectPath);
     this.planManager = new PlanManager();
     this.instructionGenerator = new InstructionGenerator(this.planManager);
     this.interactionLogger = new InteractionLogger(this.database);

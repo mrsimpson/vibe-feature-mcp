@@ -11,7 +11,7 @@ import { resolve } from 'path';
 import { existsSync } from 'fs';
 import { createLogger } from './logger.js';
 import { Database } from './database.js';
-import type { DevelopmentPhase } from './state-machine.js';
+import { DevelopmentPhase } from './state-machine-types.js';
 import type { ConversationState, ConversationContext } from './types.js';
 
 const logger = createLogger('ConversationManager');

@@ -1,0 +1,101 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "State Machine Definition",
+  "description": "YAML-based state machine definition for Vibe Feature MCP",
+  "type": "object",
+  "required": ["name", "description", "initial_state", "states", "direct_transitions"],
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Name of the state machine"
+    },
+    "description": {
+      "type": "string",
+      "description": "Description of the state machine's purpose"
+    },
+    "initial_state": {
+      "type": "string",
+      "description": "The starting state of the machine"
+    },
+    "states": {
+      "type": "object",
+      "description": "Map of states in the state machine",
+      "additionalProperties": {
+        "$ref": "#/definitions/state"
+      }
+    },
+    "direct_transitions": {
+      "type": "array",
+      "description": "Direct transition instructions for non-modeled transitions",
+      "items": {
+        "type": "object",
+        "required": ["state", "instructions", "transition_reason"],
+        "properties": {
+          "state": {
+            "type": "string",
+            "description": "State name for this direct transition"
+          },
+          "instructions": {
+            "type": "string",
+            "description": "Instructions to provide when directly transitioning to this state"
+          },
+          "transition_reason": {
+            "type": "string",
+            "description": "Reason for the direct transition"
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "state": {
+      "type": "object",
+      "required": ["description", "transitions"],
+      "properties": {
+        "description": {
+          "type": "string",
+          "description": "Description of this state"
+        },
+        "transitions": {
+          "type": "array",
+          "description": "Transitions from this state",
+          "items": {
+            "$ref": "#/definitions/transition"
+          }
+        }
+      }
+    },
+    "transition": {
+      "type": "object",
+      "required": ["trigger", "target", "is_modeled", "side_effects"],
+      "properties": {
+        "trigger": {
+          "type": "string",
+          "description": "Event that triggers this transition"
+        },
+        "target": {
+          "type": "string",
+          "description": "Target state after transition"
+        },
+        "is_modeled": {
+          "type": "boolean",
+          "description": "Whether this transition is shown in diagrams"
+        },
+        "side_effects": {
+          "type": "object",
+          "required": ["instructions", "transition_reason"],
+          "properties": {
+            "instructions": {
+              "type": "string",
+              "description": "Instructions to provide when this transition occurs"
+            },
+            "transition_reason": {
+              "type": "string",
+              "description": "Reason for this transition"
+            }
+          }
+        }
+      }
+    }
+  }
+}
