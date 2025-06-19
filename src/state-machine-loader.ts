@@ -44,7 +44,12 @@ export class StateMachineLoader {
     }
     
     // Fall back to default state machine file
-    const defaultFilePath = path.join(__dirname, '..', 'resources', 'state-machine.yaml');
+    // Use import.meta.url to get the current file's path in ESM
+    const currentFileUrl = import.meta.url;
+    const currentFilePath = new URL(currentFileUrl).pathname;
+    const projectRoot = path.dirname(path.dirname(currentFilePath));
+    const defaultFilePath = path.join(projectRoot, 'resources', 'state-machine.yaml');
+    
     logger.info('Loading default state machine file', { defaultFilePath });
     return this.loadFromFile(defaultFilePath);
   }

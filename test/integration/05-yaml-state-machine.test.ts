@@ -3,16 +3,151 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import fs from 'fs';
-import path from 'path';
-import yaml from 'js-yaml';
 import { StateMachineLoader } from '../../src/state-machine-loader.js';
 import { TransitionEngine } from '../../src/transition-engine.js';
 import { YamlStateMachine } from '../../src/state-machine-types.js';
 
-// Mock fs and path modules
-vi.mock('fs');
-vi.mock('path');
+// Mock global URL constructor
+global.URL = vi.fn().mockImplementation(() => ({
+  pathname: '/mock/src/state-machine-loader.ts'
+}));
+
+// Mock import.meta.url
+vi.stubGlobal('import.meta', { url: 'file:///mock/src/state-machine-loader.ts' });
+
+// Sample valid state machine for testing
+const validStateMachine: YamlStateMachine = {
+  name: 'Test State Machine',
+  description: 'Test state machine for integration tests',
+  initial_state: 'idle',
+  states: {
+    idle: {
+      description: 'Idle state',
+      transitions: [
+        {
+          trigger: 'new_feature_request',
+          target: 'requirements',
+          is_modeled: true,
+          side_effects: {
+            instructions: 'Start requirements analysis',
+            transition_reason: 'New feature request detected'
+          }
+        }
+      ]
+    },
+    requirements: {
+      description: 'Requirements state',
+      transitions: [
+        {
+          trigger: 'refine_requirements',
+          target: 'requirements',
+          is_modeled: true,
+          side_effects: {
+            instructions: 'Continue refining requirements',
+            transition_reason: 'Requirements need refinement'
+          }
+        },
+        {
+          trigger: 'requirements_complete',
+          target: 'design',
+          is_modeled: true,
+          side_effects: {
+            instructions: 'Start design phase',
+            transition_reason: 'Requirements complete'
+          }
+        }
+      ]
+    },
+    design: {
+      description: 'Design state',
+      transitions: [
+        {
+          trigger: 'design_complete',
+          target: 'implementation',
+          is_modeled: true,
+          side_effects: {
+            instructions: 'Start implementation phase',
+            transition_reason: 'Design complete'
+          }
+        }
+      ]
+    },
+    implementation: {
+      description: 'Implementation state',
+      transitions: []
+    }
+  },
+  direct_transitions: [
+    {
+      state: 'idle',
+      instructions: 'Direct to idle',
+      transition_reason: 'Direct transition to idle'
+    },
+    {
+      state: 'requirements',
+      instructions: 'Direct to requirements',
+      transition_reason: 'Direct transition to requirements'
+    },
+    {
+      state: 'design',
+      instructions: 'Direct to design',
+      transition_reason: 'Direct transition to design'
+    },
+    {
+      state: 'implementation',
+      instructions: 'Direct to implementation',
+      transition_reason: 'Direct transition to implementation'
+    }
+  ]
+};
+
+// Define validYamlContent before using it in mocks
+const validYamlContent = 'mocked yaml content';
+
+// Mock modules
+vi.mock('fs', () => {
+  return {
+    default: {
+      existsSync: vi.fn(),
+      readFileSync: vi.fn()
+    },
+    existsSync: vi.fn(),
+    readFileSync: vi.fn()
+  };
+});
+
+vi.mock('path', () => {
+  return {
+    default: {
+      resolve: vi.fn(p => p),
+      join: vi.fn((...paths) => paths.join('/')),
+      dirname: vi.fn(p => {
+        if (!p) return '';
+        const lastSlash = p.lastIndexOf('/');
+        return lastSlash >= 0 ? p.substring(0, lastSlash) : p;
+      })
+    },
+    resolve: vi.fn(p => p),
+    join: vi.fn((...paths) => paths.join('/')),
+    dirname: vi.fn(p => {
+      if (!p) return '';
+      const lastSlash = p.lastIndexOf('/');
+      return lastSlash >= 0 ? p.substring(0, lastSlash) : p;
+    })
+  };
+});
+
+// Properly mock js-yaml with a default export
+vi.mock('js-yaml', () => {
+  return {
+    default: {
+      load: vi.fn(() => validStateMachine),
+      dump: vi.fn(() => validYamlContent)
+    },
+    load: vi.fn(() => validStateMachine),
+    dump: vi.fn(() => validYamlContent)
+  };
+});
 
 // Mock logger
 vi.mock('../../src/logger.js', () => ({
@@ -30,115 +165,25 @@ vi.mock('../../src/logger.js', () => ({
   })
 }));
 
-describe('YAML State Machine Integration', () => {
-  // Sample valid state machine for testing
-  const validStateMachine: YamlStateMachine = {
-    name: 'Test State Machine',
-    description: 'Test state machine for integration tests',
-    initial_state: 'idle',
-    states: {
-      idle: {
-        description: 'Idle state',
-        transitions: [
-          {
-            trigger: 'new_feature_request',
-            target: 'requirements',
-            is_modeled: true,
-            side_effects: {
-              instructions: 'Start requirements analysis',
-              transition_reason: 'New feature request detected'
-            }
-          }
-        ]
-      },
-      requirements: {
-        description: 'Requirements state',
-        transitions: [
-          {
-            trigger: 'refine_requirements',
-            target: 'requirements',
-            is_modeled: true,
-            side_effects: {
-              instructions: 'Continue refining requirements',
-              transition_reason: 'Requirements need refinement'
-            }
-          },
-          {
-            trigger: 'requirements_complete',
-            target: 'design',
-            is_modeled: true,
-            side_effects: {
-              instructions: 'Start design phase',
-              transition_reason: 'Requirements complete'
-            }
-          }
-        ]
-      },
-      design: {
-        description: 'Design state',
-        transitions: [
-          {
-            trigger: 'design_complete',
-            target: 'implementation',
-            is_modeled: true,
-            side_effects: {
-              instructions: 'Start implementation phase',
-              transition_reason: 'Design complete'
-            }
-          }
-        ]
-      },
-      implementation: {
-        description: 'Implementation state',
-        transitions: []
-      }
-    },
-    direct_transitions: [
-      {
-        state: 'idle',
-        instructions: 'Direct to idle',
-        transition_reason: 'Direct transition to idle'
-      },
-      {
-        state: 'requirements',
-        instructions: 'Direct to requirements',
-        transition_reason: 'Direct transition to requirements'
-      },
-      {
-        state: 'design',
-        instructions: 'Direct to design',
-        transition_reason: 'Direct transition to design'
-      },
-      {
-        state: 'implementation',
-        instructions: 'Direct to implementation',
-        transition_reason: 'Direct transition to implementation'
-      }
-    ]
-  };
+// Import mocked modules
+import fs from 'fs';
+import path from 'path';
+import yaml from 'js-yaml';
 
-  // Convert state machine to YAML
-  const validYamlContent = yaml.dump(validStateMachine);
-  
+describe('YAML State Machine Integration', () => {
   let transitionEngine: TransitionEngine;
 
   beforeEach(() => {
     // Reset mocks
     vi.resetAllMocks();
     
-    // Mock path.resolve to return the input path
-    vi.mocked(path.resolve).mockImplementation((p) => p);
-    
-    // Mock path.join to join paths with a slash
-    vi.mocked(path.join).mockImplementation((...paths) => paths.join('/'));
-    
     // Mock fs.existsSync to return true for custom file
-    vi.mocked(fs.existsSync).mockImplementation((p) => {
+    vi.mocked(fs.existsSync).mockImplementation((p: string) => {
       return p === 'project/.vibe/state-machine.yaml';
     });
     
     // Mock fs.readFileSync to return valid YAML content
-    vi.mocked(fs.readFileSync).mockReturnValue(validYamlContent);
+    vi.mocked(fs.readFileSync).mockReturnValue(validYamlContent as any);
     
     // Create a new TransitionEngine instance
     transitionEngine = new TransitionEngine('project');
@@ -242,16 +287,8 @@ describe('YAML State Machine Integration', () => {
       // Mock fs.existsSync to return false for all files
       vi.mocked(fs.existsSync).mockReturnValue(false);
       
-      // Mock path.join for default file path
-      vi.mocked(path.join).mockImplementation((...paths) => {
-        if (paths[0] === '__dirname') {
-          return 'src/../resources/state-machine.yaml';
-        }
-        return paths.join('/');
-      });
-      
       // Mock fs.readFileSync to return valid YAML content
-      vi.mocked(fs.readFileSync).mockReturnValue(validYamlContent);
+      vi.mocked(fs.readFileSync).mockReturnValue(validYamlContent as any);
       
       // Create a new TransitionEngine instance
       const newTransitionEngine = new TransitionEngine('project');
