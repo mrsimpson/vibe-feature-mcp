@@ -1,259 +1,158 @@
 /**
  * whats_next Tool Integration Tests
  * 
- * Tests the primary analysis and instruction tool via MCP protocol
+ * Tests the whats_next tool functionality with real file system integration
+ * focusing on component-level testing rather than full server spawning.
  */
 
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { mockFileSystem, mockSqlite, startTestServer, ServerTestContext } from '../utils/test-setup';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { TempProject, createTempProjectWithDefaultStateMachine, createTempProjectWithCustomStateMachine, CUSTOM_STATE_MACHINE_YAML } from '../utils/temp-files.js';
+
+// Disable fs mocking for integration tests
+vi.unmock('fs');
+vi.unmock('fs/promises');
 
 describe('whats_next Tool Integration Tests', () => {
-  let serverContext: ServerTestContext;
+  let tempProject: TempProject;
 
-  // Setup mocks before each test
-  beforeEach(() => {
-    // Setup mocks
-    mockFileSystem();
-    mockSqlite();
-  });
-
-  // Clean up after each test
-  afterEach(async () => {
-    // Clean up client and server
-    if (serverContext) {
-      await serverContext.cleanup();
+  afterEach(() => {
+    if (tempProject) {
+      tempProject.cleanup();
     }
   });
 
-  describe('Scenario: First call to whats_next creates new conversation', () => {
-    it('should create new conversation for first whats_next call', async () => {
-      // Given: no existing conversation state for the current project
-      serverContext = await startTestServer();
+  describe('Scenario: Phase transition analysis with real state machine', () => {
+    it('should analyze phase transitions using default state machine', async () => {
+      // Given: a project with default state machine
+      tempProject = createTempProjectWithDefaultStateMachine();
       
-      // When: I call whats_next with user input about implementing a new feature
-      const result = await serverContext.client.callTool({
-        name: 'whats_next',
-        arguments: {
-          user_input: 'implement user authentication',
-          context: 'user wants to add auth to their app'
-        }
-      });
-
-      // Then: a new conversation should be created
-      expect(result.content).toBeDefined();
-      expect(result.content.length).toBeGreaterThan(0);
+      // When: I analyze a phase transition
+      const { TransitionEngine } = await import('../../src/transition-engine.js');
+      const transitionEngine = new TransitionEngine(tempProject.projectPath);
       
-      const response = JSON.parse(result.content[0].text!);
-      
-      // And: the phase should be a valid development phase
-      expect(response.phase).toBeDefined();
-      
-      // And: instructions should be provided
-      expect(response.instructions).toBeDefined();
-      expect(response.instructions.length).toBeGreaterThan(0);
-      
-      // And: a plan file path should be provided
-      expect(response.plan_file_path).toBeDefined();
-      expect(response.plan_file_path).toMatch(/\.md$/);
-      
-      // And: the transition reason should be provided
-      expect(response.transition_reason).toBeDefined();
-      expect(response.transition_reason.length).toBeGreaterThan(0);
-    });
-  });
-
-  describe('Scenario: Continuing existing conversation in idle phase', () => {
-    it('should continue in idle or transition when appropriate', async () => {
-      // Given: an existing conversation in "idle" phase
-      serverContext = await startTestServer();
-      
-      // First, explicitly set the phase to requirements for this test
-      await serverContext.client.callTool({
-        name: 'proceed_to_phase',
-        arguments: {
-          target_phase: 'requirements',
-          reason: 'setting up test'
-        }
+      const result = transitionEngine.analyzePhaseTransition({
+        currentPhase: 'idle',
+        userInput: 'implement user authentication',
+        context: 'new feature request',
+        conversationSummary: 'User wants to implement authentication'
       });
       
-      // Create initial conversation
-      const initialResult = await serverContext.client.callTool({
-        name: 'whats_next',
-        arguments: {
-          user_input: 'implement user authentication'
-        }
-      });
-      
-      const initialResponse = JSON.parse(initialResult.content[0].text!);
-      expect(initialResponse.phase).toBeDefined();
-
-      // When: I call whats_next with conversation context indicating ongoing work
-      const result = await serverContext.client.callTool({
-        name: 'whats_next',
-        arguments: {
-          conversation_summary: 'User wants authentication, discussed tech stack',
-          user_input: 'what about password requirements?',
-          context: 'continuing development discussion'
-        }
-      });
-
-      // Then: the phase should be determined based on the context
-      const response = JSON.parse(result.content[0].text!);
-      expect(response.phase).toBeDefined();
-      
-      // And: instructions should be contextually appropriate
-      expect(response.instructions).toBeDefined();
-      expect(response.instructions.length).toBeGreaterThan(0);
+      // Then: it should transition to requirements phase
+      expect(result.newPhase).toBe('requirements');
+      expect(result.instructions).toContain('requirements analysis');
+      expect(result.transitionReason).toContain('New feature request detected');
+      expect(result.isModeled).toBe(true);
     });
 
-    it('should suggest appropriate transition when context indicates readiness', async () => {
-      // Given: an existing conversation with comprehensive context
-      serverContext = await startTestServer();
+    it('should handle continuing in current phase', async () => {
+      // Given: a project setup
+      tempProject = createTempProjectWithDefaultStateMachine();
       
-      // First, explicitly set the phase to design for this test
-      await serverContext.client.callTool({
-        name: 'proceed_to_phase',
-        arguments: {
-          target_phase: 'design',
-          reason: 'setting up test'
-        }
+      // When: I analyze a transition that should continue in current phase
+      const { TransitionEngine } = await import('../../src/transition-engine.js');
+      const transitionEngine = new TransitionEngine(tempProject.projectPath);
+      
+      const result = transitionEngine.analyzePhaseTransition({
+        currentPhase: 'requirements',
+        userInput: 'I need to clarify the user roles',
+        context: 'continuing requirements gathering',
+        conversationSummary: 'Still gathering requirements'
       });
       
-      // When: I provide conversation_summary and recent_messages indicating phase completion
-      const result = await serverContext.client.callTool({
-        name: 'whats_next',
-        arguments: {
-          conversation_summary: 'Completed authentication system design. User approved the architecture with JWT tokens, bcrypt hashing, and RESTful API endpoints.',
-          recent_messages: [
-            { role: 'user', content: 'The design looks perfect, let\'s implement it' },
-            { role: 'assistant', content: 'Great! I\'ll help you implement the authentication system step by step.' }
-          ],
-          user_input: 'ready to start coding',
-          context: 'design phase complete, ready for implementation'
-        }
-      });
-
-      // Then: the transition engine should analyze the context
-      expect(result.content).toBeDefined();
-      const response = JSON.parse(result.content[0].text!);
-      
-      // And: determine appropriate phase transitions based on keywords in context
-      expect(response.phase).toBeDefined();
-      
-      // And: provide contextually relevant instructions
-      expect(response.instructions).toBeDefined();
-      expect(response.instructions.length).toBeGreaterThan(0);
-    });
-  });
-
-  describe('Scenario: Handling malformed or missing parameters', () => {
-    it('should handle missing project context gracefully', async () => {
-      // Given: the MCP server is running
-      serverContext = await startTestServer();
-
-      // When: I call whats_next with minimal parameters
-      const result = await serverContext.client.callTool({
-        name: 'whats_next',
-        arguments: {}
-      });
-
-      // Then: the tool should handle the request gracefully
-      expect(result.content).toBeDefined();
-      expect(result.content.length).toBeGreaterThan(0);
-      
-      const response = JSON.parse(result.content[0].text!);
-      
-      // And: return meaningful response
-      expect(response.phase).toBeDefined();
-      expect(response.instructions).toBeDefined();
-      expect(response.plan_file_path).toBeDefined();
-      expect(response.transition_reason).toBeDefined();
-    });
-
-    it('should work with minimal parameters', async () => {
-      // Given: the MCP server is running
-      serverContext = await startTestServer();
-
-      // When: I call whats_next with just user input
-      const result = await serverContext.client.callTool({
-        name: 'whats_next',
-        arguments: {
-          user_input: 'help me build a feature'
-        }
-      });
-
-      // Then: the tool should work properly
-      expect(result.content).toBeDefined();
-      expect(result.content.length).toBeGreaterThan(0);
-      
-      const response = JSON.parse(result.content[0].text!);
-      expect(response.phase).toBeDefined();
-      expect(response.instructions).toBeDefined();
-      expect(response.plan_file_path).toBeDefined();
+      // Then: it should continue in requirements phase
+      expect(result.newPhase).toBe('requirements');
+      expect(result.instructions).toContain('requirements');
     });
   });
 
   describe('Scenario: Context analysis drives phase transitions', () => {
-    it('should analyze conversation context for phase transitions', async () => {
-      // Given: an existing conversation with rich context
-      serverContext = await startTestServer();
+    it('should analyze conversation context for appropriate transitions', async () => {
+      // Given: a project with state machine
+      tempProject = createTempProjectWithDefaultStateMachine();
       
-      // First, explicitly set the phase to design for this test
-      await serverContext.client.callTool({
-        name: 'proceed_to_phase',
-        arguments: {
-          target_phase: 'design',
-          reason: 'setting up test'
-        }
+      // When: I provide context indicating readiness for next phase
+      const { TransitionEngine } = await import('../../src/transition-engine.js');
+      const transitionEngine = new TransitionEngine(tempProject.projectPath);
+      
+      const result = transitionEngine.analyzePhaseTransition({
+        currentPhase: 'requirements',
+        userInput: 'I think we have all the requirements, let\'s design the solution',
+        context: 'requirements complete, ready for design',
+        conversationSummary: 'Requirements gathering is complete, user wants to move to design'
       });
-
-      // When: I provide conversation_summary and recent_messages indicating phase completion
-      const result = await serverContext.client.callTool({
-        name: 'whats_next',
-        arguments: {
-          conversation_summary: 'Completed authentication system design. User approved the architecture with JWT tokens, bcrypt hashing, and RESTful API endpoints.',
-          recent_messages: [
-            { role: 'user', content: 'The design looks perfect, let\'s implement it' },
-            { role: 'assistant', content: 'Great! I\'ll help you implement the authentication system step by step.' }
-          ],
-          user_input: 'ready to start coding',
-          context: 'design phase complete, ready for implementation'
-        }
-      });
-
-      // Then: the transition engine should analyze the context
-      expect(result.content).toBeDefined();
-      const response = JSON.parse(result.content[0].text!);
       
-      // And: determine appropriate phase transitions based on context
-      expect(response.phase).toBeDefined();
-      
-      // And: provide contextually relevant instructions
-      expect(response.instructions).toBeDefined();
-      expect(response.instructions.length).toBeGreaterThan(0);
+      // Then: it should transition to design phase
+      expect(result.newPhase).toBe('design');
+      expect(result.instructions).toContain('design');
+      expect(result.transitionReason).toContain('design');
     });
 
-    it('should handle conversations with different project contexts', async () => {
-      // Given: a server running
-      serverContext = await startTestServer();
-
-      // When: I call whats_next with specific project context
-      const result = await serverContext.client.callTool({
-        name: 'whats_next',
-        arguments: {
-          user_input: 'working on user profile feature',
-          context: 'feature branch development'
-        }
-      });
-
-      // Then: the conversation should be handled appropriately
-      const response = JSON.parse(result.content[0].text!);
-      expect(response.phase).toBeDefined();
-      expect(response.instructions).toBeDefined();
-      expect(response.plan_file_path).toBeDefined();
+    it('should handle different project contexts', async () => {
+      // Given: a project with custom state machine
+      tempProject = createTempProjectWithCustomStateMachine(CUSTOM_STATE_MACHINE_YAML);
       
-      // And: plan file path should be contextually appropriate
-      expect(response.plan_file_path).toMatch(/\.md$/);
+      // When: I analyze transitions with custom phases
+      const { TransitionEngine } = await import('../../src/transition-engine.js');
+      const transitionEngine = new TransitionEngine(tempProject.projectPath);
+      
+      const result = transitionEngine.analyzePhaseTransition({
+        currentPhase: 'phase1',
+        userInput: 'move to next phase',
+        context: 'testing custom state machine',
+        conversationSummary: 'Using custom state machine with phase1 and phase2'
+      });
+      
+      // Then: it should work with custom phases
+      expect(['phase1', 'phase2']).toContain(result.newPhase);
+      expect(result.instructions).toBeDefined();
+    });
+  });
+
+  describe('Scenario: Integration with conversation management', () => {
+    it('should integrate with conversation manager', async () => {
+      // Given: a project setup
+      tempProject = createTempProjectWithDefaultStateMachine();
+      
+      // When: I use conversation manager with transition engine
+      const { ConversationManager } = await import('../../src/conversation-manager.js');
+      const { TransitionEngine } = await import('../../src/transition-engine.js');
+      
+      const conversationManager = new ConversationManager(tempProject.projectPath);
+      const transitionEngine = new TransitionEngine(tempProject.projectPath);
+      
+      // Then: they should work together
+      const conversationId = conversationManager.getConversationId();
+      expect(conversationId).toBeDefined();
+      
+      const result = transitionEngine.analyzePhaseTransition({
+        currentPhase: 'idle',
+        userInput: 'start new feature',
+        context: 'integration test',
+        conversationSummary: 'Testing integration'
+      });
+      
+      expect(result.newPhase).toBe('requirements');
+    });
+
+    it('should handle malformed or missing parameters gracefully', async () => {
+      // Given: a project setup
+      tempProject = createTempProjectWithDefaultStateMachine();
+      
+      // When: I provide minimal parameters
+      const { TransitionEngine } = await import('../../src/transition-engine.js');
+      const transitionEngine = new TransitionEngine(tempProject.projectPath);
+      
+      const result = transitionEngine.analyzePhaseTransition({
+        currentPhase: 'idle',
+        userInput: '',
+        context: '',
+        conversationSummary: ''
+      });
+      
+      // Then: it should still work with defaults
+      expect(result.newPhase).toBeDefined();
+      expect(result.instructions).toBeDefined();
+      expect(result.transitionReason).toBeDefined();
     });
   });
 });

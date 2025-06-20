@@ -16,3 +16,14 @@ export const TEST_CONFIG = {
   PROJECT_PATH: '/test/project',
   GIT_BRANCH: 'main'
 };
+
+// Global setup for memfs mocking
+// This ensures fs is mocked for unit tests only
+import { vi } from 'vitest';
+
+// Only enable automatic fs mocking for unit tests
+// Integration tests should use real file system
+if (process.env.NODE_ENV !== 'integration') {
+  vi.mock('fs');
+  vi.mock('fs/promises');
+}

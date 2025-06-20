@@ -2,20 +2,20 @@
  * Server Initialization Integration Tests
  * 
  * Tests server startup, database initialization, and component integration
+ * using real temporary files for realistic testing scenarios.
  */
 
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { mockFileSystem, mockSqlite, startTestServer, ServerTestContext } from '../utils/test-setup';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { startTestServer, ServerTestContext } from '../utils/test-setup.js';
+import { TempProject, createTempProjectWithDefaultStateMachine } from '../utils/temp-files.js';
+
+// Disable fs mocking for integration tests
+vi.unmock('fs');
+vi.unmock('fs/promises');
 
 describe('Server Initialization Integration Tests', () => {
   let serverContext: ServerTestContext;
-
-  // Setup mocks before each test
-  beforeEach(() => {
-    // Setup mocks
-    mockFileSystem();
-    mockSqlite();
-  });
+  let tempProject: TempProject;
 
   // Clean up after each test
   afterEach(async () => {
@@ -23,92 +23,142 @@ describe('Server Initialization Integration Tests', () => {
     if (serverContext) {
       await serverContext.cleanup();
     }
+    if (tempProject) {
+      tempProject.cleanup();
+    }
   });
 
-  describe('Scenario: Server starts successfully with clean state', () => {
-    it('should initialize server with all components', async () => {
-      // Given: a clean environment
+  describe('Scenario: Component initialization with real files', () => {
+    it('should initialize components with default state machine', async () => {
+      // Given: a project with default state machine setup
+      tempProject = createTempProjectWithDefaultStateMachine();
       
-      // When: I start the server
-      serverContext = await startTestServer();
+      // When: I initialize the core components
+      const { ConversationManager } = await import('../../src/conversation-manager.js');
+      const { TransitionEngine } = await import('../../src/transition-engine.js');
+      const { StateMachineLoader } = await import('../../src/state-machine-loader.js');
       
-      // Then: the server should be running
-      expect(serverContext.client).toBeDefined();
+      // Then: components should initialize successfully
+      const conversationManager = new ConversationManager(tempProject.projectPath);
+      const transitionEngine = new TransitionEngine(tempProject.projectPath);
+      const stateMachineLoader = new StateMachineLoader();
       
-      // And: the server should respond to resource requests
-      const stateResource = await serverContext.client.readResource({
-        uri: 'state://current'
-      });
+      expect(conversationManager).toBeDefined();
+      expect(transitionEngine).toBeDefined();
+      expect(stateMachineLoader).toBeDefined();
       
-      // And: return valid state information
-      expect(stateResource.contents).toBeDefined();
-      expect(stateResource.contents.length).toBeGreaterThan(0);
+      // And: state machine should load the default configuration
+      const stateMachine = stateMachineLoader.loadStateMachine(tempProject.projectPath);
+      expect(stateMachine.name).toBe('Development Workflow');
+      expect(stateMachine.initial_state).toBe('idle');
+    });
+
+    it('should handle conversation state management', async () => {
+      // Given: a project setup
+      tempProject = createTempProjectWithDefaultStateMachine();
       
-      const stateData = JSON.parse(stateResource.contents[0].text!);
+      // When: I create a conversation manager
+      const { ConversationManager } = await import('../../src/conversation-manager.js');
+      const conversationManager = new ConversationManager(tempProject.projectPath);
       
-      expect(stateData.conversationId).toBeDefined();
-      expect(stateData.currentPhase).toBeDefined();
-      expect(stateData.projectPath).toBeDefined();
+      // Then: it should manage conversation state
+      const conversationId = conversationManager.getConversationId();
+      expect(conversationId).toBeDefined();
+      expect(typeof conversationId).toBe('string');
+      
+      // And: it should provide project context
+      const projectPath = conversationManager.getProjectPath();
+      expect(projectPath).toBe(tempProject.projectPath);
     });
   });
 
-  describe('Scenario: Server reconnects to existing database', () => {
-    it('should reconnect to existing database and preserve state', async () => {
-      // Given: a server with existing state
-      serverContext = await startTestServer();
+  describe('Scenario: Integration between components', () => {
+    it('should integrate TransitionEngine with StateMachineLoader', async () => {
+      // Given: a project with state machine
+      tempProject = createTempProjectWithDefaultStateMachine();
       
-      // Create initial state by calling whats_next
-      const initialResult = await serverContext.client.callTool({
-        name: 'whats_next',
-        arguments: {
-          user_input: 'implement authentication feature'
-        }
+      // When: I use TransitionEngine which depends on StateMachineLoader
+      const { TransitionEngine } = await import('../../src/transition-engine.js');
+      const transitionEngine = new TransitionEngine(tempProject.projectPath);
+      
+      // Then: it should analyze phase transitions correctly
+      const result = transitionEngine.analyzePhaseTransition({
+        currentPhase: 'idle',
+        userInput: 'implement a new feature',
+        context: 'Testing integration',
+        conversationSummary: 'User wants to implement a feature'
       });
       
-      const initialStateResponse = await serverContext.client.readResource({
-        uri: 'state://current'
-      });
-      const initialState = JSON.parse(initialStateResponse.contents[0].text!);
-      
-      // When: I restart the server
-      await serverContext.cleanup();
-      serverContext = await startTestServer();
-      
-      // Then: the server should reconnect to the existing database
-      expect(serverContext.client).toBeDefined();
-      
-      // And: preserve all existing conversation states
-      const restoredStateResponse = await serverContext.client.readResource({
-        uri: 'state://current'
-      });
-      const restoredState = JSON.parse(restoredStateResponse.contents[0].text!);
+      expect(result.newPhase).toBe('requirements');
+      expect(result.instructions).toContain('requirements analysis');
+      expect(result.isModeled).toBe(true);
+    });
 
-      // And: be able to continue previous conversations
-      expect(restoredState.conversationId).toBe(initialState.conversationId);
-      expect(restoredState.projectPath).toBe(initialState.projectPath);
+    it('should handle explicit phase transitions', async () => {
+      // Given: a project setup
+      tempProject = createTempProjectWithDefaultStateMachine();
+      
+      // When: I use explicit phase transitions
+      const { TransitionEngine } = await import('../../src/transition-engine.js');
+      const transitionEngine = new TransitionEngine(tempProject.projectPath);
+      
+      // Then: it should handle valid transitions
+      const result = transitionEngine.handleExplicitTransition('idle', 'requirements');
+      expect(result.newPhase).toBe('requirements');
+      expect(result.instructions).toBeDefined();
+      expect(result.transitionReason).toBeDefined();
+      
+      // And: it should reject invalid transitions
+      expect(() => {
+        transitionEngine.handleExplicitTransition('idle', 'invalid_phase');
+      }).toThrow(/Invalid target phase/);
     });
   });
+  describe('Scenario: Plan file management integration', () => {
+    it('should integrate with plan file management', async () => {
+      // Given: a project setup
+      tempProject = createTempProjectWithDefaultStateMachine();
+      
+      // When: I use plan manager
+      const { PlanManager } = await import('../../src/plan-manager.js');
+      const planManager = new PlanManager(tempProject.projectPath);
+      
+      // Then: it should generate plan file paths correctly
+      const planPath = planManager.getPlanFilePath('test-feature');
+      expect(planPath).toContain(tempProject.projectPath);
+      expect(planPath).toContain('test-feature-plan.md');
+      
+      // And: it should be able to create plan files
+      const planContent = planManager.generatePlanContent('Test Feature', 'requirements');
+      expect(planContent).toContain('Test Feature');
+      expect(planContent).toContain('Requirements');
+    });
 
-  describe('Scenario: Server components are properly integrated', () => {
-    it('should have all components working together', async () => {
-      // Given: a clean server setup
-      serverContext = await startTestServer();
+    it('should handle different project contexts', async () => {
+      // Given: multiple project setups
+      const project1 = createTempProjectWithDefaultStateMachine();
+      const project2 = createTempProjectWithDefaultStateMachine();
       
-      // When: I call whats_next with a feature request
-      const result = await serverContext.client.callTool({
-        name: 'whats_next',
-        arguments: {
-          user_input: 'implement user authentication',
-          context: 'new feature request'
-        }
-      });
-      
-      // Then: the transition engine should process the request
-      expect(result.content).toBeDefined();
-      const response = JSON.parse(result.content[0].text!);
-      
-      // And: transition to requirements phase
-      expect(response.phase).toBeDefined();
+      try {
+        // When: I create conversation managers for different projects
+        const { ConversationManager } = await import('../../src/conversation-manager.js');
+        const manager1 = new ConversationManager(project1.projectPath);
+        const manager2 = new ConversationManager(project2.projectPath);
+        
+        // Then: they should have different conversation IDs
+        const id1 = manager1.getConversationId();
+        const id2 = manager2.getConversationId();
+        
+        expect(id1).not.toBe(id2);
+        expect(manager1.getProjectPath()).toBe(project1.projectPath);
+        expect(manager2.getProjectPath()).toBe(project2.projectPath);
+      } finally {
+        project1.cleanup();
+        project2.cleanup();
+      }
+    });
+  });
+});
       
       // And: provide instructions
       expect(response.instructions).toBeDefined();

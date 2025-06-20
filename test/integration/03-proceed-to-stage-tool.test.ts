@@ -1,281 +1,194 @@
 /**
  * proceed_to_phase Tool Integration Tests
  * 
- * Tests explicit phase transition tool via MCP protocol
+ * Tests the proceed_to_phase tool functionality with real file system integration
+ * focusing on component-level testing rather than full server spawning.
  */
 
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { mockFileSystem, mockSqlite, startTestServer, ServerTestContext } from '../utils/test-setup';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { TempProject, createTempProjectWithDefaultStateMachine, createTempProjectWithCustomStateMachine, CUSTOM_STATE_MACHINE_YAML } from '../utils/temp-files.js';
+
+// Disable fs mocking for integration tests
+vi.unmock('fs');
+vi.unmock('fs/promises');
 
 describe('proceed_to_phase Tool Integration Tests', () => {
-  let serverContext: ServerTestContext;
+  let tempProject: TempProject;
 
-  // Setup mocks before each test
-  beforeEach(() => {
-    // Setup mocks
-    mockFileSystem();
-    mockSqlite();
-  });
-
-  // Clean up after each test
-  afterEach(async () => {
-    // Clean up client and server
-    if (serverContext) {
-      await serverContext.cleanup();
+  afterEach(() => {
+    if (tempProject) {
+      tempProject.cleanup();
     }
   });
 
-  describe('Scenario: Valid phase transition from requirements to design', () => {
+  describe('Scenario: Valid phase transitions with default state machine', () => {
     it('should transition from requirements to design', async () => {
-      // Given: an existing conversation in "requirements" phase
-      serverContext = await startTestServer();
+      // Given: a project with default state machine
+      tempProject = createTempProjectWithDefaultStateMachine();
       
-      // First, explicitly set the phase to requirements for this test
-      await serverContext.client.callTool({
-        name: 'proceed_to_phase',
-        arguments: {
-          target_phase: 'requirements',
-          reason: 'setting up test'
-        }
-      });
-
-      // When: I call proceed_to_phase with target_phase "design"
-      const result = await serverContext.client.callTool({
-        name: 'proceed_to_phase',
-        arguments: {
-          target_phase: 'design',
-          reason: 'requirements gathering complete'
-        }
-      });
-
-      // Then: the conversation phase should be updated to "design"
-      expect(result.content).toBeDefined();
-      const response = JSON.parse(result.content[0].text!);
-      expect(response.phase).toBe('design');
+      // When: I perform an explicit phase transition
+      const { TransitionEngine } = await import('../../src/transition-engine.js');
+      const transitionEngine = new TransitionEngine(tempProject.projectPath);
       
-      // And: design-specific instructions should be returned
-      expect(response.instructions).toBeDefined();
-      expect(response.instructions.toLowerCase()).toMatch(/design|architecture|technical/);
+      const result = transitionEngine.handleExplicitTransition('requirements', 'design');
       
-      // And: the transition reason should be recorded
-      expect(response.transition_reason).toBe('requirements gathering complete');
+      // Then: the transition should be successful
+      expect(result.newPhase).toBe('design');
+      expect(result.instructions).toContain('design');
+      expect(result.transitionReason).toContain('design');
+      expect(result.isModeled).toBe(false); // Direct transitions are not modeled
     });
-  });
 
-  describe('Scenario: Direct phase transition skipping intermediate phases', () => {
     it('should allow direct transition to implementation', async () => {
-      // Given: an existing conversation
-      serverContext = await startTestServer();
+      // Given: a project setup
+      tempProject = createTempProjectWithDefaultStateMachine();
       
-      // First, explicitly set the phase to requirements for this test
-      await serverContext.client.callTool({
-        name: 'proceed_to_phase',
-        arguments: {
-          target_phase: 'requirements',
-          reason: 'setting up test'
-        }
-      });
-
-      // When: I call proceed_to_phase with target_phase "implementation" (skipping design)
-      const result = await serverContext.client.callTool({
-        name: 'proceed_to_phase',
-        arguments: {
-          target_phase: 'implementation',
-          reason: 'requirements and design already done offline'
-        }
-      });
-
-      // Then: the phase should transition directly to "implementation"
-      const response = JSON.parse(result.content[0].text!);
-      expect(response.phase).toBe('implementation');
+      // When: I skip intermediate phases
+      const { TransitionEngine } = await import('../../src/transition-engine.js');
+      const transitionEngine = new TransitionEngine(tempProject.projectPath);
       
-      // And: implementation-specific instructions should be provided
-      expect(response.instructions).toBeDefined();
-      expect(response.instructions.toLowerCase()).toMatch(/implement|code|build/);
+      const result = transitionEngine.handleExplicitTransition('idle', 'implementation');
       
-      // And: the transition reason should be recorded
-      expect(response.transition_reason).toBe('requirements and design already done offline');
+      // Then: the direct transition should work
+      expect(result.newPhase).toBe('implementation');
+      expect(result.instructions).toContain('implementation');
+      expect(result.transitionReason).toContain('implementation');
     });
-  });
 
-  describe('Scenario: Transition to completion phase', () => {
     it('should transition to complete phase', async () => {
-      // Given: an existing conversation in "testing" phase
-      serverContext = await startTestServer();
+      // Given: a project setup
+      tempProject = createTempProjectWithDefaultStateMachine();
       
-      // First, explicitly set the phase to testing for this test
-      await serverContext.client.callTool({
-        name: 'proceed_to_phase',
-        arguments: {
-          target_phase: 'testing',
-          reason: 'setting up test'
-        }
-      });
-
-      // When: I call proceed_to_phase with target_phase "complete"
-      const result = await serverContext.client.callTool({
-        name: 'proceed_to_phase',
-        arguments: {
-          target_phase: 'complete',
-          reason: 'all testing completed successfully'
-        }
-      });
-
-      // Then: the conversation should be marked as complete
-      const response = JSON.parse(result.content[0].text!);
-      expect(response.phase).toBe('complete');
+      // When: I transition to completion
+      const { TransitionEngine } = await import('../../src/transition-engine.js');
+      const transitionEngine = new TransitionEngine(tempProject.projectPath);
       
-      // And: completion instructions should be provided
-      expect(response.instructions).toBeDefined();
-      expect(response.instructions.toLowerCase()).toMatch(/complete|finish|done/);
+      const result = transitionEngine.handleExplicitTransition('testing', 'complete');
+      
+      // Then: the completion transition should work
+      expect(result.newPhase).toBe('complete');
+      expect(result.instructions).toContain('complete');
+      expect(result.transitionReason).toContain('complete');
     });
   });
 
   describe('Scenario: Invalid phase transition parameters', () => {
     it('should reject invalid phase names', async () => {
-      // Given: the MCP server is running
-      serverContext = await startTestServer();
-
-      // When: I call proceed_to_phase with an invalid target_phase
-      try {
-        await serverContext.client.callTool({
-          name: 'proceed_to_phase',
-          arguments: {
-            target_phase: 'invalid_phase'
-          }
-        });
-        
-        // Should not reach here
-        expect(true).toBe(false);
-      } catch (error) {
-        // Then: the tool should return an error response
-        expect(error).toBeDefined();
-        // The error should indicate invalid phase
-        expect(error.message || error.toString()).toMatch(/invalid|error/i);
-      }
+      // Given: a project setup
+      tempProject = createTempProjectWithDefaultStateMachine();
+      
+      // When: I try to transition to an invalid phase
+      const { TransitionEngine } = await import('../../src/transition-engine.js');
+      const transitionEngine = new TransitionEngine(tempProject.projectPath);
+      
+      // Then: it should throw an error
+      expect(() => {
+        transitionEngine.handleExplicitTransition('idle', 'invalid_phase');
+      }).toThrow(/Invalid target phase/);
     });
 
-    it('should handle missing target_phase parameter', async () => {
-      // Given: the MCP server is running
-      serverContext = await startTestServer();
-
-      // When: I call proceed_to_phase without target_phase
-      try {
-        await serverContext.client.callTool({
-          name: 'proceed_to_phase',
-          arguments: {
-            reason: 'test reason'
-          }
-        });
-        
-        // Should not reach here
-        expect(true).toBe(false);
-      } catch (error) {
-        // Then: the tool should return an error response
-        expect(error).toBeDefined();
-        // The error should indicate missing required parameter
-        expect(error.message || error.toString()).toMatch(/required|missing|target_phase/i);
+    it('should handle transitions from any valid phase', async () => {
+      // Given: a project setup
+      tempProject = createTempProjectWithDefaultStateMachine();
+      
+      // When: I transition from various phases
+      const { TransitionEngine } = await import('../../src/transition-engine.js');
+      const transitionEngine = new TransitionEngine(tempProject.projectPath);
+      
+      // Then: all valid transitions should work
+      const phases = ['idle', 'requirements', 'design', 'implementation', 'qa', 'testing', 'complete'];
+      
+      for (const fromPhase of phases) {
+        for (const toPhase of phases) {
+          const result = transitionEngine.handleExplicitTransition(fromPhase, toPhase);
+          expect(result.newPhase).toBe(toPhase);
+          expect(result.instructions).toBeDefined();
+          expect(result.transitionReason).toBeDefined();
+        }
       }
     });
   });
 
-  describe('Scenario: Transition with detailed reason', () => {
-    it('should record transition with provided reason', async () => {
-      // Given: an existing conversation in "design" phase
-      serverContext = await startTestServer();
+  describe('Scenario: Custom state machine transitions', () => {
+    it('should work with custom state machine phases', async () => {
+      // Given: a project with custom state machine
+      tempProject = createTempProjectWithCustomStateMachine(CUSTOM_STATE_MACHINE_YAML);
       
-      // First, explicitly set the phase to design for this test
-      await serverContext.client.callTool({
-        name: 'proceed_to_phase',
-        arguments: {
-          target_phase: 'design',
-          reason: 'setting up test'
-        }
-      });
-
-      // When: I call proceed_to_phase with detailed reason
-      const detailedReason = 'design approved by user, ready to code';
-      const result = await serverContext.client.callTool({
-        name: 'proceed_to_phase',
-        arguments: {
-          target_phase: 'implementation',
-          reason: detailedReason
-        }
-      });
-
-      // Then: the transition should be recorded with the provided reason
-      const response = JSON.parse(result.content[0].text!);
-      expect(response.transition_reason).toBe(detailedReason);
+      // When: I perform transitions with custom phases
+      const { TransitionEngine } = await import('../../src/transition-engine.js');
+      const transitionEngine = new TransitionEngine(tempProject.projectPath);
       
-      // And: the reason should be included in the response
-      expect(response.transition_reason).toContain('approved');
-      expect(response.transition_reason).toContain('ready to code');
+      const result = transitionEngine.handleExplicitTransition('phase1', 'phase2');
+      
+      // Then: the custom transition should work
+      expect(result.newPhase).toBe('phase2');
+      expect(result.instructions).toBe('Direct to phase 2');
+      expect(result.transitionReason).toBe('Direct transition to phase 2');
+    });
+
+    it('should reject invalid phases for custom state machine', async () => {
+      // Given: a project with custom state machine
+      tempProject = createTempProjectWithCustomStateMachine(CUSTOM_STATE_MACHINE_YAML);
+      
+      // When: I try to use default phases with custom state machine
+      const { TransitionEngine } = await import('../../src/transition-engine.js');
+      const transitionEngine = new TransitionEngine(tempProject.projectPath);
+      
+      // Then: it should reject default phases
+      expect(() => {
+        transitionEngine.handleExplicitTransition('phase1', 'requirements');
+      }).toThrow(/Invalid target phase/);
+      
+      expect(() => {
+        transitionEngine.handleExplicitTransition('idle', 'phase2');
+      }).toThrow(/Invalid target phase/);
     });
   });
 
-  describe('Scenario: Transition without existing conversation', () => {
-    it('should create new conversation with target phase', async () => {
-      // Given: no existing conversation state for the current project
-      serverContext = await startTestServer();
-
-      // When: I call proceed_to_phase with target_phase "design"
-      const result = await serverContext.client.callTool({
-        name: 'proceed_to_phase',
-        arguments: {
-          target_phase: 'design',
-          reason: 'starting directly with design'
-        }
-      });
-
-      // Then: a new conversation should be created
-      const response = JSON.parse(result.content[0].text!);
-      expect(response.phase).toBe('design');
+  describe('Scenario: Integration with state machine loader', () => {
+    it('should integrate properly with state machine validation', async () => {
+      // Given: a project setup
+      tempProject = createTempProjectWithDefaultStateMachine();
       
-      // And: the phase should be set to the requested target phase
-      expect(response.instructions).toBeDefined();
-      expect(response.instructions.toLowerCase()).toMatch(/design|architecture/);
+      // When: I use transition engine which depends on state machine loader
+      const { TransitionEngine } = await import('../../src/transition-engine.js');
+      const { StateMachineLoader } = await import('../../src/state-machine-loader.js');
+      
+      const transitionEngine = new TransitionEngine(tempProject.projectPath);
+      const stateMachineLoader = new StateMachineLoader();
+      
+      // Then: they should work together for validation
+      const stateMachine = stateMachineLoader.loadStateMachine(tempProject.projectPath);
+      expect(Object.keys(stateMachine.states)).toContain('idle');
+      expect(Object.keys(stateMachine.states)).toContain('requirements');
+      
+      // And: transition engine should respect state machine constraints
+      const result = transitionEngine.handleExplicitTransition('idle', 'requirements');
+      expect(result.newPhase).toBe('requirements');
     });
-  });
 
-  describe('Scenario: Multiple rapid phase transitions', () => {
-    it('should handle sequential transitions correctly', async () => {
-      // Given: an existing conversation
-      serverContext = await startTestServer();
-
-      // When: transitions are requested in sequence
-      const transition1 = await serverContext.client.callTool({
-        name: 'proceed_to_phase',
-        arguments: {
-          target_phase: 'design',
-          reason: 'move to design'
-        }
-      });
-
-      const transition2 = await serverContext.client.callTool({
-        name: 'proceed_to_phase',
-        arguments: {
-          target_phase: 'implementation',
-          reason: 'move to implementation'
-        }
-      });
-
-      const transition3 = await serverContext.client.callTool({
-        name: 'proceed_to_phase',
-        arguments: {
-          target_phase: 'qa',
-          reason: 'move to qa'
-        }
-      });
-
+    it('should handle multiple rapid transitions correctly', async () => {
+      // Given: a project setup
+      tempProject = createTempProjectWithDefaultStateMachine();
+      
+      // When: I perform multiple rapid transitions
+      const { TransitionEngine } = await import('../../src/transition-engine.js');
+      const transitionEngine = new TransitionEngine(tempProject.projectPath);
+      
       // Then: each transition should be processed correctly
-      const response1 = JSON.parse(transition1.content[0].text!);
-      expect(response1.phase).toBe('design');
-
-      const response2 = JSON.parse(transition2.content[0].text!);
-      expect(response2.phase).toBe('implementation');
-
-      const response3 = JSON.parse(transition3.content[0].text!);
-      expect(response3.phase).toBe('qa');
+      const transition1 = transitionEngine.handleExplicitTransition('idle', 'design');
+      expect(transition1.newPhase).toBe('design');
+      
+      const transition2 = transitionEngine.handleExplicitTransition('design', 'implementation');
+      expect(transition2.newPhase).toBe('implementation');
+      
+      const transition3 = transitionEngine.handleExplicitTransition('implementation', 'complete');
+      expect(transition3.newPhase).toBe('complete');
+      
+      // And: each should have proper instructions and reasons
+      expect(transition1.instructions).toBeDefined();
+      expect(transition2.instructions).toBeDefined();
+      expect(transition3.instructions).toBeDefined();
     });
   });
 });

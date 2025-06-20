@@ -27,6 +27,7 @@
     "@modelcontextprotocol/inspector": "0.14.2",
     "@types/node": "^20.0.0",
     "@types/sqlite3": "^3.1.11",
+    "memfs": "4.17.2",
     "tsx": "4.20.3",
     "typescript": "^5.0.0",
     "vitest": "3.2.4"

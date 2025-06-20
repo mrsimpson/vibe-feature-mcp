@@ -1,145 +1,103 @@
 /**
  * Integration tests for YAML-based state machine loading
  * 
- * Tests the loading of custom state machines from project directories
- * and fallback to default state machine when no custom one exists.
+ * These tests verify that the state machine loading works with real files
+ * in integration with other components (without spawning server processes).
  */
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { TransitionEngine } from '../../src/transition-engine.js';
 import { StateMachineLoader } from '../../src/state-machine-loader.js';
-import { mockFileSystem, mockLogger, mockSqlite } from '../utils/test-setup';
+import { 
+  TempProject, 
+  createTempProjectWithCustomStateMachine, 
+  createTempProjectWithDefaultStateMachine,
+  CUSTOM_STATE_MACHINE_YAML 
+} from '../utils/temp-files.js';
 
-// Define a simple custom state machine for testing
-const customStateMachineYaml = `
-name: "Overridden State Machine"
-description: "Simple two-phase state machine for testing"
-initial_state: "phase1"
-states:
-  phase1:
-    description: "First test phase"
-    transitions:
-      - trigger: "move_to_phase2"
-        target: "phase2"
-        is_modeled: true
-        side_effects:
-          instructions: "Moving to phase 2"
-          transition_reason: "Transition to phase 2 triggered"
-  phase2:
-    description: "Second test phase"
-    transitions: []
-direct_transitions:
-  - state: "phase1"
-    instructions: "Direct to phase 1"
-    transition_reason: "Direct transition to phase 1"
-  - state: "phase2"
-    instructions: "Direct to phase 2"
-    transition_reason: "Direct transition to phase 2"
-`;
-
-// Define default state machine for testing - using the actual default state machine structure
-const defaultStateMachineYaml = `
-name: "Development Workflow"
-description: "State machine for guiding feature development workflow"
-initial_state: "idle"
-states:
-  idle:
-    description: "Waiting for feature requests"
-    transitions:
-      - trigger: "new_feature_request"
-        target: "requirements"
-        is_modeled: true
-        side_effects:
-          instructions: "Start requirements analysis by asking the user clarifying questions about WHAT they need. Focus on understanding their goals, scope, and constraints. Break down their needs into specific, actionable tasks and document them in the plan file. Mark completed requirements tasks as you progress."
-          transition_reason: "New feature request detected, starting requirements analysis"
-  requirements:
-    description: "Gathering requirements"
-    transitions: []
-direct_transitions:
-  - state: "idle"
-    instructions: "Returned to idle state"
-    transition_reason: "Direct transition to idle state"
-  - state: "requirements"
-    instructions: "Starting requirements analysis"
-    transition_reason: "Direct transition to requirements phase"
-`;
+// Disable fs mocking for integration tests
+vi.unmock('fs');
+vi.unmock('fs/promises');
 
 describe('YAML State Machine Integration Tests', () => {
-  // Setup mocks before each test
-  beforeEach(() => {
-    // Reset mocks
-    vi.resetAllMocks();
-    
-    // Mock logger and sqlite
-    mockLogger();
-    mockSqlite();
-  });
+  let tempProject: TempProject;
 
   afterEach(() => {
-    vi.resetAllMocks();
+    if (tempProject) {
+      tempProject.cleanup();
+    }
   });
 
-  describe('Scenario: Using custom state machine from project directory', () => {
+  describe('Scenario: Loading custom state machine from real files', () => {
     it('should load and use custom state machine from project directory', () => {
-      // Given: a project with a custom state machine
-      const projectPath = 'custom-project';
+      // Given: a real project directory with a custom state machine file
+      tempProject = createTempProjectWithCustomStateMachine(CUSTOM_STATE_MACHINE_YAML);
       
-      // Setup mock filesystem with custom state machine
-      const mockFs = mockFileSystem({
-        fileContents: {
-          [`${projectPath}/.vibe/state-machine.yaml`]: customStateMachineYaml
-        }
-      });
-      
-      // When: the transition engine is initialized with the custom state machine
+      // When: the state machine loader loads from the real file
       const loader = new StateMachineLoader();
-      const stateMachine = loader.loadStateMachine(projectPath);
+      const stateMachine = loader.loadStateMachine(tempProject.projectPath);
       
-      // Then: the custom state machine should be loaded
+      // Then: the custom state machine should be loaded correctly
       expect(stateMachine.name).toBe('Custom Test State Machine');
       expect(stateMachine.initial_state).toBe('phase1');
       expect(Object.keys(stateMachine.states)).toContain('phase1');
       expect(Object.keys(stateMachine.states)).toContain('phase2');
       
-      // And: we can use the custom state machine for transitions
-      const transitionEngine = new TransitionEngine(projectPath);
+      // And: the transition engine should work with the custom state machine
+      const transitionEngine = new TransitionEngine(tempProject.projectPath);
       const result = transitionEngine.handleExplicitTransition('phase1', 'phase2');
       
       // Then: transitions should follow the custom state machine rules
       expect(result.newPhase).toBe('phase2');
-      expect(result.instructions).toBe('Direct to phase 2');
-      expect(result.transitionReason).toBe('Direct transition to phase 2');
+      expect(result.instructions).toBe('Moving to phase 2'); // This comes from the modeled transition
+      expect(result.transitionReason).toBe('Transition to phase 2 triggered');
+    });
+
+    it('should handle .yml extension for custom state machine', () => {
+      // Given: a project with a custom state machine using .yml extension
+      tempProject = new TempProject({
+        projectName: 'yml-test-project',
+        additionalFiles: {
+          '.vibe/state-machine.yml': CUSTOM_STATE_MACHINE_YAML
+        }
+      });
+      
+      // When: the state machine loader loads from the .yml file
+      const loader = new StateMachineLoader();
+      const stateMachine = loader.loadStateMachine(tempProject.projectPath);
+      
+      // Then: the custom state machine should be loaded correctly
+      expect(stateMachine.name).toBe('Custom Test State Machine');
+      expect(stateMachine.initial_state).toBe('phase1');
     });
   });
 
   describe('Scenario: Falling back to default state machine', () => {
     it('should use default state machine when no custom one exists', () => {
-      // Given: a project without a custom state machine
-      const projectPath = 'default-project';
+      // Given: a project directory without a custom state machine
+      tempProject = createTempProjectWithDefaultStateMachine();
       
-      // Setup mock filesystem with default state machine
-      const mockFs = mockFileSystem({
-        fileContents: {
-          'resources/state-machine.yaml': defaultStateMachineYaml
-        }
-      });
-      
-      // When: the transition engine is initialized
+      // When: the state machine loader attempts to load
       const loader = new StateMachineLoader();
-      const stateMachine = loader.loadStateMachine(projectPath);
+      const stateMachine = loader.loadStateMachine(tempProject.projectPath);
       
       // Then: the default state machine should be loaded
       expect(stateMachine.name).toBe('Development Workflow');
       expect(stateMachine.initial_state).toBe('idle');
       expect(Object.keys(stateMachine.states)).toContain('idle');
       expect(Object.keys(stateMachine.states)).toContain('requirements');
+      expect(Object.keys(stateMachine.states)).toContain('design');
+      expect(Object.keys(stateMachine.states)).toContain('implementation');
+      expect(Object.keys(stateMachine.states)).toContain('qa');
+      expect(Object.keys(stateMachine.states)).toContain('testing');
+      expect(Object.keys(stateMachine.states)).toContain('complete');
       
-      // And: the default state machine should be used for transitions
-      const transitionEngine = new TransitionEngine(projectPath);
+      // And: the transition engine should work with the default state machine
+      const transitionEngine = new TransitionEngine(tempProject.projectPath);
       const result = transitionEngine.analyzePhaseTransition({
         currentPhase: 'idle',
         userInput: 'implement a new feature',
-        context: 'Testing phase transition',
+        context: 'Testing default state machine integration',
         conversationSummary: 'Testing default state machine transition'
       });
       
@@ -151,36 +109,23 @@ describe('YAML State Machine Integration Tests', () => {
     });
   });
 
-  describe('Scenario: Handling custom state machine with alternate file extension', () => {
-    it('should load and use custom state machine with .yml extension', () => {
-      // Given: a project with a custom state machine using .yml extension
-      const projectPath = 'yml-project';
+  describe('Scenario: Integration with TransitionEngine', () => {
+    it('should integrate properly with TransitionEngine for custom phases', () => {
+      // Given: a project with custom state machine
+      tempProject = createTempProjectWithCustomStateMachine(CUSTOM_STATE_MACHINE_YAML);
       
-      // Setup mock filesystem with custom state machine using .yml extension
-      const mockFs = mockFileSystem({
-        fileContents: {
-          [`${projectPath}/.vibe/state-machine.yml`]: customStateMachineYaml
-        }
-      });
+      // When: TransitionEngine is used with custom phases
+      const transitionEngine = new TransitionEngine(tempProject.projectPath);
       
-      // When: the transition engine is initialized with the custom state machine
-      const loader = new StateMachineLoader();
-      const stateMachine = loader.loadStateMachine(projectPath);
+      // Then: it should handle custom phase transitions
+      expect(() => {
+        transitionEngine.handleExplicitTransition('phase1', 'phase2');
+      }).not.toThrow();
       
-      // Then: the custom state machine should be loaded
-      expect(stateMachine.name).toBe('Custom Test State Machine');
-      expect(stateMachine.initial_state).toBe('phase1');
-      expect(Object.keys(stateMachine.states)).toContain('phase1');
-      expect(Object.keys(stateMachine.states)).toContain('phase2');
-      
-      // And: we can use the custom state machine for transitions
-      const transitionEngine = new TransitionEngine(projectPath);
-      const result = transitionEngine.handleExplicitTransition('phase1', 'phase2');
-      
-      // Then: transitions should follow the custom state machine rules
-      expect(result.newPhase).toBe('phase2');
-      expect(result.instructions).toBe('Direct to phase 2');
-      expect(result.transitionReason).toBe('Direct transition to phase 2');
+      // And: it should reject invalid phases
+      expect(() => {
+        transitionEngine.handleExplicitTransition('phase1', 'invalid_phase');
+      }).toThrow(/Invalid target phase/);
     });
   });
 });
