@@ -6,7 +6,6 @@
 
 import { vi } from 'vitest';
 import { join } from 'path';
-import { YamlStateMachine } from '../../src/state-machine-types.js';
 
 // Default minimal state machine YAML
 const defaultStateMachineYamlString = `
@@ -99,41 +98,72 @@ direct_transitions:
 /**
  * Mock the fs module with configurable behavior
  * @param options Configuration options for the mock
+ * @returns The mocked fs module for assertions
  */
 export function mockFileSystem(options: {
   existingPaths?: string[],
-  stateMachineYaml?: string
+  stateMachineYaml?: string,
+  fileContents?: Record<string, string> // Map of file paths to their contents
 } = {}) {
+  // Create mock implementations
+  const existsSyncMock = vi.fn().mockImplementation((path) => {
+    // Check fileContents map first
+    if (options.fileContents && path in options.fileContents) {
+      return true;
+    }
+
+    // Default paths that should exist
+    if (path.includes('.vibe')) return true;
+    if (path.includes('state-machine.yaml')) return true;
+    if (path.includes('.git')) return true;
+    if (path.includes('.sqlite')) return true;
+
+    // Check custom paths if provided
+    if (options.existingPaths && options.existingPaths.some(p => path.includes(p))) {
+      return true;
+    }
+
+    return false;
+  });
+
+  const readFileSyncMock = vi.fn().mockImplementation((path, opts) => {
+    // Check fileContents map first
+    if (options.fileContents && path in options.fileContents) {
+      return options.fileContents[path];
+    }
+
+    // Default state machine handling
+    if (path.includes('state-machine.yaml')) {
+      return options.stateMachineYaml || defaultStateMachineYamlString;
+    }
+
+    return '';
+  });
+
+  const writeFileSyncMock = vi.fn();
+  const mkdirSyncMock = vi.fn();
+  const rmSyncMock = vi.fn();
+
+  // Create the mock module
+  const fsMock = {
+    existsSync: existsSyncMock,
+    readFileSync: readFileSyncMock,
+    writeFileSync: writeFileSyncMock,
+    mkdirSync: mkdirSyncMock,
+    rmSync: rmSyncMock
+  };
 
   // Setup fs mock
   vi.mock('fs', async (importOriginal) => {
     const actual = await importOriginal();
     return {
       ...actual,
-      existsSync: vi.fn().mockImplementation((path) => {
-        if (path.includes('.vibe')) return true;
-        if (path.includes('state-machine.yaml')) return true;
-        if (path.includes('.git')) return true;
-        if (path.includes('.sqlite')) return true;
-        
-        // Check custom paths if provided
-        if (options.existingPaths && options.existingPaths.some(p => path.includes(p))) {
-          return true;
-        }
-        
-        return false;
-      }),
-      readFileSync: vi.fn().mockImplementation((path, opts) => {
-        if (path.includes('state-machine.yaml')) {
-          return options.stateMachineYaml || defaultStateMachineYamlString;
-        }
-        return '';
-      }),
-      writeFileSync: vi.fn(),
-      mkdirSync: vi.fn(),
-      rmSync: vi.fn()
+      ...fsMock
     };
   });
+
+  // Return the mock functions for assertions
+  return fsMock;
 }
 
 /**
@@ -202,10 +232,10 @@ export async function startTestServer(options: {
 } = {}): Promise<ServerTestContext> {
   const serverPath = join(process.cwd(), 'src', 'index.ts');
   const tempDir = options.projectPath || '/mock/project/path';
-  
+
   const { Client } = await import('@modelcontextprotocol/sdk/client/index.js');
   const { StdioClientTransport } = await import('@modelcontextprotocol/sdk/client/stdio.js');
-  
+
   const transport = new StdioClientTransport({
     command: 'npx',
     args: ['tsx', serverPath],
@@ -216,16 +246,16 @@ export async function startTestServer(options: {
       NODE_ENV: 'test'
     }
   });
-  
+
   const client = new Client({
     name: 'test-client',
     version: '1.0.0'
   }, {
     capabilities: {}
   });
-  
+
   await client.connect(transport);
-  
+
   return {
     client,
     transport,
