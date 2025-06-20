@@ -14,7 +14,14 @@ import path from 'path';
 
 // Read the actual state machine YAML content
 const stateMachineYamlPath = path.join(process.cwd(), 'resources', 'state-machine.yaml');
-const actualStateMachineYaml = readFileSync(stateMachineYamlPath, 'utf8');
+let actualStateMachineYaml = '';
+
+try {
+  // Try to read the actual state machine YAML content
+  actualStateMachineYaml = readFileSync(stateMachineYamlPath, 'utf8');
+} catch (error) {
+  console.error('Failed to load state machine YAML:', error);
+}
 
 // Mock modules
 vi.mock('fs', () => {
@@ -45,6 +52,18 @@ describe('proceed_to_phase Tool Integration Tests', () => {
   beforeEach(async () => {
     // Reset mocks
     vi.resetAllMocks();
+    
+    // Delete any existing database file
+    try {
+      const actualFs = await import('fs');
+      const dbPath = join(process.cwd(), '.vibe', 'conversation-state.sqlite');
+      if (actualFs.existsSync(dbPath)) {
+        actualFs.rmSync(dbPath);
+        console.log(`Deleted existing database file: ${dbPath}`);
+      }
+    } catch (error) {
+      console.error('Error deleting database file:', error);
+    }
     
     // Mock fs.existsSync to return true for directories and state machine file
     vi.mocked(existsSync).mockImplementation((path: string) => {

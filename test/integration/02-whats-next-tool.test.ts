@@ -14,7 +14,14 @@ import path from 'path';
 
 // Read the actual state machine YAML content
 const stateMachineYamlPath = path.join(process.cwd(), 'resources', 'state-machine.yaml');
-const actualStateMachineYaml = readFileSync(stateMachineYamlPath, 'utf8');
+let actualStateMachineYaml = '';
+
+try {
+  // Try to read the actual state machine YAML content
+  actualStateMachineYaml = readFileSync(stateMachineYamlPath, 'utf8');
+} catch (error) {
+  console.error('Failed to load state machine YAML:', error);
+}
 
 // Mock modules
 vi.mock('fs', () => {
@@ -45,6 +52,18 @@ describe('whats_next Tool Integration Tests', () => {
   beforeEach(async () => {
     // Reset mocks
     vi.resetAllMocks();
+    
+    // Delete any existing database file
+    try {
+      const actualFs = await import('fs');
+      const dbPath = join(process.cwd(), '.vibe', 'conversation-state.sqlite');
+      if (actualFs.existsSync(dbPath)) {
+        actualFs.rmSync(dbPath);
+        console.log(`Deleted existing database file: ${dbPath}`);
+      }
+    } catch (error) {
+      console.error('Error deleting database file:', error);
+    }
     
     // Mock fs.existsSync to return true for directories and state machine file
     vi.mocked(existsSync).mockImplementation((path: string) => {
@@ -121,7 +140,6 @@ describe('whats_next Tool Integration Tests', () => {
       const response = JSON.parse(result.content[0].text!);
       
       // And: the phase should transition from idle to a valid phase based on the state machine
-      // The transition engine should analyze the context and determine the appropriate phase
       expect(response.phase).toBeDefined();
       
       // And: instructions should be provided
@@ -176,6 +194,15 @@ describe('whats_next Tool Integration Tests', () => {
     it('should suggest appropriate transition when context indicates readiness', async () => {
       // Given: an existing conversation with comprehensive context
       await startServer();
+      
+      // First, explicitly set the phase to design for this test
+      await client.callTool({
+        name: 'proceed_to_phase',
+        arguments: {
+          target_phase: 'design',
+          reason: 'setting up test'
+        }
+      });
       
       // When: I provide conversation_summary and recent_messages indicating phase completion
       const result = await client.callTool({
@@ -255,6 +282,15 @@ describe('whats_next Tool Integration Tests', () => {
     it('should analyze conversation context for phase transitions', async () => {
       // Given: an existing conversation with rich context
       await startServer();
+      
+      // First, explicitly set the phase to design for this test
+      await client.callTool({
+        name: 'proceed_to_phase',
+        arguments: {
+          target_phase: 'design',
+          reason: 'setting up test'
+        }
+      });
 
       // When: I provide conversation_summary and recent_messages indicating phase completion
       const result = await client.callTool({
