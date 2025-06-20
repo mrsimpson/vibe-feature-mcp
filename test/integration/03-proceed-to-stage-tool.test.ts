@@ -5,87 +5,144 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { Client } from '@modelcontextprotocol/sdk/client/index.js';
-import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
 import { join } from 'path';
-import { existsSync, rmSync, mkdirSync, readFileSync } from 'fs';
-import { homedir } from 'os';
-import path from 'path';
 
-// Read the actual state machine YAML content
-const stateMachineYamlPath = path.join(process.cwd(), 'resources', 'state-machine.yaml');
-let actualStateMachineYaml = '';
-
-try {
-  // Try to read the actual state machine YAML content
-  actualStateMachineYaml = readFileSync(stateMachineYamlPath, 'utf8');
-} catch (error) {
-  console.error('Failed to load state machine YAML:', error);
-}
-
-// Mock modules
-vi.mock('fs', () => {
-  const actualFs = vi.importActual('fs');
+// Mock fs module
+vi.mock('fs', async (importOriginal) => {
+  const actual = await importOriginal();
   return {
-    default: {
-      ...actualFs,
-      existsSync: vi.fn(),
-      readFileSync: vi.fn(),
-      writeFileSync: vi.fn(),
-      mkdirSync: vi.fn(),
-      rmSync: vi.fn()
-    },
-    existsSync: vi.fn(),
-    readFileSync: vi.fn(),
+    ...actual,
+    existsSync: vi.fn().mockImplementation((path) => {
+      if (path.includes('.vibe')) return true;
+      if (path.includes('state-machine.yaml')) return true;
+      if (path.includes('.git')) return true;
+      if (path.includes('.sqlite')) return true;
+      return false;
+    }),
+    readFileSync: vi.fn().mockImplementation((path, options) => {
+      if (path.includes('state-machine.yaml')) {
+        return `
+name: "Development Workflow"
+description: "State machine for guiding feature development workflow"
+initial_state: "idle"
+states:
+  idle:
+    description: "Waiting for feature requests"
+    transitions:
+      - trigger: "new_feature_request"
+        target: "requirements"
+        is_modeled: true
+        side_effects:
+          instructions: "Start requirements analysis"
+          transition_reason: "New feature request detected"
+  requirements:
+    description: "Gathering requirements"
+    transitions:
+      - trigger: "requirements_complete"
+        target: "design"
+        is_modeled: true
+        side_effects:
+          instructions: "Start design phase"
+          transition_reason: "Requirements gathering complete"
+  design:
+    description: "Designing solution"
+    transitions:
+      - trigger: "design_complete"
+        target: "implementation"
+        is_modeled: true
+        side_effects:
+          instructions: "Start implementation phase"
+          transition_reason: "Design phase complete"
+  implementation:
+    description: "Implementing solution"
+    transitions:
+      - trigger: "implementation_complete"
+        target: "qa"
+        is_modeled: true
+        side_effects:
+          instructions: "Start QA phase"
+          transition_reason: "Implementation phase complete"
+  qa:
+    description: "Quality assurance"
+    transitions:
+      - trigger: "qa_complete"
+        target: "testing"
+        is_modeled: true
+        side_effects:
+          instructions: "Start testing phase"
+          transition_reason: "QA phase complete"
+  testing:
+    description: "Testing solution"
+    transitions:
+      - trigger: "testing_complete"
+        target: "complete"
+        is_modeled: true
+        side_effects:
+          instructions: "Feature development complete"
+          transition_reason: "Testing phase complete"
+  complete:
+    description: "Feature complete"
+    transitions: []
+
+direct_transitions:
+  - state: "idle"
+    instructions: "Returned to idle state"
+    transition_reason: "Direct transition to idle state"
+  - state: "requirements"
+    instructions: "Starting requirements analysis"
+    transition_reason: "Direct transition to requirements phase"
+  - state: "design"
+    instructions: "Starting design phase"
+    transition_reason: "Direct transition to design phase"
+  - state: "implementation"
+    instructions: "Starting implementation phase"
+    transition_reason: "Direct transition to implementation phase"
+  - state: "qa"
+    instructions: "Starting QA phase"
+    transition_reason: "Direct transition to QA phase"
+  - state: "testing"
+    instructions: "Starting testing phase"
+    transition_reason: "Direct transition to testing phase"
+  - state: "complete"
+    instructions: "Feature development complete"
+    transition_reason: "Direct transition to complete phase"
+`;
+      }
+      return '';
+    }),
     writeFileSync: vi.fn(),
     mkdirSync: vi.fn(),
     rmSync: vi.fn()
   };
 });
 
-describe('proceed_to_phase Tool Integration Tests', () => {
-  let client: Client;
-  let transport: StdioClientTransport;
-  const tempDir = '/mock/project/path';
-  const vibeTestDir = join(tempDir, '.vibe');
+// Mock sqlite3 module
+vi.mock('sqlite3', () => {
+  return {
+    Database: vi.fn().mockImplementation(() => {
+      return {
+        run: vi.fn().mockImplementation((sql, params, callback) => {
+          if (callback) callback(null);
+        }),
+        get: vi.fn().mockImplementation((sql, params, callback) => {
+          if (callback) callback(null, null);
+        }),
+        all: vi.fn().mockImplementation((sql, params, callback) => {
+          if (callback) callback(null, []);
+        }),
+        close: vi.fn().mockImplementation((callback) => {
+          if (callback) callback(null);
+        })
+      };
+    })
+  };
+});
 
-  beforeEach(async () => {
-    // Reset mocks
-    vi.resetAllMocks();
-    
-    // Delete any existing database file
-    try {
-      const actualFs = await import('fs');
-      const dbPath = join(process.cwd(), '.vibe', 'conversation-state.sqlite');
-      if (actualFs.existsSync(dbPath)) {
-        actualFs.rmSync(dbPath);
-        console.log(`Deleted existing database file: ${dbPath}`);
-      }
-    } catch (error) {
-      console.error('Error deleting database file:', error);
-    }
-    
-    // Mock fs.existsSync to return true for directories and state machine file
-    vi.mocked(existsSync).mockImplementation((path: string) => {
-      if (path === vibeTestDir) return true;
-      if (path.includes('state-machine.yaml')) return true;
-      return false;
-    });
-    
-    // Mock fs.readFileSync to return the actual state machine YAML for state machine files
-    vi.mocked(readFileSync).mockImplementation((path: string, options?: any) => {
-      if (path.includes('state-machine.yaml')) {
-        return actualStateMachineYaml;
-      }
-      return '';
-    });
-    
-    // Mock fs.mkdirSync to do nothing
-    vi.mocked(mkdirSync).mockImplementation(() => undefined);
-    
-    // Mock fs.rmSync to do nothing
-    vi.mocked(rmSync).mockImplementation(() => undefined);
-  });
+describe('proceed_to_phase Tool Integration Tests', () => {
+  const serverPath = join(process.cwd(), 'src', 'index.ts');
+  const tempDir = '/mock/project/path';
+  let client;
+  let transport;
 
   afterEach(async () => {
     // Clean up client and server
@@ -95,7 +152,8 @@ describe('proceed_to_phase Tool Integration Tests', () => {
   });
 
   async function startServer() {
-    const serverPath = join(process.cwd(), 'src', 'index.ts');
+    const { Client } = await import('@modelcontextprotocol/sdk/client/index.js');
+    const { StdioClientTransport } = await import('@modelcontextprotocol/sdk/client/stdio.js');
     
     transport = new StdioClientTransport({
       command: 'npx',
@@ -103,33 +161,26 @@ describe('proceed_to_phase Tool Integration Tests', () => {
       env: {
         ...process.env,
         VIBE_FEATURE_LOG_LEVEL: 'DEBUG',
-        VIBE_FEATURE_PROJECT_PATH: tempDir, // Use the mocked directory as the project path
-        NODE_ENV: 'test' // Ensure we're in test mode
+        VIBE_FEATURE_PROJECT_PATH: tempDir,
+        NODE_ENV: 'test'
       }
     });
-
+    
     client = new Client({
       name: 'test-client',
       version: '1.0.0'
     }, {
       capabilities: {}
     });
-
+    
     await client.connect(transport);
+    return client;
   }
 
   describe('Scenario: Valid phase transition from requirements to design', () => {
     it('should transition from requirements to design', async () => {
       // Given: an existing conversation in "requirements" phase
-      await startServer();
-      
-      // Create initial conversation in requirements phase (by providing feature request)
-      const initialResult = await client.callTool({
-        name: 'whats_next',
-        arguments: {
-          user_input: 'implement authentication feature'
-        }
-      });
+      const client = await startServer();
       
       // First, explicitly set the phase to requirements for this test
       await client.callTool({
@@ -166,7 +217,7 @@ describe('proceed_to_phase Tool Integration Tests', () => {
   describe('Scenario: Direct phase transition skipping intermediate phases', () => {
     it('should allow direct transition to implementation', async () => {
       // Given: an existing conversation
-      await startServer();
+      const client = await startServer();
       
       // First, explicitly set the phase to requirements for this test
       await client.callTool({
@@ -202,7 +253,7 @@ describe('proceed_to_phase Tool Integration Tests', () => {
   describe('Scenario: Transition to completion phase', () => {
     it('should transition to complete phase', async () => {
       // Given: an existing conversation in "testing" phase
-      await startServer();
+      const client = await startServer();
       
       // First, explicitly set the phase to testing for this test
       await client.callTool({
@@ -235,7 +286,7 @@ describe('proceed_to_phase Tool Integration Tests', () => {
   describe('Scenario: Invalid phase transition parameters', () => {
     it('should reject invalid phase names', async () => {
       // Given: the MCP server is running
-      await startServer();
+      const client = await startServer();
 
       // When: I call proceed_to_phase with an invalid target_phase
       try {
@@ -258,7 +309,7 @@ describe('proceed_to_phase Tool Integration Tests', () => {
 
     it('should handle missing target_phase parameter', async () => {
       // Given: the MCP server is running
-      await startServer();
+      const client = await startServer();
 
       // When: I call proceed_to_phase without target_phase
       try {
@@ -283,7 +334,7 @@ describe('proceed_to_phase Tool Integration Tests', () => {
   describe('Scenario: Transition with detailed reason', () => {
     it('should record transition with provided reason', async () => {
       // Given: an existing conversation in "design" phase
-      await startServer();
+      const client = await startServer();
       
       // First, explicitly set the phase to design for this test
       await client.callTool({
@@ -317,7 +368,7 @@ describe('proceed_to_phase Tool Integration Tests', () => {
   describe('Scenario: Transition without existing conversation', () => {
     it('should create new conversation with target phase', async () => {
       // Given: no existing conversation state for the current project
-      await startServer();
+      const client = await startServer();
 
       // When: I call proceed_to_phase with target_phase "design"
       const result = await client.callTool({
@@ -341,7 +392,7 @@ describe('proceed_to_phase Tool Integration Tests', () => {
   describe('Scenario: Multiple rapid phase transitions', () => {
     it('should handle sequential transitions correctly', async () => {
       // Given: an existing conversation
-      await startServer();
+      const client = await startServer();
 
       // When: transitions are requested in sequence
       const transition1 = await client.callTool({
