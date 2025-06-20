@@ -115,8 +115,6 @@ vi.mock('../../src/logger.js', () => ({
 
 // Import mocked modules
 import fs from 'fs';
-import path from 'path';
-import yaml from 'js-yaml';
 
 describe('StateMachineLoader', () => {
   let stateMachineLoader: StateMachineLoader;

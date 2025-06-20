@@ -6,17 +6,10 @@
 
 import { vi } from 'vitest';
 import { join } from 'path';
+import { YamlStateMachine } from '../../src/state-machine-types.js';
 
-/**
- * Mock the fs module with configurable behavior
- * @param options Configuration options for the mock
- */
-export function mockFileSystem(options: {
-  existingPaths?: string[],
-  stateMachineYaml?: string
-} = {}) {
-  // Default minimal state machine YAML
-  const defaultStateMachineYaml = `
+// Default minimal state machine YAML
+const defaultStateMachineYamlString = `
 name: "Development Workflow"
 description: "State machine for guiding feature development workflow"
 initial_state: "idle"
@@ -103,6 +96,15 @@ direct_transitions:
     transition_reason: "Direct transition to complete phase"
 `;
 
+/**
+ * Mock the fs module with configurable behavior
+ * @param options Configuration options for the mock
+ */
+export function mockFileSystem(options: {
+  existingPaths?: string[],
+  stateMachineYaml?: string
+} = {}) {
+
   // Setup fs mock
   vi.mock('fs', async (importOriginal) => {
     const actual = await importOriginal();
@@ -123,7 +125,7 @@ direct_transitions:
       }),
       readFileSync: vi.fn().mockImplementation((path, opts) => {
         if (path.includes('state-machine.yaml')) {
-          return options.stateMachineYaml || defaultStateMachineYaml;
+          return options.stateMachineYaml || defaultStateMachineYamlString;
         }
         return '';
       }),
@@ -132,6 +134,26 @@ direct_transitions:
       rmSync: vi.fn()
     };
   });
+}
+
+/**
+ * Mock logger for tests
+ */
+export function mockLogger() {
+  vi.mock('../../src/logger.js', () => ({
+    createLogger: () => ({
+      debug: vi.fn(),
+      info: vi.fn(),
+      warn: vi.fn(),
+      error: vi.fn(),
+      child: () => ({
+        debug: vi.fn(),
+        info: vi.fn(),
+        warn: vi.fn(),
+        error: vi.fn()
+      })
+    })
+  }));
 }
 
 /**

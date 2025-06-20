@@ -9,9 +9,9 @@
     "start": "npx @modelcontextprotocol/inspector",
     "dev": "tsc --watch",
     "clean": "rm -rf dist",
-    "test": "vitest --pool=forks --poolOptions.forks.singleFork=true",
+    "test": "vitest",
     "test:ui": "vitest --ui",
-    "test:run": "vitest run --pool=forks --poolOptions.forks.singleFork=true",
+    "test:run": "vitest run",
     "generate-system-prompt": "vite-node src/scripts/generate-system-prompt.ts",
     "generate-system-prompt:simple": "vite-node src/scripts/generate-system-prompt.ts --type=simple",
     "generate-system-prompt:verbose": "vite-node src/scripts/generate-system-prompt.ts --type=verbose"
