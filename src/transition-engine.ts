@@ -7,13 +7,11 @@
 
 import { createLogger } from './logger.js';
 import { StateMachineLoader } from './state-machine-loader.js';
-import { DevelopmentPhase } from './state-machine-types.js';
-import path from 'path';
 
 const logger = createLogger('TransitionEngine');
 
 export interface TransitionContext {
-  currentPhase: DevelopmentPhase;
+  currentPhase: string;
   userInput?: string;
   context?: string;
   conversationSummary?: string;
@@ -21,7 +19,7 @@ export interface TransitionContext {
 }
 
 export interface TransitionResult {
-  newPhase: DevelopmentPhase;
+  newPhase: string;
   instructions: string;
   transitionReason: string;
   isModeled: boolean;
@@ -99,8 +97,8 @@ export class TransitionEngine {
    * Handle explicit phase transition request
    */
   handleExplicitTransition(
-    currentPhase: DevelopmentPhase,
-    targetPhase: DevelopmentPhase, 
+    currentPhase: string,
+    targetPhase: string, 
     reason?: string
   ): TransitionResult {
     logger.debug('Handling explicit phase transition', {
@@ -109,6 +107,14 @@ export class TransitionEngine {
       reason 
     });
     
+    // Validate that the target phase exists in the state machine
+    if (!this.stateMachineLoader.isValidPhase(targetPhase)) {
+      const validPhases = this.stateMachineLoader.getValidPhases();
+      const errorMsg = `Invalid target phase: "${targetPhase}". Valid phases are: ${validPhases.join(', ')}`;
+      logger.error('Invalid target phase', new Error(errorMsg));
+      throw new Error(errorMsg);
+    }
+
     const transitionInfo = this.stateMachineLoader.getTransitionInstructions(
       currentPhase, 
       targetPhase
@@ -132,7 +138,7 @@ export class TransitionEngine {
   /**
    * Determine suggested phase based on conversation context
    */
-  private determineSuggestedPhase(context: TransitionContext): DevelopmentPhase {
+  private determineSuggestedPhase(context: TransitionContext): string {
     const { currentPhase, userInput, context: additionalContext, conversationSummary } = context;
 
     // Combine all available context
@@ -148,7 +154,7 @@ export class TransitionEngine {
     });
 
     // Phase transition logic based on context analysis
-    let suggestedPhase: DevelopmentPhase;
+    let suggestedPhase: string;
     switch (currentPhase) {
       case 'idle':
         suggestedPhase = this.analyzeIdlePhase(fullContext);
@@ -191,7 +197,7 @@ export class TransitionEngine {
     return suggestedPhase;
   }
 
-  private analyzeIdlePhase(context: string): DevelopmentPhase {
+  private analyzeIdlePhase(context: string): string {
     // Look for new feature requests
     const featureKeywords = [
       'implement', 'build', 'create', 'add', 'develop', 'feature', 
@@ -209,7 +215,7 @@ export class TransitionEngine {
     return 'idle';
   }
 
-  private analyzeRequirementsPhase(context: string): DevelopmentPhase {
+  private analyzeRequirementsPhase(context: string): string {
     // Check for completion indicators
     const completionKeywords = [
       'requirements complete', 'ready to design', 'move to design',
@@ -228,7 +234,7 @@ export class TransitionEngine {
     return 'requirements';
   }
 
-  private analyzeDesignPhase(context: string): DevelopmentPhase {
+  private analyzeDesignPhase(context: string): string {
     // Check for implementation readiness
     const implementationKeywords = [
       'design complete', 'ready to implement', 'start coding', 
@@ -257,7 +263,7 @@ export class TransitionEngine {
     return 'design';
   }
 
-  private analyzeImplementationPhase(context: string): DevelopmentPhase {
+  private analyzeImplementationPhase(context: string): string {
     // Check for QA readiness
     const qaKeywords = [
       'implementation complete', 'ready for review', 'code review',
@@ -286,7 +292,7 @@ export class TransitionEngine {
     return 'implementation';
   }
 
-  private analyzeQAPhase(context: string): DevelopmentPhase {
+  private analyzeQAPhase(context: string): string {
     // Check for testing readiness
     const testingKeywords = [
       'qa complete', 'ready for testing', 'start testing',
@@ -315,7 +321,7 @@ export class TransitionEngine {
     return 'qa';
   }
 
-  private analyzeTestingPhase(context: string): DevelopmentPhase {
+  private analyzeTestingPhase(context: string): string {
     // Check for completion
     const completionKeywords = [
       'testing complete', 'tests pass', 'all tests passing',
@@ -344,7 +350,7 @@ export class TransitionEngine {
     return 'testing';
   }
 
-  private analyzeCompletePhase(context: string): DevelopmentPhase {
+  private analyzeCompletePhase(context: string): string {
     // Check for new feature requests
     const newFeatureKeywords = [
       'new feature', 'next feature', 'implement', 'build next',

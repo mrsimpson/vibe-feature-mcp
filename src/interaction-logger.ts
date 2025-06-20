@@ -42,7 +42,7 @@ export class InteractionLogger {
     toolName: string,
     inputParams: any,
     responseData: any,
-    currentPhase: DevelopmentPhase
+    currentPhase: string
   ): Promise<void> {
     logger.debug('Logging interaction', { 
       conversationId, 

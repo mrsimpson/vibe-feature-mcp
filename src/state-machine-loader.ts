@@ -10,8 +10,7 @@ import path from 'path';
 import { createLogger } from './logger.js';
 import { 
   YamlStateMachine, 
-  YamlTransition, 
-  DevelopmentPhase 
+  YamlTransition,
 } from './state-machine-types.js';
 
 const logger = createLogger('StateMachineLoader');
@@ -21,6 +20,27 @@ const logger = createLogger('StateMachineLoader');
  */
 export class StateMachineLoader {
   private stateMachine: YamlStateMachine | null = null;
+  private validPhases: Set<string> = new Set();
+
+  /**
+   * Get all valid phases from the loaded state machine
+   */
+  public getValidPhases(): string[] {
+    if (!this.stateMachine) {
+      throw new Error('State machine not loaded');
+    }
+    return Array.from(this.validPhases);
+  }
+
+  /**
+   * Get the initial state from the loaded state machine
+   */
+  public getInitialState(): string {
+    if (!this.stateMachine) {
+      throw new Error('State machine not loaded');
+    }
+    return this.stateMachine.initial_state;
+  }
   
   /**
    * Load state machine from YAML file
@@ -65,11 +85,15 @@ export class StateMachineLoader {
       // Validate the state machine
       this.validateStateMachine(stateMachine);
       
+      // Store valid phases for later validation
+      this.validPhases = new Set(Object.keys(stateMachine.states));
+
       this.stateMachine = stateMachine;
       logger.info('State machine loaded successfully', {
         name: stateMachine.name,
         stateCount: Object.keys(stateMachine.states).length,
-        directTransitionCount: stateMachine.direct_transitions.length
+        directTransitionCount: stateMachine.direct_transitions.length,
+        phases: Array.from(this.validPhases)
       });
       
       return stateMachine;
@@ -136,8 +160,8 @@ export class StateMachineLoader {
    * Get transition instructions for a specific state change
    */
   public getTransitionInstructions(
-    fromState: DevelopmentPhase,
-    toState: DevelopmentPhase, 
+    fromState: string,
+    toState: string, 
     trigger?: string
   ): { instructions: string; transitionReason: string; isModeled: boolean } {
     if (!this.stateMachine) {
@@ -181,7 +205,7 @@ export class StateMachineLoader {
   /**
    * Get all possible transitions from a given state
    */
-  public getPossibleTransitions(fromState: DevelopmentPhase): YamlTransition[] {
+  public getPossibleTransitions(fromState: string): YamlTransition[] {
     if (!this.stateMachine) {
       throw new Error('State machine not loaded');
     }
@@ -193,7 +217,7 @@ export class StateMachineLoader {
   /**
    * Check if a transition is modeled (shown in state diagram)
    */
-  public isModeledTransition(fromState: DevelopmentPhase, toState: DevelopmentPhase): boolean {
+  public isModeledTransition(fromState: string, toState: string): boolean {
     if (!this.stateMachine) {
       throw new Error('State machine not loaded');
     }
@@ -207,9 +231,16 @@ export class StateMachineLoader {
   }
   
   /**
+   * Check if a phase is valid in the current state machine
+   */
+  public isValidPhase(phase: string): boolean {
+    return this.validPhases.has(phase);
+  }
+
+  /**
    * Get phase-specific instructions for continuing work in current phase
    */
-  public getContinuePhaseInstructions(phase: DevelopmentPhase): string {
+  public getContinuePhaseInstructions(phase: string): string {
     if (!this.stateMachine) {
       throw new Error('State machine not loaded');
     }

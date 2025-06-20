@@ -5,12 +5,11 @@
  * Customizes instructions based on project context and development phase.
  */
 
-import type { DevelopmentPhase } from './state-machine.js';
 import type { ConversationContext } from './types.js';
 import { PlanManager } from './plan-manager.js';
 
 export interface InstructionContext {
-  phase: DevelopmentPhase;
+  phase: string;
   conversationContext: ConversationContext;
   transitionReason: string;
   isModeled: boolean;
@@ -21,7 +20,7 @@ export interface GeneratedInstructions {
   instructions: string;
   planFileGuidance: string;
   metadata: {
-    phase: DevelopmentPhase;
+    phase: string;
     planFilePath: string;
     transitionReason: string;
     isModeled: boolean;
@@ -115,7 +114,7 @@ export class InstructionGenerator {
   /**
    * Get phase-specific contextual information
    */
-  private getPhaseSpecificContext(phase: DevelopmentPhase): string {
+  private getPhaseSpecificContext(phase: string): string {
     switch (phase) {
       case 'idle':
         return '**Context**: Ready to help with new development tasks or feature requests.';
@@ -146,7 +145,7 @@ export class InstructionGenerator {
   /**
    * Get phase-specific reminders and best practices
    */
-  private getPhaseReminders(phase: DevelopmentPhase): string {
+  private getPhaseReminders(phase: string): string {
     switch (phase) {
       case 'requirements':
         return '**Remember**: \n- Ask "what" not "how"\n- Break down complex requests into specific tasks\n- Clarify scope and constraints\n- Document acceptance criteria\n- Update plan file with gathered requirements';

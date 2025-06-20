@@ -11,8 +11,8 @@ import { resolve } from 'path';
 import { existsSync } from 'fs';
 import { createLogger } from './logger.js';
 import { Database } from './database.js';
-import { DevelopmentPhase } from './state-machine-types.js';
 import type { ConversationState, ConversationContext } from './types.js';
+import { StateMachineLoader } from './state-machine-loader.js';
 
 const logger = createLogger('ConversationManager');
 
@@ -118,12 +118,18 @@ export class ConversationManager {
     
     const planFilePath = resolve(projectPath, '.vibe', planFileName);
     
+    // Get initial state from state machine loader
+    // Import dynamically to avoid circular dependencies
+    const stateMachineLoader = new StateMachineLoader();
+    stateMachineLoader.loadStateMachine(projectPath);
+    const initialPhase = stateMachineLoader.getInitialState();
+
     // Create new state
     const newState: ConversationState = {
       conversationId,
       projectPath,
       gitBranch,
-      currentPhase: 'idle',
+      currentPhase: initialPhase,
       planFilePath,
       createdAt: timestamp,
       updatedAt: timestamp
@@ -134,7 +140,8 @@ export class ConversationManager {
     
     logger.info('New conversation state created', { 
       conversationId, 
-      planFilePath 
+      planFilePath,
+      initialPhase
     });
     
     return newState;

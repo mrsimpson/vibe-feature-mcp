@@ -13,7 +13,7 @@ export interface InteractionLog {
   toolName: string;
   inputParams: string;
   responseData: string;
-  currentPhase: DevelopmentPhase;
+  currentPhase: string;
   timestamp: string;
 }
 
@@ -24,7 +24,7 @@ export interface ConversationState {
   conversationId: string;
   projectPath: string;
   gitBranch: string;
-  currentPhase: DevelopmentPhase;
+  currentPhase: string;
   planFilePath: string;
   createdAt: string;
   updatedAt: string;
@@ -37,6 +37,6 @@ export interface ConversationContext {
   conversationId: string;
   projectPath: string;
   gitBranch: string;
-  currentPhase: DevelopmentPhase;
+  currentPhase: string;
   planFilePath: string;
 }

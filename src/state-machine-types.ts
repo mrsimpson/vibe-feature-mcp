@@ -4,35 +4,6 @@
  * Type definitions for YAML-based state machine
  */
 
-export type DevelopmentPhase = 
-  | 'idle'
-  | 'requirements'
-  | 'design'
-  | 'implementation'
-  | 'qa'
-  | 'testing'
-  | 'complete';
-
-export type TransitionTrigger = 
-  | 'new_feature_request'
-  | 'refine_requirements'
-  | 'requirements_complete'
-  | 'abandon_feature'
-  | 'refine_design'
-  | 'requirements_unclear'
-  | 'design_complete'
-  | 'refine_implementation'
-  | 'design_issues'
-  | 'implementation_complete'
-  | 'refine_qa'
-  | 'implementation_issues'
-  | 'qa_complete'
-  | 'refine_testing'
-  | 'qa_issues'
-  | 'testing_complete'
-  | 'feature_delivered'
-  | 'direct_transition';
-
 /**
  * Side effect of a state transition, including instructions and transition reason
  */

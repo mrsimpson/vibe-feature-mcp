@@ -211,7 +211,7 @@ export class PlanManager {
   /**
    * Generate phase-specific plan file guidance
    */
-  generatePlanFileGuidance(phase: DevelopmentPhase): string {
+  generatePlanFileGuidance(phase: string): string {
     switch (phase) {
       case 'requirements':
         return 'Update the Requirements Analysis section with gathered requirements, scope definition, and completed tasks. Mark tasks as complete with [x].';

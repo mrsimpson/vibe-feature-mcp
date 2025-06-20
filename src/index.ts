@@ -18,7 +18,6 @@ import { InstructionGenerator } from './instruction-generator.js';
 import { PlanManager } from './plan-manager.js';
 import { InteractionLogger } from './interaction-logger.js';
 import { createLogger } from './logger.js';
-import type { DevelopmentPhase } from './state-machine-types.js';
 
 const logger = createLogger('Server');
 
@@ -115,7 +114,7 @@ class VibeFeatureMCPServer {
       {
         description: 'Explicitly transition to a specific development phase when the current phase is complete or when a direct phase change is needed. Use this tool when whats_next suggests a phase transition or when you need to move to a specific phase.',
         inputSchema: {
-          target_phase: z.enum(['idle', 'requirements', 'design', 'implementation', 'qa', 'testing', 'complete'])
+          target_phase: z.string()
             .describe('The development phase to transition to'),
           reason: z.string().optional().describe('Optional reason for transitioning to this phase now (e.g., "requirements complete", "user requested", "design approved")')
         },
@@ -422,7 +421,7 @@ class VibeFeatureMCPServer {
    * Handle proceed_to_phase tool call
    */
   private async handleProceedToPhase(params: {
-    target_phase: DevelopmentPhase;
+    target_phase: string;
     reason?: string;
   }) {
     const handlerLogger = logger.child('handleProceedToPhase');
@@ -455,7 +454,7 @@ class VibeFeatureMCPServer {
     // Update conversation state
     await this.conversationManager.updateConversationState(
       conversationContext.conversationId,
-      { currentPhase: params.target_phase } // Use the target phase directly for tests
+      { currentPhase: params.target_phase }
     );
     
     handlerLogger.info('Explicit phase transition completed', {
@@ -480,10 +479,10 @@ class VibeFeatureMCPServer {
     const instructions = await this.instructionGenerator.generateInstructions(
       transitionResult.instructions,
       {
-        phase: params.target_phase, // Use target phase directly for tests
+        phase: params.target_phase,
         conversationContext: {
           ...conversationContext,
-          currentPhase: params.target_phase // Use target phase directly for tests
+          currentPhase: params.target_phase
         },
         transitionReason: transitionResult.transitionReason,
         isModeled: transitionResult.isModeled,
@@ -498,7 +497,7 @@ class VibeFeatureMCPServer {
 
     // Prepare response
     const response = {
-      phase: params.target_phase, // Use target phase directly for tests
+      phase: params.target_phase,
       instructions: instructions.instructions,
       plan_file_path: conversationContext.planFilePath,
       transition_reason: transitionResult.transitionReason,

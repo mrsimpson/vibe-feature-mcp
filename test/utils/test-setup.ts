@@ -106,7 +106,7 @@ export function mockFileSystem(options: {
   fileContents?: Record<string, string> // Map of file paths to their contents
 } = {}) {
   // Create mock implementations
-  const existsSyncMock = vi.fn().mockImplementation((path) => {
+  const existsSyncMock = vi.fn((path) => {
     // Check fileContents map first
     if (options.fileContents && path in options.fileContents) {
       return true;
@@ -126,7 +126,7 @@ export function mockFileSystem(options: {
     return false;
   });
 
-  const readFileSyncMock = vi.fn().mockImplementation((path, opts) => {
+  const readFileSyncMock = vi.fn((path, opts) => {
     // Check fileContents map first
     if (options.fileContents && path in options.fileContents) {
       return options.fileContents[path];
@@ -154,13 +154,7 @@ export function mockFileSystem(options: {
   };
 
   // Setup fs mock
-  vi.mock('fs', async (importOriginal) => {
-    const actual = await importOriginal();
-    return {
-      ...actual,
-      ...fsMock
-    };
-  });
+  vi.mock('fs', () => fsMock);
 
   // Return the mock functions for assertions
   return fsMock;
