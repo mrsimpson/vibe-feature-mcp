@@ -4,159 +4,34 @@
  * Tests the primary analysis and instruction tool via MCP protocol
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { join } from 'path';
-
-// Mock fs module
-vi.mock('fs', async (importOriginal) => {
-  const actual = await importOriginal();
-  return {
-    ...actual,
-    existsSync: vi.fn().mockImplementation((path) => {
-      if (path.includes('.vibe')) return true;
-      if (path.includes('state-machine.yaml')) return true;
-      if (path.includes('.git')) return true;
-      if (path.includes('.sqlite')) return true;
-      return false;
-    }),
-    readFileSync: vi.fn().mockImplementation((path, options) => {
-      if (path.includes('state-machine.yaml')) {
-        return `
-name: "Development Workflow"
-description: "State machine for guiding feature development workflow"
-initial_state: "idle"
-states:
-  idle:
-    description: "Waiting for feature requests"
-    transitions:
-      - trigger: "new_feature_request"
-        target: "requirements"
-        is_modeled: true
-        side_effects:
-          instructions: "Start requirements analysis"
-          transition_reason: "New feature request detected"
-  requirements:
-    description: "Gathering requirements"
-    transitions:
-      - trigger: "requirements_complete"
-        target: "design"
-        is_modeled: true
-        side_effects:
-          instructions: "Start design phase"
-          transition_reason: "Requirements gathering complete"
-  design:
-    description: "Designing solution"
-    transitions:
-      - trigger: "design_complete"
-        target: "implementation"
-        is_modeled: true
-        side_effects:
-          instructions: "Start implementation phase"
-          transition_reason: "Design phase complete"
-  implementation:
-    description: "Implementing solution"
-    transitions: []
-  qa:
-    description: "Quality assurance"
-    transitions: []
-  testing:
-    description: "Testing solution"
-    transitions: []
-  complete:
-    description: "Feature complete"
-    transitions: []
-
-direct_transitions:
-  - state: "idle"
-    instructions: "Returned to idle state"
-    transition_reason: "Direct transition to idle state"
-  - state: "requirements"
-    instructions: "Starting requirements analysis"
-    transition_reason: "Direct transition to requirements phase"
-  - state: "design"
-    instructions: "Starting design phase"
-    transition_reason: "Direct transition to design phase"
-  - state: "implementation"
-    instructions: "Starting implementation phase"
-    transition_reason: "Direct transition to implementation phase"
-`;
-      }
-      return '';
-    }),
-    writeFileSync: vi.fn(),
-    mkdirSync: vi.fn(),
-    rmSync: vi.fn()
-  };
-});
-
-// Mock sqlite3 module
-vi.mock('sqlite3', () => {
-  return {
-    Database: vi.fn().mockImplementation(() => {
-      return {
-        run: vi.fn().mockImplementation((sql, params, callback) => {
-          if (callback) callback(null);
-        }),
-        get: vi.fn().mockImplementation((sql, params, callback) => {
-          if (callback) callback(null, null);
-        }),
-        all: vi.fn().mockImplementation((sql, params, callback) => {
-          if (callback) callback(null, []);
-        }),
-        close: vi.fn().mockImplementation((callback) => {
-          if (callback) callback(null);
-        })
-      };
-    })
-  };
-});
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { mockFileSystem, mockSqlite, startTestServer, ServerTestContext } from '../utils/test-setup';
 
 describe('whats_next Tool Integration Tests', () => {
-  const serverPath = join(process.cwd(), 'src', 'index.ts');
-  const tempDir = '/mock/project/path';
-  let client;
-  let transport;
+  let serverContext: ServerTestContext;
 
-  afterEach(async () => {
-    // Clean up client and server
-    if (client) {
-      await client.close();
-    }
+  // Setup mocks before each test
+  beforeEach(() => {
+    // Setup mocks
+    mockFileSystem();
+    mockSqlite();
   });
 
-  async function startServer() {
-    const { Client } = await import('@modelcontextprotocol/sdk/client/index.js');
-    const { StdioClientTransport } = await import('@modelcontextprotocol/sdk/client/stdio.js');
-    
-    transport = new StdioClientTransport({
-      command: 'npx',
-      args: ['tsx', serverPath],
-      env: {
-        ...process.env,
-        VIBE_FEATURE_LOG_LEVEL: 'DEBUG',
-        VIBE_FEATURE_PROJECT_PATH: tempDir,
-        NODE_ENV: 'test'
-      }
-    });
-    
-    client = new Client({
-      name: 'test-client',
-      version: '1.0.0'
-    }, {
-      capabilities: {}
-    });
-    
-    await client.connect(transport);
-    return client;
-  }
+  // Clean up after each test
+  afterEach(async () => {
+    // Clean up client and server
+    if (serverContext) {
+      await serverContext.cleanup();
+    }
+  });
 
   describe('Scenario: First call to whats_next creates new conversation', () => {
     it('should create new conversation for first whats_next call', async () => {
       // Given: no existing conversation state for the current project
-      const client = await startServer();
+      serverContext = await startTestServer();
       
       // When: I call whats_next with user input about implementing a new feature
-      const result = await client.callTool({
+      const result = await serverContext.client.callTool({
         name: 'whats_next',
         arguments: {
           user_input: 'implement user authentication',
@@ -190,10 +65,10 @@ describe('whats_next Tool Integration Tests', () => {
   describe('Scenario: Continuing existing conversation in idle phase', () => {
     it('should continue in idle or transition when appropriate', async () => {
       // Given: an existing conversation in "idle" phase
-      const client = await startServer();
+      serverContext = await startTestServer();
       
       // First, explicitly set the phase to requirements for this test
-      await client.callTool({
+      await serverContext.client.callTool({
         name: 'proceed_to_phase',
         arguments: {
           target_phase: 'requirements',
@@ -202,7 +77,7 @@ describe('whats_next Tool Integration Tests', () => {
       });
       
       // Create initial conversation
-      const initialResult = await client.callTool({
+      const initialResult = await serverContext.client.callTool({
         name: 'whats_next',
         arguments: {
           user_input: 'implement user authentication'
@@ -213,7 +88,7 @@ describe('whats_next Tool Integration Tests', () => {
       expect(initialResponse.phase).toBeDefined();
 
       // When: I call whats_next with conversation context indicating ongoing work
-      const result = await client.callTool({
+      const result = await serverContext.client.callTool({
         name: 'whats_next',
         arguments: {
           conversation_summary: 'User wants authentication, discussed tech stack',
@@ -233,10 +108,10 @@ describe('whats_next Tool Integration Tests', () => {
 
     it('should suggest appropriate transition when context indicates readiness', async () => {
       // Given: an existing conversation with comprehensive context
-      const client = await startServer();
+      serverContext = await startTestServer();
       
       // First, explicitly set the phase to design for this test
-      await client.callTool({
+      await serverContext.client.callTool({
         name: 'proceed_to_phase',
         arguments: {
           target_phase: 'design',
@@ -245,7 +120,7 @@ describe('whats_next Tool Integration Tests', () => {
       });
       
       // When: I provide conversation_summary and recent_messages indicating phase completion
-      const result = await client.callTool({
+      const result = await serverContext.client.callTool({
         name: 'whats_next',
         arguments: {
           conversation_summary: 'Completed authentication system design. User approved the architecture with JWT tokens, bcrypt hashing, and RESTful API endpoints.',
@@ -274,10 +149,10 @@ describe('whats_next Tool Integration Tests', () => {
   describe('Scenario: Handling malformed or missing parameters', () => {
     it('should handle missing project context gracefully', async () => {
       // Given: the MCP server is running
-      const client = await startServer();
+      serverContext = await startTestServer();
 
       // When: I call whats_next with minimal parameters
-      const result = await client.callTool({
+      const result = await serverContext.client.callTool({
         name: 'whats_next',
         arguments: {}
       });
@@ -297,10 +172,10 @@ describe('whats_next Tool Integration Tests', () => {
 
     it('should work with minimal parameters', async () => {
       // Given: the MCP server is running
-      const client = await startServer();
+      serverContext = await startTestServer();
 
       // When: I call whats_next with just user input
-      const result = await client.callTool({
+      const result = await serverContext.client.callTool({
         name: 'whats_next',
         arguments: {
           user_input: 'help me build a feature'
@@ -321,10 +196,10 @@ describe('whats_next Tool Integration Tests', () => {
   describe('Scenario: Context analysis drives phase transitions', () => {
     it('should analyze conversation context for phase transitions', async () => {
       // Given: an existing conversation with rich context
-      const client = await startServer();
+      serverContext = await startTestServer();
       
       // First, explicitly set the phase to design for this test
-      await client.callTool({
+      await serverContext.client.callTool({
         name: 'proceed_to_phase',
         arguments: {
           target_phase: 'design',
@@ -333,7 +208,7 @@ describe('whats_next Tool Integration Tests', () => {
       });
 
       // When: I provide conversation_summary and recent_messages indicating phase completion
-      const result = await client.callTool({
+      const result = await serverContext.client.callTool({
         name: 'whats_next',
         arguments: {
           conversation_summary: 'Completed authentication system design. User approved the architecture with JWT tokens, bcrypt hashing, and RESTful API endpoints.',
@@ -360,10 +235,10 @@ describe('whats_next Tool Integration Tests', () => {
 
     it('should handle conversations with different project contexts', async () => {
       // Given: a server running
-      const client = await startServer();
+      serverContext = await startTestServer();
 
       // When: I call whats_next with specific project context
-      const result = await client.callTool({
+      const result = await serverContext.client.callTool({
         name: 'whats_next',
         arguments: {
           user_input: 'working on user profile feature',
