@@ -59,7 +59,15 @@ export class StateMachineLoader {
     for (const filePath of customFilePaths) {
       if (fs.existsSync(filePath)) {
         logger.info('Loading custom state machine file', { filePath });
-        return this.loadFromFile(filePath);
+        try {
+          return this.loadFromFile(filePath);
+        } catch (error) {
+          logger.warn('Failed to load custom state machine, falling back to default', { 
+            filePath, 
+            error: (error as Error).message 
+          });
+          // Continue to try next file or fall back to default
+        }
       }
     }
     

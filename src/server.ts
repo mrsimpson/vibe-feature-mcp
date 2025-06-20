@@ -330,6 +330,7 @@ export class VibeFeatureMCPServer {
       // Analyze phase transition
       const transitionResult = this.transitionEngine.analyzePhaseTransition({
         currentPhase,
+        projectPath: conversationContext.projectPath,
         userInput: user_input,
         context,
         conversationSummary: conversation_summary,
@@ -415,6 +416,7 @@ export class VibeFeatureMCPServer {
       const transitionResult = this.transitionEngine.handleExplicitTransition(
         currentPhase,
         target_phase,
+        conversationContext.projectPath,
         reason
       );
 

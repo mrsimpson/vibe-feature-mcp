@@ -2,5 +2,11 @@
 <project version="4">
   <component name="VcsDirectoryMappings">
     <mapping directory="" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/conversation-state-corruption/vibe-feature-tests/default-sm-1750441639607" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/conversation-state-corruption/vibe-feature-tests/default-sm-1750441646739" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/conversation-state-corruption/vibe-feature-tests/default-sm-1750441668548" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/conversation-state-error-handling/vibe-feature-tests/default-sm-1750441639613" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/conversation-state-error-handling/vibe-feature-tests/default-sm-1750441646743" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/conversation-state-error-handling/vibe-feature-tests/default-sm-1750441668552" vcs="Git" />
   </component>
 </project>

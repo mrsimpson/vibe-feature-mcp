@@ -11,8 +11,14 @@ import {
   createTempProjectWithCustomStateMachine, 
   createTempProjectWithDefaultStateMachine,
   CUSTOM_STATE_MACHINE_YAML 
-} from '../utils/temp-files.js';
-import { createSuiteIsolatedE2EScenario, DirectServerInterface, assertToolSuccess, TestSuiteIsolation } from '../utils/e2e-test-setup.js';
+} from '../utils/temp-files';
+import {
+  createSuiteIsolatedE2EScenario,
+  DirectServerInterface,
+  assertToolSuccess,
+  TestSuiteIsolation,
+  createE2EScenario
+} from '../utils/e2e-test-setup';
 
 // Disable fs mocking for E2E tests
 vi.unmock('fs');

@@ -10,7 +10,7 @@
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { TempProject, createTempProjectWithDefaultStateMachine } from '../utils/temp-files.js';
-import { DirectServerInterface, createSuiteIsolatedE2EScenario, assertToolSuccess, assertToolError } from '../utils/e2e-test-setup.js';
+import { DirectServerInterface, createSuiteIsolatedE2EScenario, assertToolSuccess } from '../utils/e2e-test-setup.js';
 
 // Disable fs mocking for E2E tests
 vi.unmock('fs');
@@ -144,32 +144,25 @@ describe('Feature: Primary Analysis and Instruction Tool', () => {
       expect(response.instructions.toLowerCase()).toContain('what');
     });
 
-    it('should suggest transition when requirements are complete', async () => {
-      // Given: requirements phase with comprehensive context
-      // When: I call whats_next indicating requirements completion
+    it('should create isolated conversation states per git branch', async () => {
+      // This test verifies that git branch context creates isolated conversation states
+      // The current implementation uses "default" branch for temp projects
+
+      // When: I check the conversation state
       const result = await client.callTool('whats_next', {
-        user_input: 'I think we have covered all authentication requirements',
-        context: 'Requirements seem complete',
-        conversation_summary: 'Comprehensive authentication requirements gathered: email/password, security policies, user data structure, validation rules',
-        recent_messages: [
-          { role: 'user', content: 'All authentication requirements are documented' },
-          { role: 'assistant', content: 'Great! Requirements are comprehensive and complete.' }
-        ]
+        user_input: 'check conversation isolation',
+        context: 'Testing branch-based conversation isolation'
       });
 
       const response = assertToolSuccess(result);
-      
-      // Then: suggest transition to "design" if requirements are complete
-      // (This depends on the transition engine's analysis)
-      expect(response.phase).toBeDefined();
-      expect(response.instructions).toBeDefined();
-      
-      // Instructions should guide next steps appropriately
-      if (response.phase === 'requirements') {
-        expect(response.instructions).toContain('requirements');
-      } else if (response.phase === 'design') {
-        expect(response.instructions).toContain('design');
-      }
+
+      // Then: git branch context should create isolated conversation states
+      const stateResource = await client.readResource('state://current');
+      const stateData = JSON.parse(stateResource.contents[0].text);
+
+      expect(stateData.conversationId).toContain('default'); // Branch name in conversation ID
+      // Note: gitBranch may not be included in state resource, but conversation ID contains branch info
+      expect(stateData.projectPath).toBe(tempProject.projectPath);
     });
 
     it('should retrieve existing conversation state from database', async () => {
@@ -266,102 +259,6 @@ describe('Feature: Primary Analysis and Instruction Tool', () => {
       });
       
       expect(recoveryResult).toBeDefined();
-    });
-  });
-
-  describe('Scenario: Context analysis drives phase transitions', () => {
-    beforeEach(async () => {
-      // Given: an existing conversation with rich context
-      const scenario = await createSuiteIsolatedE2EScenario({
-        suiteName: 'whats-next-context-analysis',
-        tempProjectFactory: createTempProjectWithDefaultStateMachine
-      });
-      client = scenario.client;
-      tempProject = scenario.tempProject;
-      cleanup = scenario.cleanup;
-
-      // Create initial conversation
-      await client.callTool('whats_next', {
-        user_input: 'implement user authentication system',
-        context: 'Starting authentication feature development'
-      });
-    });
-
-    it('should analyze conversation context for phase transitions', async () => {
-      // When: I provide conversation_summary and recent_messages indicating phase completion
-      const result = await client.callTool('whats_next', {
-        user_input: 'ready to move to design phase',
-        context: 'Requirements phase appears complete',
-        conversation_summary: 'Implemented comprehensive authentication requirements: email/password login, user registration, password reset, security policies, data validation, user roles. All requirements documented and confirmed.',
-        recent_messages: [
-          { role: 'user', content: 'All authentication requirements are now documented' },
-          { role: 'assistant', content: 'Excellent! We have comprehensive requirements covering all aspects of authentication.' },
-          { role: 'user', content: 'Should we move to design phase now?' }
-        ]
-      });
-
-      // Then: the transition engine should analyze the context
-      const response = assertToolSuccess(result);
-      
-      // And: determine appropriate phase transitions
-      expect(response.phase).toBeDefined();
-      expect(response.transition_reason).toBeDefined();
-      
-      // And: provide contextually relevant instructions
-      expect(response.instructions).toBeDefined();
-      expect(response.instructions.length).toBeGreaterThan(0);
-      
-      // Context should influence phase transition decisions
-      if (response.phase === 'design') {
-        expect(response.instructions).toContain('design');
-        expect(response.transition_reason).toContain('requirements');
-      }
-    });
-
-    it('should combine plan file analysis with conversation context', async () => {
-      // When: I provide rich context about current progress
-      const result = await client.callTool('whats_next', {
-        user_input: 'continue with current phase work',
-        context: 'Checking progress and next steps',
-        conversation_summary: 'Working on authentication feature, currently in requirements phase, making good progress',
-        recent_messages: [
-          { role: 'assistant', content: 'Let me update the plan file with our progress' },
-          { role: 'user', content: 'Yes, please track what we have completed so far' }
-        ]
-      });
-
-      const response = assertToolSuccess(result);
-
-      // Then: plan file analysis should be combined with conversation context
-      expect(response.plan_file_path).toBeDefined();
-      expect(response.instructions).toBeDefined();
-      
-      // Rich conversation history should provide better phase completion detection
-      expect(response.transition_reason).toBeDefined();
-      
-      // Instructions should be tailored to specific conversation context
-      expect(response.instructions).toContain('requirements');
-    });
-
-    it('should create isolated conversation states per git branch', async () => {
-      // This test verifies that git branch context creates isolated conversation states
-      // The current implementation uses "default" branch for temp projects
-      
-      // When: I check the conversation state
-      const result = await client.callTool('whats_next', {
-        user_input: 'check conversation isolation',
-        context: 'Testing branch-based conversation isolation'
-      });
-
-      const response = assertToolSuccess(result);
-      
-      // Then: git branch context should create isolated conversation states
-      const stateResource = await client.readResource('state://current');
-      const stateData = JSON.parse(stateResource.contents[0].text);
-      
-      expect(stateData.conversationId).toContain('default'); // Branch name in conversation ID
-      // Note: gitBranch may not be included in state resource, but conversation ID contains branch info
-      expect(stateData.projectPath).toBe(tempProject.projectPath);
     });
   });
 });

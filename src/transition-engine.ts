@@ -12,6 +12,7 @@ const logger = createLogger('TransitionEngine');
 
 export interface TransitionContext {
   currentPhase: string;
+  projectPath: string;
   userInput?: string;
   context?: string;
   conversationSummary?: string;
@@ -39,10 +40,14 @@ export class TransitionEngine {
    * Analyze context and determine appropriate phase transition
    */
   analyzePhaseTransition(context: TransitionContext): TransitionResult {
-    const { currentPhase, userInput, context: additionalContext, conversationSummary } = context;
+    const { currentPhase, projectPath, userInput, context: additionalContext, conversationSummary } = context;
+    
+    // Reload state machine for this specific project/conversation
+    this.stateMachineLoader.loadStateMachine(projectPath);
     
     logger.debug('Analyzing phase transition', {
       currentPhase,
+      projectPath,
       hasUserInput: !!userInput,
       hasContext: !!additionalContext,
       hasSummary: !!conversationSummary,
@@ -98,12 +103,17 @@ export class TransitionEngine {
    */
   handleExplicitTransition(
     currentPhase: string,
-    targetPhase: string, 
+    targetPhase: string,
+    projectPath: string,
     reason?: string
   ): TransitionResult {
+    // Reload state machine for this specific project/conversation
+    this.stateMachineLoader.loadStateMachine(projectPath);
+    
     logger.debug('Handling explicit phase transition', {
       currentPhase,
       targetPhase,
+      projectPath,
       reason 
     });
     
