@@ -47,7 +47,8 @@ export class TransitionEngine {
       currentPhase,
       hasUserInput: !!userInput,
       hasContext: !!additionalContext,
-      hasSummary: !!conversationSummary
+      hasSummary: !!conversationSummary,
+      userInput: userInput ? userInput.substring(0, 50) + (userInput.length > 50 ? '...' : '') : undefined
     });
 
     // Analyze if we should transition to a new phase
@@ -141,32 +142,53 @@ export class TransitionEngine {
       conversationSummary || ''
     ].join(' ').toLowerCase();
 
+    logger.debug('Determining suggested phase', {
+      currentPhase,
+      fullContext: fullContext.substring(0, 100) + (fullContext.length > 100 ? '...' : '')
+    });
+
     // Phase transition logic based on context analysis
+    let suggestedPhase: DevelopmentPhase;
     switch (currentPhase) {
       case 'idle':
-        return this.analyzeIdlePhase(fullContext);
+        suggestedPhase = this.analyzeIdlePhase(fullContext);
+        break;
       
       case 'requirements':
-        return this.analyzeRequirementsPhase(fullContext);
+        suggestedPhase = this.analyzeRequirementsPhase(fullContext);
+        break;
       
       case 'design':
-        return this.analyzeDesignPhase(fullContext);
+        suggestedPhase = this.analyzeDesignPhase(fullContext);
+        break;
       
       case 'implementation':
-        return this.analyzeImplementationPhase(fullContext);
+        suggestedPhase = this.analyzeImplementationPhase(fullContext);
+        break;
       
       case 'qa':
-        return this.analyzeQAPhase(fullContext);
+        suggestedPhase = this.analyzeQAPhase(fullContext);
+        break;
       
       case 'testing':
-        return this.analyzeTestingPhase(fullContext);
+        suggestedPhase = this.analyzeTestingPhase(fullContext);
+        break;
       
       case 'complete':
-        return this.analyzeCompletePhase(fullContext);
+        suggestedPhase = this.analyzeCompletePhase(fullContext);
+        break;
       
       default:
-        return currentPhase;
+        suggestedPhase = currentPhase;
     }
+
+    logger.debug('Suggested phase determined', {
+      currentPhase,
+      suggestedPhase,
+      willTransition: suggestedPhase !== currentPhase
+    });
+
+    return suggestedPhase;
   }
 
   private analyzeIdlePhase(context: string): DevelopmentPhase {
@@ -177,6 +199,10 @@ export class TransitionEngine {
     ];
     
     if (featureKeywords.some(keyword => context.includes(keyword))) {
+      logger.debug('Feature keyword detected in idle phase, transitioning to requirements', {
+        context: context.substring(0, 100) + (context.length > 100 ? '...' : ''),
+        matchedKeywords: featureKeywords.filter(keyword => context.includes(keyword))
+      });
       return 'requirements';
     }
     

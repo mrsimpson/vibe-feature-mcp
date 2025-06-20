@@ -74,11 +74,8 @@ export class StateMachineLoader {
       
       return stateMachine;
     } catch (error) {
-      logger.error('Failed to load state machine', { 
-        filePath, 
-        error: error.message 
-      });
-      throw new Error(`Failed to load state machine: ${error.message}`);
+      logger.error('Failed to load state machine', error as Error);
+      throw new Error(`Failed to load state machine: ${(error as Error).message}`);
     }
   }
   
@@ -177,7 +174,7 @@ export class StateMachineLoader {
     }
     
     // If no transition found, throw error
-    logger.error('No transition found', { fromState, toState, trigger });
+    logger.error('No transition found', new Error(`No transition found from "${fromState}" to "${toState}"`));
     throw new Error(`No transition found from "${fromState}" to "${toState}"`);
   }
   
@@ -219,7 +216,7 @@ export class StateMachineLoader {
     
     const stateDefinition = this.stateMachine.states[phase];
     if (!stateDefinition) {
-      logger.error('Unknown phase', { phase });
+      logger.error('Unknown phase', new Error(`Unknown phase: ${phase}`));
       throw new Error(`Unknown phase: ${phase}`);
     }
     
