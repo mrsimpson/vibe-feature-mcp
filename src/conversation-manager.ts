@@ -18,9 +18,11 @@ const logger = createLogger('ConversationManager');
 
 export class ConversationManager {
   private database: Database;
+  private projectPath: string;
 
-  constructor(database: Database) {
+  constructor(database: Database, projectPath?: string) {
     this.database = database;
+    this.projectPath = projectPath || process.cwd();
   }
 
   /**
@@ -178,7 +180,7 @@ export class ConversationManager {
    * Get the current project path
    */
   private getProjectPath(): string {
-    return process.cwd();
+    return this.projectPath;
   }
   
   /**

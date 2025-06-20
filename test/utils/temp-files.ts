@@ -21,6 +21,8 @@ export interface TempProjectOptions {
   gitBranch?: string;
   /** Additional files to create */
   additionalFiles?: Record<string, string>;
+  /** Base directory for the project (defaults to OS temp dir) */
+  baseDirectory?: string;
 }
 
 /**
@@ -154,11 +156,12 @@ export class TempProject {
       projectName = `test-project-${Date.now()}`,
       gitBranch = 'main',
       customStateMachine,
-      additionalFiles = {}
+      additionalFiles = {},
+      baseDirectory = tmpdir()
     } = options;
 
     // Create temporary project directory
-    this.projectPath = join(tmpdir(), 'vibe-feature-tests', projectName);
+    this.projectPath = join(baseDirectory, 'vibe-feature-tests', projectName);
     this.cleanupPaths.push(this.projectPath);
 
     // Create directory structure
@@ -221,19 +224,21 @@ export class TempProject {
 /**
  * Create a temporary project with custom state machine
  */
-export function createTempProjectWithCustomStateMachine(customStateMachine: string = CUSTOM_STATE_MACHINE_YAML): TempProject {
+export function createTempProjectWithCustomStateMachine(customStateMachine: string = CUSTOM_STATE_MACHINE_YAML, baseDirectory?: string): TempProject {
   return new TempProject({
     customStateMachine,
-    projectName: `custom-sm-${Date.now()}`
+    projectName: `custom-sm-${Date.now()}`,
+    baseDirectory
   });
 }
 
 /**
  * Create a temporary project with default state machine (no custom one)
  */
-export function createTempProjectWithDefaultStateMachine(): TempProject {
+export function createTempProjectWithDefaultStateMachine(baseDirectory?: string): TempProject {
   return new TempProject({
-    projectName: `default-sm-${Date.now()}`
+    projectName: `default-sm-${Date.now()}`,
+    baseDirectory
   });
 }
 

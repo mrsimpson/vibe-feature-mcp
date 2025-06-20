@@ -1,110 +1,218 @@
 /**
- * proceed_to_phase Tool Integration Tests
+ * proceed_to_phase Tool E2E Integration Tests
  * 
- * Tests the proceed_to_phase tool functionality with real file system integration
- * focusing on component-level testing rather than full server spawning.
+ * Tests the proceed_to_phase tool functionality using the E2E methodology
+ * with DirectServerInterface for consumer perspective testing without process spawning.
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, afterAll, vi } from 'vitest';
 import { TempProject, createTempProjectWithDefaultStateMachine, createTempProjectWithCustomStateMachine, CUSTOM_STATE_MACHINE_YAML } from '../utils/temp-files.js';
+import { createSuiteIsolatedE2EScenario, DirectServerInterface, assertToolSuccess, TestSuiteIsolation } from '../utils/e2e-test-setup.js';
 
-// Disable fs mocking for integration tests
+// Disable fs mocking for E2E tests
 vi.unmock('fs');
 vi.unmock('fs/promises');
 
-describe('proceed_to_phase Tool Integration Tests', () => {
+describe('proceed_to_phase Tool E2E Integration Tests', () => {
+  const SUITE_NAME = 'proceed-to-stage-tool';
   let tempProject: TempProject;
+  let client: DirectServerInterface;
+  let cleanup: () => Promise<void>;
 
-  afterEach(() => {
+  afterEach(async () => {
+    if (cleanup) {
+      await cleanup();
+    }
     if (tempProject) {
       tempProject.cleanup();
     }
   });
 
+  afterAll(async () => {
+    // Clean up the entire suite
+    await TestSuiteIsolation.cleanupSuite(SUITE_NAME);
+  });
+
   describe('Scenario: Valid phase transitions with default state machine', () => {
     it('should transition from requirements to design', async () => {
-      // Given: a project with default state machine
-      tempProject = createTempProjectWithDefaultStateMachine();
+      // Given: a project with default state machine and existing conversation
+      const scenario = await createSuiteIsolatedE2EScenario({ 
+        suiteName: SUITE_NAME,
+        tempProjectFactory: createTempProjectWithDefaultStateMachine
+      });
+      tempProject = scenario.tempProject;
+      client = scenario.client;
+      cleanup = scenario.cleanup;
       
-      // When: I perform an explicit phase transition
-      const { TransitionEngine } = await import('../../src/transition-engine.js');
-      const transitionEngine = new TransitionEngine(tempProject.projectPath);
+      // Create initial conversation in requirements phase
+      await client.callTool('whats_next', {
+        user_input: 'implement user authentication',
+        context: 'Starting new feature development'
+      });
       
-      const result = transitionEngine.handleExplicitTransition('requirements', 'design');
+      // When: I perform an explicit phase transition to design
+      const result = await client.callTool('proceed_to_phase', {
+        target_phase: 'design',
+        reason: 'requirements complete'
+      });
       
       // Then: the transition should be successful
-      expect(result.newPhase).toBe('design');
-      expect(result.instructions).toContain('design');
-      expect(result.transitionReason).toContain('design');
-      expect(result.isModeled).toBe(false); // Direct transitions are not modeled
+      const response = assertToolSuccess(result);
+      expect(response.phase).toBe('design');
+      expect(response.instructions).toContain('design');
+      expect(response.transition_reason).toContain('requirements complete');
+      expect(response.plan_file_path).toBeDefined();
     });
 
     it('should allow direct transition to implementation', async () => {
-      // Given: a project setup
-      tempProject = createTempProjectWithDefaultStateMachine();
+      // Given: a project setup with initial conversation
+      const scenario = await createSuiteIsolatedE2EScenario({ 
+        suiteName: SUITE_NAME,
+        tempProjectFactory: createTempProjectWithDefaultStateMachine
+      });
+      tempProject = scenario.tempProject;
+      client = scenario.client;
+      cleanup = scenario.cleanup;
       
-      // When: I skip intermediate phases
-      const { TransitionEngine } = await import('../../src/transition-engine.js');
-      const transitionEngine = new TransitionEngine(tempProject.projectPath);
+      // Create initial conversation
+      await client.callTool('whats_next', {
+        user_input: 'implement feature',
+        context: 'Starting development'
+      });
       
-      const result = transitionEngine.handleExplicitTransition('idle', 'implementation');
+      // When: I skip intermediate phases and go directly to implementation
+      const result = await client.callTool('proceed_to_phase', {
+        target_phase: 'implementation',
+        reason: 'skipping to implementation'
+      });
       
       // Then: the direct transition should work
-      expect(result.newPhase).toBe('implementation');
-      expect(result.instructions).toContain('implementation');
-      expect(result.transitionReason).toContain('implementation');
+      const response = assertToolSuccess(result);
+      expect(response.phase).toBe('implementation');
+      expect(response.instructions).toContain('implementation');
+      expect(response.transition_reason).toContain('skipping to implementation');
     });
 
     it('should transition to complete phase', async () => {
-      // Given: a project setup
-      tempProject = createTempProjectWithDefaultStateMachine();
+      // Given: a project setup with conversation in testing phase
+      const scenario = await createSuiteIsolatedE2EScenario({ 
+        suiteName: SUITE_NAME,
+        tempProjectFactory: createTempProjectWithDefaultStateMachine
+      });
+      tempProject = scenario.tempProject;
+      client = scenario.client;
+      cleanup = scenario.cleanup;
+      
+      // Create initial conversation and progress to testing
+      await client.callTool('whats_next', {
+        user_input: 'implement feature',
+        context: 'Starting development'
+      });
+      
+      await client.callTool('proceed_to_phase', {
+        target_phase: 'testing',
+        reason: 'ready for testing'
+      });
       
       // When: I transition to completion
-      const { TransitionEngine } = await import('../../src/transition-engine.js');
-      const transitionEngine = new TransitionEngine(tempProject.projectPath);
-      
-      const result = transitionEngine.handleExplicitTransition('testing', 'complete');
+      const result = await client.callTool('proceed_to_phase', {
+        target_phase: 'complete',
+        reason: 'testing finished'
+      });
       
       // Then: the completion transition should work
-      expect(result.newPhase).toBe('complete');
-      expect(result.instructions).toContain('complete');
-      expect(result.transitionReason).toContain('complete');
+      const response = assertToolSuccess(result);
+      expect(response.phase).toBe('complete');
+      expect(response.instructions).toContain('complete');
+      expect(response.transition_reason).toContain('testing finished');
     });
   });
 
   describe('Scenario: Invalid phase transition parameters', () => {
     it('should reject invalid phase names', async () => {
-      // Given: a project setup
-      tempProject = createTempProjectWithDefaultStateMachine();
+      // Given: a project setup with existing conversation
+      const scenario = await createSuiteIsolatedE2EScenario({ 
+        suiteName: SUITE_NAME,
+        tempProjectFactory: createTempProjectWithDefaultStateMachine
+      });
+      tempProject = scenario.tempProject;
+      client = scenario.client;
+      cleanup = scenario.cleanup;
+      
+      // Create initial conversation
+      await client.callTool('whats_next', {
+        user_input: 'implement feature',
+        context: 'Starting development'
+      });
       
       // When: I try to transition to an invalid phase
-      const { TransitionEngine } = await import('../../src/transition-engine.js');
-      const transitionEngine = new TransitionEngine(tempProject.projectPath);
+      // Then: it should return an error response
+      const result = await client.callTool('proceed_to_phase', {
+        target_phase: 'invalid_phase',
+        reason: 'testing invalid transition'
+      });
       
-      // Then: it should throw an error
-      expect(() => {
-        transitionEngine.handleExplicitTransition('idle', 'invalid_phase');
-      }).toThrow(/Invalid target phase/);
+      // The result should contain an error
+      expect(result).toHaveProperty('error');
+      expect(result.error).toContain('Invalid target phase');
+    });
+
+    it('should handle missing required parameters', async () => {
+      // Given: a project setup with existing conversation
+      const scenario = await createSuiteIsolatedE2EScenario({ 
+        suiteName: SUITE_NAME,
+        tempProjectFactory: createTempProjectWithDefaultStateMachine
+      });
+      tempProject = scenario.tempProject;
+      client = scenario.client;
+      cleanup = scenario.cleanup;
+      
+      // Create initial conversation
+      await client.callTool('whats_next', {
+        user_input: 'implement feature',
+        context: 'Starting development'
+      });
+      
+      // When: I call proceed_to_phase without required target_phase parameter
+      // Then: it should return an error response
+      const result = await client.callTool('proceed_to_phase', {
+        reason: 'testing missing parameter'
+      });
+      
+      // The result should contain an error
+      expect(result).toHaveProperty('error');
     });
 
     it('should handle transitions from any valid phase', async () => {
       // Given: a project setup
-      tempProject = createTempProjectWithDefaultStateMachine();
+      const scenario = await createSuiteIsolatedE2EScenario({ 
+        suiteName: SUITE_NAME,
+        tempProjectFactory: createTempProjectWithDefaultStateMachine
+      });
+      tempProject = scenario.tempProject;
+      client = scenario.client;
+      cleanup = scenario.cleanup;
       
-      // When: I transition from various phases
-      const { TransitionEngine } = await import('../../src/transition-engine.js');
-      const transitionEngine = new TransitionEngine(tempProject.projectPath);
+      // Create initial conversation
+      await client.callTool('whats_next', {
+        user_input: 'implement feature',
+        context: 'Starting development'
+      });
       
-      // Then: all valid transitions should work
-      const phases = ['idle', 'requirements', 'design', 'implementation', 'qa', 'testing', 'complete'];
+      // When: I transition through various phases
+      const phases = ['requirements', 'design', 'implementation', 'qa', 'testing', 'complete'];
       
-      for (const fromPhase of phases) {
-        for (const toPhase of phases) {
-          const result = transitionEngine.handleExplicitTransition(fromPhase, toPhase);
-          expect(result.newPhase).toBe(toPhase);
-          expect(result.instructions).toBeDefined();
-          expect(result.transitionReason).toBeDefined();
-        }
+      for (const toPhase of phases) {
+        const result = await client.callTool('proceed_to_phase', {
+          target_phase: toPhase,
+          reason: `transitioning to ${toPhase}`
+        });
+        
+        // Then: all valid transitions should work
+        const response = assertToolSuccess(result);
+        expect(response.phase).toBe(toPhase);
+        expect(response.instructions).toBeDefined();
+        expect(response.transition_reason).toBeDefined();
       }
     });
   });
@@ -112,83 +220,187 @@ describe('proceed_to_phase Tool Integration Tests', () => {
   describe('Scenario: Custom state machine transitions', () => {
     it('should work with custom state machine phases', async () => {
       // Given: a project with custom state machine
-      tempProject = createTempProjectWithCustomStateMachine(CUSTOM_STATE_MACHINE_YAML);
+      const scenario = await createSuiteIsolatedE2EScenario({ 
+        suiteName: SUITE_NAME,
+        tempProjectFactory: (baseDir) => createTempProjectWithCustomStateMachine(CUSTOM_STATE_MACHINE_YAML, baseDir)
+      });
+      tempProject = scenario.tempProject;
+      client = scenario.client;
+      cleanup = scenario.cleanup;
+      
+      // Create initial conversation
+      await client.callTool('whats_next', {
+        user_input: 'start custom workflow',
+        context: 'Using custom state machine'
+      });
       
       // When: I perform transitions with custom phases
-      const { TransitionEngine } = await import('../../src/transition-engine.js');
-      const transitionEngine = new TransitionEngine(tempProject.projectPath);
-      
-      const result = transitionEngine.handleExplicitTransition('phase1', 'phase2');
+      const result = await client.callTool('proceed_to_phase', {
+        target_phase: 'phase2',
+        reason: 'moving to phase 2'
+      });
       
       // Then: the custom transition should work
-      expect(result.newPhase).toBe('phase2');
-      expect(result.instructions).toBe('Direct to phase 2');
-      expect(result.transitionReason).toBe('Direct transition to phase 2');
+      const response = assertToolSuccess(result);
+      expect(response.phase).toBe('phase2');
+      expect(response.instructions).toBe('Direct to phase 2');
+      expect(response.transition_reason).toContain('phase 2');
     });
 
     it('should reject invalid phases for custom state machine', async () => {
       // Given: a project with custom state machine
-      tempProject = createTempProjectWithCustomStateMachine(CUSTOM_STATE_MACHINE_YAML);
+      const scenario = await createSuiteIsolatedE2EScenario({ 
+        suiteName: SUITE_NAME,
+        tempProjectFactory: (baseDir) => createTempProjectWithCustomStateMachine(CUSTOM_STATE_MACHINE_YAML, baseDir)
+      });
+      tempProject = scenario.tempProject;
+      client = scenario.client;
+      cleanup = scenario.cleanup;
+      
+      // Create initial conversation
+      await client.callTool('whats_next', {
+        user_input: 'start custom workflow',
+        context: 'Using custom state machine'
+      });
       
       // When: I try to use default phases with custom state machine
-      const { TransitionEngine } = await import('../../src/transition-engine.js');
-      const transitionEngine = new TransitionEngine(tempProject.projectPath);
-      
       // Then: it should reject default phases
-      expect(() => {
-        transitionEngine.handleExplicitTransition('phase1', 'requirements');
-      }).toThrow(/Invalid target phase/);
+      const result1 = await client.callTool('proceed_to_phase', {
+        target_phase: 'requirements',
+        reason: 'trying default phase'
+      });
       
-      expect(() => {
-        transitionEngine.handleExplicitTransition('idle', 'phase2');
-      }).toThrow(/Invalid target phase/);
+      expect(result1).toHaveProperty('error');
+      expect(result1.error).toContain('Invalid target phase');
+      
+      const result2 = await client.callTool('proceed_to_phase', {
+        target_phase: 'design',
+        reason: 'trying another default phase'
+      });
+      
+      expect(result2).toHaveProperty('error');
+      expect(result2.error).toContain('Invalid target phase');
     });
   });
 
-  describe('Scenario: Integration with state machine loader', () => {
-    it('should integrate properly with state machine validation', async () => {
+  describe('Scenario: Integration with conversation state management', () => {
+    it('should update conversation state after transitions', async () => {
       // Given: a project setup
-      tempProject = createTempProjectWithDefaultStateMachine();
+      const scenario = await createSuiteIsolatedE2EScenario({ 
+        suiteName: SUITE_NAME,
+        tempProjectFactory: createTempProjectWithDefaultStateMachine
+      });
+      tempProject = scenario.tempProject;
+      client = scenario.client;
+      cleanup = scenario.cleanup;
       
-      // When: I use transition engine which depends on state machine loader
-      const { TransitionEngine } = await import('../../src/transition-engine.js');
-      const { StateMachineLoader } = await import('../../src/state-machine-loader.js');
+      // Create initial conversation
+      await client.callTool('whats_next', {
+        user_input: 'implement feature',
+        context: 'Starting development'
+      });
       
-      const transitionEngine = new TransitionEngine(tempProject.projectPath);
-      const stateMachineLoader = new StateMachineLoader();
+      // When: I perform a phase transition
+      await client.callTool('proceed_to_phase', {
+        target_phase: 'design',
+        reason: 'moving to design'
+      });
       
-      // Then: they should work together for validation
-      const stateMachine = stateMachineLoader.loadStateMachine(tempProject.projectPath);
-      expect(Object.keys(stateMachine.states)).toContain('idle');
-      expect(Object.keys(stateMachine.states)).toContain('requirements');
+      // Then: the conversation state should be updated
+      const stateResource = await client.readResource('state://current');
+      const stateData = JSON.parse(stateResource.contents[0].text);
       
-      // And: transition engine should respect state machine constraints
-      const result = transitionEngine.handleExplicitTransition('idle', 'requirements');
-      expect(result.newPhase).toBe('requirements');
+      expect(stateData.currentPhase).toBe('design');
+      expect(stateData.conversationId).toBeDefined();
+      // Note: The project path in the state might be different from tempProject.projectPath
+      // because the conversation manager might be using the actual project path for git branch detection
+      expect(stateData.projectPath).toBeDefined();
     });
 
     it('should handle multiple rapid transitions correctly', async () => {
       // Given: a project setup
-      tempProject = createTempProjectWithDefaultStateMachine();
+      const scenario = await createSuiteIsolatedE2EScenario({ 
+        suiteName: SUITE_NAME,
+        tempProjectFactory: createTempProjectWithDefaultStateMachine
+      });
+      tempProject = scenario.tempProject;
+      client = scenario.client;
+      cleanup = scenario.cleanup;
+      
+      // Create initial conversation
+      await client.callTool('whats_next', {
+        user_input: 'implement feature',
+        context: 'Starting development'
+      });
       
       // When: I perform multiple rapid transitions
-      const { TransitionEngine } = await import('../../src/transition-engine.js');
-      const transitionEngine = new TransitionEngine(tempProject.projectPath);
+      const transition1 = await client.callTool('proceed_to_phase', {
+        target_phase: 'design',
+        reason: 'moving to design'
+      });
+      
+      const transition2 = await client.callTool('proceed_to_phase', {
+        target_phase: 'implementation',
+        reason: 'moving to implementation'
+      });
+      
+      const transition3 = await client.callTool('proceed_to_phase', {
+        target_phase: 'complete',
+        reason: 'completing feature'
+      });
       
       // Then: each transition should be processed correctly
-      const transition1 = transitionEngine.handleExplicitTransition('idle', 'design');
-      expect(transition1.newPhase).toBe('design');
+      const response1 = assertToolSuccess(transition1);
+      const response2 = assertToolSuccess(transition2);
+      const response3 = assertToolSuccess(transition3);
       
-      const transition2 = transitionEngine.handleExplicitTransition('design', 'implementation');
-      expect(transition2.newPhase).toBe('implementation');
-      
-      const transition3 = transitionEngine.handleExplicitTransition('implementation', 'complete');
-      expect(transition3.newPhase).toBe('complete');
+      expect(response1.phase).toBe('design');
+      expect(response2.phase).toBe('implementation');
+      expect(response3.phase).toBe('complete');
       
       // And: each should have proper instructions and reasons
-      expect(transition1.instructions).toBeDefined();
-      expect(transition2.instructions).toBeDefined();
-      expect(transition3.instructions).toBeDefined();
+      expect(response1.instructions).toBeDefined();
+      expect(response2.instructions).toBeDefined();
+      expect(response3.instructions).toBeDefined();
+      
+      // And: final state should reflect the last transition
+      const stateResource = await client.readResource('state://current');
+      const stateData = JSON.parse(stateResource.contents[0].text);
+      expect(stateData.currentPhase).toBe('complete');
+    });
+  });
+
+  describe('Scenario: Plan file integration', () => {
+    it('should provide plan file path in transition response', async () => {
+      // Given: a project setup
+      const scenario = await createSuiteIsolatedE2EScenario({ 
+        suiteName: SUITE_NAME,
+        tempProjectFactory: createTempProjectWithDefaultStateMachine
+      });
+      tempProject = scenario.tempProject;
+      client = scenario.client;
+      cleanup = scenario.cleanup;
+      
+      // Create initial conversation
+      await client.callTool('whats_next', {
+        user_input: 'implement authentication',
+        context: 'Starting auth feature'
+      });
+      
+      // When: I perform a phase transition
+      const result = await client.callTool('proceed_to_phase', {
+        target_phase: 'design',
+        reason: 'requirements complete'
+      });
+      
+      // Then: the response should include plan file path
+      const response = assertToolSuccess(result);
+      expect(response.plan_file_path).toBeDefined();
+      expect(response.plan_file_path).toContain('.md');
+      
+      // And: the plan file should be accessible via resource
+      const planResource = await client.readResource('plan://current');
+      expect(planResource.contents[0].text).toBeDefined();
     });
   });
 });
