@@ -200,21 +200,22 @@ export class ConversationManager {
     try {
       // Check if this is a git repository
       if (!existsSync(`${projectPath}/.git`)) {
-        logger.warn('Not a git repository, using "default" as branch name', { projectPath });
+        logger.debug('Not a git repository, using "default" as branch name', { projectPath });
         return 'default';
       }
       
       // Get current branch name
       const branch = execSync('git rev-parse --abbrev-ref HEAD', {
         cwd: projectPath,
-        encoding: 'utf-8'
+        encoding: 'utf-8',
+        stdio: ['ignore', 'pipe', 'ignore'] // Suppress stderr to avoid "fatal: not a git repository" warnings
       }).trim();
       
       logger.debug('Detected git branch', { projectPath, branch });
       
       return branch;
     } catch (error) {
-      logger.warn('Failed to get git branch, using "default" as branch name', { projectPath });
+      logger.debug('Failed to get git branch, using "default" as branch name', { projectPath });
       return 'default';
     }
   }
