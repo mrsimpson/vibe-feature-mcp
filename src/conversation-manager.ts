@@ -170,10 +170,18 @@ export class ConversationManager {
       return `${projectName}-${cleanBranch}-p423k1`;
     }
     
-    // Generate a unique ID for normal operation
-    const id = Math.random().toString(36).substring(2, 8);
+    // Generate a deterministic ID based on project path and branch
+    // This ensures the same project/branch combination always gets the same conversation ID
+    let hash = 0;
+    const str = `${projectPath}:${gitBranch}`;
+    for (let i = 0; i < str.length; i++) {
+      const char = str.charCodeAt(i);
+      hash = ((hash << 5) - hash) + char;
+      hash = hash & hash; // Convert to 32-bit integer
+    }
+    const hashStr = Math.abs(hash).toString(36).substring(0, 6);
     
-    return `${projectName}-${cleanBranch}-${id}`;
+    return `${projectName}-${cleanBranch}-${hashStr}`;
   }
   
   /**
