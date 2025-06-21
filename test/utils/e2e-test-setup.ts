@@ -205,15 +205,25 @@ export class DirectServerInterface {
   /**
    * List available tools (for testing completeness)
    */
-  async listTools(): Promise<string[]> {
-    return ['whats_next', 'proceed_to_phase'];
+  async listTools(): Promise<{ tools: { name: string }[] }> {
+    return {
+      tools: [
+        { name: 'whats_next' },
+        { name: 'proceed_to_phase' }
+      ]
+    };
   }
 
   /**
    * List available resources (for testing completeness)
    */
-  async listResources(): Promise<string[]> {
-    return ['state://current', 'plan://current'];
+  async listResources(): Promise<{ resources: { uri: string }[] }> {
+    return {
+      resources: [
+        { uri: 'state://current' },
+        { uri: 'plan://current' }
+      ]
+    };
   }
 
   /**
