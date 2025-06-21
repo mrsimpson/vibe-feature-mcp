@@ -18,6 +18,7 @@
 
 - [x] Replace current TypeScript-based state machine implementation
 - [x] Implement a standard state machine modeling approach
+- [x] Clean up unused artifacts and mocks before merging to main
 - [x] Integrate with existing codebase
 - [x] Ensure backward compatibility with current functionality
 

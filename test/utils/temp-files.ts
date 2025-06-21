@@ -37,56 +37,44 @@ states:
     description: "Waiting for feature requests"
     transitions:
       - trigger: "new_feature_request"
-        target: "requirements"
-        is_modeled: true
-        side_effects:
-          instructions: "Start requirements analysis by asking the user clarifying questions about WHAT they need. Focus on understanding their goals, scope, and constraints. Break down their needs into specific, actionable tasks and document them in the plan file. Mark completed requirements tasks as you progress."
-          transition_reason: "New feature request detected, starting requirements analysis"
+        to: "requirements"
+        instructions: "Start requirements analysis by asking the user clarifying questions about WHAT they need. Focus on understanding their goals, scope, and constraints. Break down their needs into specific, actionable tasks and document them in the plan file. Mark completed requirements tasks as you progress."
+        transition_reason: "New feature request detected, starting requirements analysis"
   requirements:
     description: "Gathering requirements"
     transitions:
       - trigger: "requirements_complete"
-        target: "design"
-        is_modeled: true
-        side_effects:
-          instructions: "Help the user design the technical solution. Ask about quality goals, technology preferences, and architectural decisions. Document the design decisions and update the plan file. Mark completed requirements tasks as done."
-          transition_reason: "Requirements gathering complete, starting design phase"
+        to: "design"
+        instructions: "Help the user design the technical solution. Ask about quality goals, technology preferences, and architectural decisions. Document the design decisions and update the plan file. Mark completed requirements tasks as done."
+        transition_reason: "Requirements gathering complete, starting design phase"
   design:
     description: "Designing solution"
     transitions:
       - trigger: "design_complete"
-        target: "implementation"
-        is_modeled: true
-        side_effects:
-          instructions: "Guide the user through implementing the solution. Follow coding best practices, provide structure guidance, and track implementation progress. Update the plan file and mark completed design tasks."
-          transition_reason: "Design phase complete, starting implementation"
+        to: "implementation"
+        instructions: "Guide the user through implementing the solution. Follow coding best practices, provide structure guidance, and track implementation progress. Update the plan file and mark completed design tasks."
+        transition_reason: "Design phase complete, starting implementation"
   implementation:
     description: "Implementing solution"
     transitions:
       - trigger: "implementation_complete"
-        target: "qa"
-        is_modeled: true
-        side_effects:
-          instructions: "Guide code review and quality validation. Ensure requirements are properly met, help with testing and documentation. Update the plan file and mark completed implementation tasks."
-          transition_reason: "Implementation phase complete, starting QA"
+        to: "qa"
+        instructions: "Guide code review and quality validation. Ensure requirements are properly met, help with testing and documentation. Update the plan file and mark completed implementation tasks."
+        transition_reason: "Implementation phase complete, starting QA"
   qa:
     description: "Quality assurance"
     transitions:
       - trigger: "qa_complete"
-        target: "testing"
-        is_modeled: true
-        side_effects:
-          instructions: "Guide comprehensive testing strategies. Help create and execute test plans, validate feature completeness. Update the plan file and mark completed QA tasks."
-          transition_reason: "QA phase complete, starting testing"
+        to: "testing"
+        instructions: "Guide comprehensive testing strategies. Help create and execute test plans, validate feature completeness. Update the plan file and mark completed QA tasks."
+        transition_reason: "QA phase complete, starting testing"
   testing:
     description: "Testing solution"
     transitions:
       - trigger: "testing_complete"
-        target: "complete"
-        is_modeled: true
-        side_effects:
-          instructions: "Feature development is complete! All phases have been finished successfully. The feature is ready for delivery."
-          transition_reason: "Testing phase complete, feature development finished"
+        to: "complete"
+        instructions: "Feature development is complete! All phases have been finished successfully. The feature is ready for delivery."
+        transition_reason: "Testing phase complete, feature development finished"
   complete:
     description: "Feature complete"
     transitions: []
@@ -127,11 +115,9 @@ states:
     description: "First test phase"
     transitions:
       - trigger: "move_to_phase2"
-        target: "phase2"
-        is_modeled: true
-        side_effects:
-          instructions: "Moving to phase 2"
-          transition_reason: "Transition to phase 2 triggered"
+        to: "phase2"
+        instructions: "Moving to phase 2"
+        transition_reason: "Transition to phase 2 triggered"
   phase2:
     description: "Second test phase"
     transitions: []
