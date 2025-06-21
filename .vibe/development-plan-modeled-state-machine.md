@@ -215,9 +215,9 @@
 - [x] Fixed MCP server transport wiring issues - updated tool registration to use Zod schemas instead of JSON schemas
 - [x] Verified basic E2E functionality works correctly
 - [x] Successfully running 4/11 tests in 03-proceed-to-stage-tool.test.ts
-- [ ] Fix remaining test failures in custom state machine scenarios
-- [ ] Fix database logging constraint issues
-- [ ] Ensure all e2e scenarios from specs are covered
+- [x] Fix remaining test failures in custom state machine scenarios
+- [x] Fix database logging constraint issues
+- [x] Ensure all e2e scenarios from specs are covered
 
 ---
 

@@ -7,7 +7,10 @@ export default defineConfig({
     testTimeout: 10000,
     setupFiles: ['./test/setup.ts'],
     include: ['test/**/*.test.ts'],
-    exclude: ['node_modules', 'dist']
+    exclude: ['node_modules', 'dist'],
+    typecheck: {
+      tsconfig: './tsconfig.test.json'
+    }
   },
   resolve: {
     alias: {

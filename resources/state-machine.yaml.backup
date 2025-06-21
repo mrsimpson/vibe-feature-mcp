@@ -20,89 +20,109 @@ states:
     description: "Gathering and analyzing requirements"
     transitions:
       - trigger: "refine_requirements"
-        to: "requirements"
-        instructions: >
+        target: "requirements"
+        is_modeled: true
+        side_effects:
+          instructions: >
             Continue refining requirements. Ask more detailed questions to clarify scope, constraints, and user needs.
             Add any new requirements to the plan file and mark completed tasks. Ensure you have a complete understanding
             of WHAT needs to be built before moving to design.
-        transition_reason: "Requirements need further refinement and clarification"
+          transition_reason: "Requirements need further refinement and clarification"
       
       - trigger: "requirements_complete"
-        to: "design"
-        instructions: >
+        target: "design"
+        is_modeled: true
+        side_effects:
+          instructions: >
             Requirements are complete! ✅ Now transition to design phase. Analyze the current software project.
             Particularly pay attention to interfaces, design patterns and architecture documentation if exists.
             Help the user design the technical solution by asking about architecture, technologies, quality goals, and implementation approach. 
             Focus on HOW to build what was defined in requirements. Suggest alternative solutions and present tradeoffs.
             Document design decisions in the plan file and mark completed requirements tasks.
-        transition_reason: "All requirements tasks completed, moving to technical design"
+          transition_reason: "All requirements tasks completed, moving to technical design"
       
       - trigger: "abandon_feature"
-        to: "idle"
-        instructions: >
+        target: "idle"
+        is_modeled: true
+        side_effects:
+          instructions: >
             Feature development abandoned. Clean up any temporary work and return to idle state.
             The plan file will remain for future reference if the user wants to resume this feature later.
-        transition_reason: "User decided to abandon this feature development"
+          transition_reason: "User decided to abandon this feature development"
 
   design:
     description: "Designing technical solution"
     transitions:
       - trigger: "refine_design"
-        to: "design"
-        instructions: >
+        target: "design"
+        is_modeled: true
+        side_effects:
+          instructions: >
             Continue refining the technical design. Ask about architecture details, technology choices, data models, API design,
             and quality considerations. Update the plan file with design decisions and mark completed design tasks.
             Ensure the design is solid before implementation.
-        transition_reason: "Design needs further refinement and detail"
+          transition_reason: "Design needs further refinement and detail"
       
       - trigger: "requirements_unclear"
-        to: "requirements"
-        instructions: >
+        target: "requirements"
+        is_modeled: true
+        side_effects:
+          instructions: >
             Design phase revealed unclear requirements. Return to requirements analysis to clarify the WHAT before continuing with HOW.
             You may stash technical artifacts you already created.
             Ask specific questions about the unclear aspects and update the plan file with refined requirements.
-        transition_reason: "Design work revealed gaps or ambiguities in requirements"
+          transition_reason: "Design work revealed gaps or ambiguities in requirements"
       
       - trigger: "design_complete"
-        to: "implementation"
-        instructions: >
+        target: "implementation"
+        is_modeled: true
+        side_effects:
+          instructions: >
             Design is complete! ✅ Now transition to implementation. Before we start, get a solid understanding of the 
             code style and patterns used up to now. Guide the user through building the solution following the design.
             If there are special challenges, present them as pseudo code. When you provide real code, always use your 
             tools to edit the actual files. 
             Focus on coding best practices, proper structure, error handling, and basic testing.
             Update the plan file with implementation progress and mark completed design tasks.
-        transition_reason: "Technical design is complete, ready to start building"
+          transition_reason: "Technical design is complete, ready to start building"
       
       - trigger: "abandon_feature"
-        to: "idle"
-        instructions: >
+        target: "idle"
+        is_modeled: true
+        side_effects:
+          instructions: >
             Feature development abandoned during design phase. Clean up any design artifacts and return to idle state.
             The plan file will remain for future reference.
-        transition_reason: "User decided to abandon feature during design phase"
+          transition_reason: "User decided to abandon feature during design phase"
 
   implementation:
     description: "Building the solution"
     transitions:
       - trigger: "refine_implementation"
-        to: "implementation"
-        instructions: >
+        target: "implementation"
+        is_modeled: true
+        side_effects:
+          instructions: >
             Continue implementation work. Help with coding, debugging, structure improvements, and adding functionality.
             Follow best practices and ensure code quality. Update the plan file with progress and mark completed implementation tasks.
-        transition_reason: "Implementation work continues, adding features or improving code"
+          transition_reason: "Implementation work continues, adding features or improving code"
       
       - trigger: "design_issues"
-        to: "design"
-        instructions: >
+        target: "design"
+        is_modeled: true
+        side_effects:
+          instructions: >
             Implementation revealed issues with the design. Return to design phase to address architectural problems or design gaps.
             You may stash technical artifacts you already created.
             Analyze what's not working and revise the technical approach. Present high-level alternative ideas to the user.
             Update the plan file with design changes.
-        transition_reason: "Implementation work revealed problems with the current design"
+          transition_reason: "Implementation work revealed problems with the current design"
       
       - trigger: "implementation_complete"
-        to: "qa"
-        instructions: >
+        target: "qa"
+        is_modeled: true
+        side_effects:
+          instructions: >
             Implementation is complete! ✅ Now transition to quality assurance. Take these specific actions:
 
             1. **Syntax Check**: Run syntax checking tools or validate syntax manually
@@ -117,21 +137,25 @@ states:
             - **Requirement Compliance**: Verify all requirements are properly implemented
 
             Update the plan file and mark completed implementation tasks.
-        transition_reason: "Core implementation is complete, ready for quality review"
+          transition_reason: "Core implementation is complete, ready for quality review"
       
       - trigger: "abandon_feature"
-        to: "idle"
-        instructions: >
+        target: "idle"
+        is_modeled: true
+        side_effects:
+          instructions: >
             Feature development abandoned during implementation. Clean up any incomplete code and return to idle state.
             The plan file and any completed work will remain for future reference.
-        transition_reason: "User decided to abandon feature during implementation"
+          transition_reason: "User decided to abandon feature during implementation"
 
   qa:
     description: "Quality assurance and review"
     transitions:
       - trigger: "refine_qa"
-        to: "qa"
-        instructions: >
+        target: "qa"
+        is_modeled: true
+        side_effects:
+          instructions: >
             Continue quality assurance work. Take these specific actions if not already completed:
 
             1. **Syntax Check**: Run syntax checking tools or validate syntax manually
@@ -146,82 +170,100 @@ states:
             - **Requirement Compliance**: Verify all requirements are properly implemented
 
             Update the plan file with QA progress and mark completed tasks.
-        transition_reason: "Quality assurance work continues, improving code quality"
+          transition_reason: "Quality assurance work continues, improving code quality"
       
       - trigger: "implementation_issues"
-        to: "implementation"
-        instructions: >
+        target: "implementation"
+        is_modeled: true
+        side_effects:
+          instructions: >
             Quality assurance revealed implementation issues. Return to implementation phase to fix bugs,
             improve code quality, or add missing functionality. Focus on addressing the specific issues identified during QA review.
-        transition_reason: "QA review found issues that require implementation changes"
+          transition_reason: "QA review found issues that require implementation changes"
       
       - trigger: "qa_complete"
-        to: "testing"
-        instructions: >
+        target: "testing"
+        is_modeled: true
+        side_effects:
+          instructions: >
             Quality assurance is complete! ✅ Now transition to testing phase. 
             Ask the user about edge cases you identified, propose new test scenarios.
             Implement those new tests and make sure they succeed. At this phase, do not change the actual source code anymore, but adapt the tests.
             Once they succeed, review the tests to make sure they actually test the artifacts implemented.
             Update the plan file and mark completed QA tasks.
-        transition_reason: "Quality assurance is complete, ready for comprehensive testing"
+          transition_reason: "Quality assurance is complete, ready for comprehensive testing"
       
       - trigger: "abandon_feature"
-        to: "idle"
-        instructions: >
+        target: "idle"
+        is_modeled: true
+        side_effects:
+          instructions: >
             Feature development abandoned during QA phase. Clean up any QA artifacts and return to idle state.
             You may stash technical artifacts you already created.
             The plan file and completed work will remain for future reference.
-        transition_reason: "User decided to abandon feature during quality assurance"
+          transition_reason: "User decided to abandon feature during quality assurance"
 
   testing:
     description: "Testing and validation"
     transitions:
       - trigger: "refine_testing"
-        to: "testing"
-        instructions: >
+        target: "testing"
+        is_modeled: true
+        side_effects:
+          instructions: >
             Continue testing work. Create more test cases, improve test coverage, run integration tests, and validate edge cases.
             Update the plan file with testing progress and mark completed testing tasks.
-        transition_reason: "Testing work continues, improving coverage and validation"
+          transition_reason: "Testing work continues, improving coverage and validation"
       
       - trigger: "qa_issues"
-        to: "qa"
-        instructions: >
+        target: "qa"
+        is_modeled: true
+        side_effects:
+          instructions: >
             Testing revealed quality issues. Return to QA phase to address code quality problems,
             documentation gaps, or requirement compliance issues identified during testing.
             Focus on the specific QA issues found.
-        transition_reason: "Testing found issues that require quality assurance attention"
+          transition_reason: "Testing found issues that require quality assurance attention"
       
       - trigger: "testing_complete"
-        to: "complete"
-        instructions: >
+        target: "complete"
+        is_modeled: true
+        side_effects:
+          instructions: >
             Testing is complete! ✅ The feature is fully implemented, tested, and ready for delivery.
             Transition to complete state. Summarize what was accomplished and prepare final documentation.
             Mark all testing tasks as complete.
-        transition_reason: "All testing is complete, feature is ready for delivery"
+          transition_reason: "All testing is complete, feature is ready for delivery"
       
       - trigger: "abandon_feature"
-        to: "idle"
-        instructions: >
+        target: "idle"
+        is_modeled: true
+        side_effects:
+          instructions: >
             Feature development abandoned during testing phase. Clean up any testing artifacts and return to idle state.
             The plan file and completed work will remain for future reference.
-        transition_reason: "User decided to abandon feature during testing phase"
+          transition_reason: "User decided to abandon feature during testing phase"
 
   complete:
     description: "Feature complete and ready for delivery"
     transitions:
       - trigger: "feature_delivered"
-        to: "idle"
-        instructions: >
+        target: "idle"
+        is_modeled: true
+        side_effects:
+          instructions: >
             Feature has been delivered successfully! Return to idle state, ready for the next development task.
             The completed plan file serves as documentation of what was accomplished.
-        transition_reason: "Feature delivery complete, returning to idle state"
+          transition_reason: "Feature delivery complete, returning to idle state"
       
       - trigger: "new_feature_request"
-        to: "requirements"
-        instructions: >
+        target: "requirements"
+        is_modeled: true
+        side_effects:
+          instructions: >
             New feature request while previous feature is complete. Start fresh requirements analysis for the new feature.
             Ask clarifying questions about what they need and create a new development plan.
-        transition_reason: "New feature request received, starting new development cycle"
+          transition_reason: "New feature request received, starting new development cycle"
 
 # Direct transition instructions
 direct_transitions:

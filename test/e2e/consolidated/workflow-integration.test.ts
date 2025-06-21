@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { TempProject, createTempProjectWithDefaultStateMachine } from '../../utils/temp-files.js';
-import { DirectServerInterface, createSuiteIsolatedE2EScenario, assertToolSuccess } from '../../utils/e2e-test-setup.js';
+import { TempProject, createTempProjectWithDefaultStateMachine } from '../../utils/temp-files';
+import { DirectServerInterface, createSuiteIsolatedE2EScenario, assertToolSuccess } from '../../utils/e2e-test-setup';
 import { promises as fs } from 'fs';
 import path from 'path';
 
@@ -319,23 +319,31 @@ states:
   backlog:
     description: "Feature backlog"
     transitions:
-      - to: "sprint_planning"
-        condition: "ready_for_sprint"
+      - trigger: "ready_for_sprint"
+        to: "sprint_planning"
+        instructions: "Backlog prioritized, ready for sprint planning"
+        transition_reason: "Backlog items prioritized and ready for sprint"
   sprint_planning:
     description: "Sprint planning"
     transitions:
-      - to: "development"
-        condition: "sprint_planned"
+      - trigger: "sprint_planned"
+        to: "development"
+        instructions: "Sprint planned, ready to start development"
+        transition_reason: "Sprint planning complete, ready to develop"
   development:
     description: "Active development"
     transitions:
-      - to: "review"
-        condition: "development_complete"
+      - trigger: "development_complete"
+        to: "review"
+        instructions: "Development complete, ready for code review"
+        transition_reason: "Development phase finished, ready for review"
   review:
     description: "Code review"
     transitions:
-      - to: "done"
-        condition: "review_approved"
+      - trigger: "review_approved"
+        to: "done"
+        instructions: "Review approved, sprint complete"
+        transition_reason: "Code review passed, ready to complete sprint"
   done:
     description: "Sprint complete"
     transitions: []

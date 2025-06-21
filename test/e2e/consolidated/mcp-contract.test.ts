@@ -4,7 +4,7 @@ import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js'
 import { spawn, ChildProcess } from 'child_process';
 import path from 'path';
 import { promises as fs } from 'fs';
-import { TempProject, createTempProjectWithDefaultStateMachine } from '../../utils/temp-files.js';
+import { TempProject, createTempProjectWithDefaultStateMachine } from '../../utils/temp-files';
 
 vi.unmock('fs');
 vi.unmock('fs/promises');

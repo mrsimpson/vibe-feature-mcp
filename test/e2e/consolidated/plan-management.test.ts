@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { TempProject, createTempProjectWithDefaultStateMachine } from '../../utils/temp-files.js';
-import { DirectServerInterface, createSuiteIsolatedE2EScenario, assertToolSuccess } from '../../utils/e2e-test-setup.js';
+import { TempProject, createTempProjectWithDefaultStateMachine } from '../../utils/temp-files';
+import { DirectServerInterface, createSuiteIsolatedE2EScenario, assertToolSuccess } from '../../utils/e2e-test-setup';
 import { promises as fs } from 'fs';
 import path from 'path';
 
@@ -247,10 +247,10 @@ describe('Plan Management', () => {
 
   describe('Plan Content Integration', () => {
     it('should integrate plan content with phase instructions', async () => {
-      const result = await client.callTool('whats_next', {
+      let result = await client.callTool('whats_next', {
         user_input: 'integration test'
       });
-      const response = assertToolSuccess(result);
+      let response = assertToolSuccess(result);
 
       // Instructions should reference plan file updates
       expect(response.instructions).toContain('plan');
@@ -259,7 +259,13 @@ describe('Plan Management', () => {
       const planResource = await client.readResource('plan://current');
       const planContent = planResource.contents[0].text;
 
-      // Plan should contain relevant phase information
+      // Plan should contain relevant phase information of all but the initial phase
+      result = await client.callTool('proceed_to_phase', {
+        target_phase: 'requirements',
+        reason: 'Starting specification'
+      });
+      response = assertToolSuccess(result);
+
       expect(planContent).toContain(response.phase);
     });
 

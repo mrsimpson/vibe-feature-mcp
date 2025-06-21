@@ -136,12 +136,12 @@ export class StateMachineLoader {
       }
       
       state.transitions.forEach(transition => {
-        if (!stateNames.includes(transition.target)) {
-          throw new Error(`State "${stateName}" has transition to unknown state "${transition.target}"`);
+        if (!stateNames.includes(transition.to)) {
+          throw new Error(`State "${stateName}" has transition to unknown state "${transition.to}"`);
         }
         
-        if (!transition.side_effects || !transition.side_effects.instructions || !transition.side_effects.transition_reason) {
-          throw new Error(`Transition from "${stateName}" to "${transition.target}" has invalid side effects`);
+        if (!transition.instructions || !transition.transition_reason) {
+          throw new Error(`Transition from "${stateName}" to "${transition.to}" is missing instructions or transition_reason`);
         }
       });
     });
@@ -180,14 +180,14 @@ export class StateMachineLoader {
     const stateDefinition = this.stateMachine.states[fromState];
     if (stateDefinition) {
       const transition = stateDefinition.transitions.find(
-        t => t.target === toState && (!trigger || t.trigger === trigger)
+        t => t.to === toState && (!trigger || t.trigger === trigger)
       );
       
       if (transition) {
         return {
-          instructions: transition.side_effects.instructions,
-          transitionReason: transition.side_effects.transition_reason,
-          isModeled: transition.is_modeled
+          instructions: transition.instructions,
+          transitionReason: transition.transition_reason,
+          isModeled: true
         };
       }
     }
@@ -234,7 +234,7 @@ export class StateMachineLoader {
     if (!stateDefinition) return false;
     
     return stateDefinition.transitions.some(
-      t => t.target === toState && t.is_modeled
+      t => t.to === toState
     );
   }
   
@@ -260,11 +260,11 @@ export class StateMachineLoader {
     }
     
     const continueTransition = stateDefinition.transitions.find(
-      t => t.target === phase
+      t => t.to === phase
     );
     
     if (continueTransition) {
-      return continueTransition.side_effects.instructions;
+      return continueTransition.instructions;
     }
     
     // Fall back to direct transition instructions

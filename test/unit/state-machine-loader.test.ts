@@ -8,7 +8,7 @@ import { StateMachineLoader } from '../../src/state-machine-loader.js';
 // Mock global URL constructor
 global.URL = vi.fn().mockImplementation(() => ({
   pathname: '/mock/src/state-machine-loader.ts'
-}));
+})) as any;
 
 // Mock import.meta.url
 vi.stubGlobal('import.meta', { url: 'file:///mock/src/state-machine-loader.ts' });
@@ -24,12 +24,9 @@ const mockStateMachine = {
       transitions: [
         {
           trigger: 'new_feature_request',
-          target: 'requirements',
-          is_modeled: true,
-          side_effects: {
-            instructions: 'Start requirements analysis',
-            transition_reason: 'New feature request detected'
-          }
+          to: 'requirements',
+          instructions: 'Start requirements analysis',
+          transition_reason: 'New feature request detected'
         }
       ]
     },
@@ -134,8 +131,8 @@ describe('StateMachineLoader', () => {
   describe('loadStateMachine', () => {
     it('should load custom state machine file if it exists', () => {
       // Mock fs.existsSync to return true for custom file
-      vi.mocked(fs.existsSync).mockImplementation((p: string) => {
-        return p === 'project/.vibe/state-machine.yaml';
+      vi.mocked(fs.existsSync).mockImplementation((p) => {
+        return String(p) === 'project/.vibe/state-machine.yaml';
       });
       
       // Mock fs.readFileSync to return valid YAML content

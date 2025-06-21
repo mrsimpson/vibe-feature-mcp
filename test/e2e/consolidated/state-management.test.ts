@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { TempProject, createTempProjectWithDefaultStateMachine } from '../../utils/temp-files.js';
-import { DirectServerInterface, createSuiteIsolatedE2EScenario, assertToolSuccess } from '../../utils/e2e-test-setup.js';
+import { TempProject, createTempProjectWithDefaultStateMachine } from '../../utils/temp-files';
+import { DirectServerInterface, createSuiteIsolatedE2EScenario, assertToolSuccess } from '../../utils/e2e-test-setup';
 import { promises as fs } from 'fs';
 import path from 'path';
 
@@ -111,25 +111,29 @@ states:
   planning:
     description: "Planning phase"
     transitions:
-      - to: "building"
-        condition: "ready_to_build"
+      - trigger: "ready_to_build"
+        to: "building"
+        instructions: "Planning complete, ready to build the feature"
+        transition_reason: "Planning phase finished, moving to building"
   building:
     description: "Building phase"
     transitions:
-      - to: "complete"
-        condition: "build_finished"
+      - trigger: "build_finished"
+        to: "complete"
+        instructions: "Building complete, feature is ready"
+        transition_reason: "Building phase finished, feature complete"
   complete:
     description: "Completed"
     transitions: []
 direct_transitions:
   - state: "planning"
-    instructions: "Start planning the feature"
+    instructions: "Start planning the feature. Define what needs to be built and create a plan."
     transition_reason: "Beginning custom workflow"
   - state: "building"
-    instructions: "Build the feature"
+    instructions: "Build the feature according to the plan. Focus on implementation and testing."
     transition_reason: "Ready to build"
   - state: "complete"
-    instructions: "Feature is complete"
+    instructions: "Feature is complete and ready for delivery."
     transition_reason: "Build finished"
 `;
 

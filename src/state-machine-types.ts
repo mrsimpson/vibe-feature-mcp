@@ -5,17 +5,6 @@
  */
 
 /**
- * Side effect of a state transition, including instructions and transition reason
- */
-export interface YamlSideEffect {
-  /** Instructions to provide when this transition occurs */
-  instructions: string;
-  
-  /** Reason for this transition */
-  transition_reason: string;
-}
-
-/**
  * Transition between states
  */
 export interface YamlTransition {
@@ -23,13 +12,13 @@ export interface YamlTransition {
   trigger: string;
   
   /** Target state after transition */
-  target: string;
+  to: string;
   
-  /** Whether this transition is shown in diagrams */
-  is_modeled: boolean;
+  /** Instructions to provide when this transition occurs */
+  instructions: string;
   
-  /** Side effects of this transition */
-  side_effects: YamlSideEffect;
+  /** Reason for this transition */
+  transition_reason: string;
 }
 
 /**

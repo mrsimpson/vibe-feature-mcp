@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { TempProject, createTempProjectWithDefaultStateMachine } from '../../utils/temp-files.js';
-import { DirectServerInterface, createSuiteIsolatedE2EScenario, assertToolSuccess } from '../../utils/e2e-test-setup.js';
+import { TempProject, createTempProjectWithDefaultStateMachine } from '../../utils/temp-files';
+import { DirectServerInterface, createSuiteIsolatedE2EScenario, assertToolSuccess } from '../../utils/e2e-test-setup';
 
 vi.unmock('fs');
 vi.unmock('fs/promises');

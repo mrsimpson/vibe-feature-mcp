@@ -23,11 +23,9 @@ states:
     description: "Description of this state"
     transitions:
       - trigger: "event_name"
-        target: "target_state"
-        is_modeled: true
-        side_effects:
-          instructions: "Instructions to provide when this transition occurs"
-          transition_reason: "Reason for this transition"
+        to: "target_state"
+        instructions: "Instructions to provide when this transition occurs"
+        transition_reason: "Reason for this transition"
 
 # Direct transition instructions
 direct_transitions:
@@ -50,66 +48,50 @@ states:
     description: "Planning the feature"
     transitions:
       - trigger: "planning_complete"
-        target: "building"
-        is_modeled: true
-        side_effects:
-          instructions: "Planning complete! Now let's start building the feature."
-          transition_reason: "Planning phase complete, moving to building"
+        to: "building"
+        instructions: "Planning complete! Now let's start building the feature."
+        transition_reason: "Planning phase complete, moving to building"
       
       - trigger: "refine_planning"
-        target: "planning"
-        is_modeled: true
-        side_effects:
-          instructions: "Continue refining the plan."
-          transition_reason: "Planning needs more refinement"
+        to: "planning"
+        instructions: "Continue refining the plan."
+        transition_reason: "Planning needs more refinement"
 
   building:
     description: "Building the feature"
     transitions:
       - trigger: "building_complete"
-        target: "reviewing"
-        is_modeled: true
-        side_effects:
-          instructions: "Building complete! Let's review the implementation."
-          transition_reason: "Building phase complete, moving to review"
+        to: "reviewing"
+        instructions: "Building complete! Let's review the implementation."
+        transition_reason: "Building phase complete, moving to review"
       
       - trigger: "refine_building"
-        target: "building"
-        is_modeled: true
-        side_effects:
-          instructions: "Continue building the feature."
-          transition_reason: "Building needs more work"
+        to: "building"
+        instructions: "Continue building the feature."
+        transition_reason: "Building needs more work"
       
       - trigger: "planning_issues"
-        target: "planning"
-        is_modeled: true
-        side_effects:
-          instructions: "Issues found with the plan. Let's go back to planning."
-          transition_reason: "Implementation revealed planning issues"
+        to: "planning"
+        instructions: "Issues found with the plan. Let's go back to planning."
+        transition_reason: "Implementation revealed planning issues"
 
   reviewing:
     description: "Reviewing the feature"
     transitions:
       - trigger: "review_complete"
-        target: "planning"
-        is_modeled: true
-        side_effects:
-          instructions: "Review complete! Ready for the next feature."
-          transition_reason: "Review complete, starting new cycle"
+        to: "planning"
+        instructions: "Review complete! Ready for the next feature."
+        transition_reason: "Review complete, starting new cycle"
       
       - trigger: "refine_review"
-        target: "reviewing"
-        is_modeled: true
-        side_effects:
-          instructions: "Continue reviewing the feature."
-          transition_reason: "Review needs more attention"
+        to: "reviewing"
+        instructions: "Continue reviewing the feature."
+        transition_reason: "Review needs more attention"
       
       - trigger: "implementation_issues"
-        target: "building"
-        is_modeled: true
-        side_effects:
-          instructions: "Issues found during review. Let's fix the implementation."
-          transition_reason: "Review revealed implementation issues"
+        to: "building"
+        instructions: "Issues found during review. Let's fix the implementation."
+        transition_reason: "Review revealed implementation issues"
 
 direct_transitions:
   - state: "planning"

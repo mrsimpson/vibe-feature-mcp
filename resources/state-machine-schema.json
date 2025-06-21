@@ -67,33 +67,23 @@
     },
     "transition": {
       "type": "object",
-      "required": ["trigger", "target", "is_modeled", "side_effects"],
+      "required": ["trigger", "to", "instructions", "transition_reason"],
       "properties": {
         "trigger": {
           "type": "string",
           "description": "Event that triggers this transition"
         },
-        "target": {
+        "to": {
           "type": "string",
           "description": "Target state after transition"
         },
-        "is_modeled": {
-          "type": "boolean",
-          "description": "Whether this transition is shown in diagrams"
+        "instructions": {
+          "type": "string",
+          "description": "Instructions to provide when this transition occurs"
         },
-        "side_effects": {
-          "type": "object",
-          "required": ["instructions", "transition_reason"],
-          "properties": {
-            "instructions": {
-              "type": "string",
-              "description": "Instructions to provide when this transition occurs"
-            },
-            "transition_reason": {
-              "type": "string",
-              "description": "Reason for this transition"
-            }
-          }
+        "transition_reason": {
+          "type": "string",
+          "description": "Reason for this transition"
         }
       }
     }
