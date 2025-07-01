@@ -441,7 +441,9 @@ start_development({ workflow: "waterfall" })
 
 Available workflows include:
 - **waterfall**: Classical waterfall development process (default)
-- **agile**: Iterative development with sprint cycles
+- **epcc**: Explore, Plan, Code, Commit - comprehensive workflow for smaller features
+- **bugfix**: Focused workflow for bug fixing: Reproduce, Analyze, Fix, Verify
+- **minor-enhancement**: Streamlined workflow for small-impact changes: Explore → Implement
 - **custom**: Custom workflow defined in `.vibe/state-machine.yaml`
 
 > **Important**: The `start_development` tool must be called before any other tools (`whats_next`, `proceed_to_phase`, `resume_workflow`). This ensures that development follows a deliberate workflow selection process.
@@ -568,7 +570,7 @@ The primary tool that analyzes conversation state and provides LLM instructions.
 Tool for explicitly transitioning to a new development phase when current phase is complete.
 
 **Parameters:**
-- `target_phase` (string): The phase to transition to (requirements, design, implementation, qa, testing, complete)
+- `target_phase` (string): The phase to transition to (depends on selected workflow - e.g., waterfall: requirements, design, implementation, qa, testing, complete; epcc: explore, plan, code, commit; minor-enhancement: explore, implement)
 - `reason` (string, optional): Reason for transitioning now
 
 **Returns:**
@@ -576,6 +578,24 @@ Tool for explicitly transitioning to a new development phase when current phase 
 - `instructions` (string): Instructions for the new phase
 - `plan_file_path` (string): Path to the plan file to update
 - `transition_reason` (string): Confirmation of phase transition
+
+#### `start_development`
+Tool for beginning a new development project with a structured workflow. Must be called before any other development tools.
+
+**Parameters:**
+- `workflow` (string): Choose your development workflow:
+  - **waterfall**: Classical waterfall development process (default)
+  - **epcc**: Explore, Plan, Code, Commit - comprehensive workflow for smaller features
+  - **bugfix**: Focused workflow for bug fixing: Reproduce, Analyze, Fix, Verify
+  - **minor-enhancement**: Streamlined workflow for small-impact changes: Explore → Implement
+  - **custom**: Use custom workflow from .vibe/state-machine.yaml in your project
+
+**Returns:**
+- `phase` (string): Initial development phase
+- `instructions` (string): Instructions for the initial phase
+- `plan_file_path` (string): Path to the plan file
+- `conversation_id` (string): Unique conversation identifier
+- `workflow` (object): State machine object with workflow details
 
 #### `resume_workflow`
 Tool for resuming development workflow after conversation compression. Returns comprehensive project context, current state, system prompt instructions, and next steps to seamlessly continue development.
