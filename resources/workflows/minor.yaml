@@ -1,6 +1,6 @@
 # yaml-language-server: $schema=../state-machine-schema.json
 ---
-name: "minor-enhancement"
+name: "minor"
 description: "A streamlined workflow for small-impact changes: Explore (analysis + design) → Implement (code + test + commit) - optimized for minor enhancements"
 initial_state: "explore"
 
