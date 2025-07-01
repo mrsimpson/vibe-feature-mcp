@@ -8,7 +8,12 @@ initial_state: "explore"
 states:
   explore:
     description: "Analysis and design phase - understanding and planning without implementation"
-    default_instructions: "Starting exploration phase for minor enhancement. Focus on analysis and design only - do not write any code yet. Understand the problem, analyze existing patterns, and design your approach. Consider the scope and impact of the change. Document your analysis and design decisions in the plan file. This phase should be efficient since it's a minor enhancement."
+    default_instructions: >
+                          Starting exploration phase for minor enhancement. 
+                          This phase should be efficient since it's a minor enhancement.
+                          Understand the problem, analyze existing patterns, and design your approach. 
+                          Consider the scope and impact of the change. Document your analysis and design decisions in the plan file. 
+                          Focus on analysis and design only - do not write any code yet.
     transitions:
       - trigger: "exploration_complete"
         to: "implement"
@@ -23,7 +28,8 @@ states:
       - trigger: "abandon_feature"
         to: "explore"
         instructions: >
-          Minor enhancement abandoned. Return to exploration state for new tasks.
+          Minor enhancement abandoned. Revert potentially made changes. 
+          Return to exploration state for new tasks.
           The plan file will remain for future reference if needed.
         additional_instructions: "Minor enhancement development abandoned. Clean up any analysis work and prepare for new tasks."
         transition_reason: "User decided to abandon current minor enhancement"
