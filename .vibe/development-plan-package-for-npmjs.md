@@ -139,7 +139,7 @@ Set up professional publishing workflow for the responsible-vibe MCP server to n
 - [x] Create setup instructions for npm token
 - [x] Run final test suite to ensure no regressions
 - [x] Review and clean up any temporary files
-- [ ] Commit all changes with conventional commit message
+- [x] Commit all changes with conventional commit message
 - [x] Prepare summary of what was implemented
 
 ### Implementation Summary
