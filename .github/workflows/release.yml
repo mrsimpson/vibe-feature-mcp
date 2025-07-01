@@ -63,13 +63,28 @@ jobs:
         default_bump: patch
         tag_prefix: v
         
-    - name: Create changelog
-      uses: mathieudutour/github-tag-action@v6.1
+    - name: Update package.json version
+      if: steps.version.outputs.new_tag
+      run: |
+        NEW_VERSION=${{ steps.version.outputs.new_version }}
+        npm version $NEW_VERSION --no-git-tag-version
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git add package.json package-lock.json
+        git commit -m "chore: bump version to $NEW_VERSION [skip ci]" || exit 0
+        git push
+        
+    - name: Create GitHub Release
+      if: steps.version.outputs.new_tag
+      uses: softprops/action-gh-release@v1
       with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
         tag_name: ${{ steps.version.outputs.new_tag }}
-        release_name: Release ${{ steps.version.outputs.new_tag }}
+        name: Release ${{ steps.version.outputs.new_tag }}
         body: ${{ steps.version.outputs.changelog }}
+        draft: false
+        prerelease: false
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         
     - name: Publish to npm
       if: steps.version.outputs.new_tag

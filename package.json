@@ -1,6 +1,6 @@
 {
   "name": "@mrsimpson/responsible-vibe-mcp",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A Model Context Protocol server that acts as an intelligent conversation state manager and development guide for LLMs",
   "main": "dist/index.js",
   "type": "module",
