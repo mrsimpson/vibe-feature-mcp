@@ -53,6 +53,30 @@ export class StartDevelopmentHandler extends BaseToolHandler<StartDevelopmentArg
       );
     }
 
+    // Check if user is on main/master branch and prompt for branch creation
+    const currentBranch = this.getCurrentGitBranch(context.projectPath);
+    if (currentBranch === 'main' || currentBranch === 'master') {
+      const suggestedBranchName = this.generateBranchSuggestion();
+      const branchPromptResponse: StartDevelopmentResult = {
+        phase: 'branch-prompt',
+        instructions: `You're currently on the ${currentBranch} branch. It's recommended to create a feature branch for development. Propose a branch creation by suggesting a branch command to the user call start_development again.
+
+Suggested command: \`git checkout -b ${suggestedBranchName}\`
+
+Please create a new branch and then call start_development again to begin development.`,
+        plan_file_path: '',
+        conversation_id: '',
+        workflow: {}
+      };
+      
+      this.logger.debug('User on main/master branch, prompting for branch creation', { 
+        currentBranch, 
+        suggestedBranchName 
+      });
+      
+      return branchPromptResponse;
+    }
+
     // Create or get conversation context with the selected workflow
     const conversationContext = await context.conversationManager.createConversationContext(selectedWorkflow);
     const currentPhase = conversationContext.currentPhase;
@@ -132,5 +156,44 @@ export class StartDevelopmentHandler extends BaseToolHandler<StartDevelopmentArg
     );
     
     return response;
+  }
+
+  /**
+   * Get the current git branch for a project
+   * Uses the same logic as ConversationManager but locally accessible
+   */
+  private getCurrentGitBranch(projectPath: string): string {
+    try {
+      const { execSync } = require('child_process');
+      const { existsSync } = require('fs');
+      
+      // Check if this is a git repository
+      if (!existsSync(`${projectPath}/.git`)) {
+        this.logger.debug('Not a git repository, using "default" as branch name', { projectPath });
+        return 'default';
+      }
+      
+      // Get current branch name
+      const branch = execSync('git rev-parse --abbrev-ref HEAD', {
+        cwd: projectPath,
+        encoding: 'utf-8',
+        stdio: ['ignore', 'pipe', 'ignore'] // Suppress stderr
+      }).trim();
+      
+      this.logger.debug('Detected git branch', { projectPath, branch });
+      
+      return branch;
+    } catch (error) {
+      this.logger.debug('Failed to get git branch, using "default" as branch name', { projectPath });
+      return 'default';
+    }
+  }
+
+  /**
+   * Generate a suggested branch name for feature development
+   */
+  private generateBranchSuggestion(): string {
+    const timestamp = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+    return `feature/development-${timestamp}`;
   }
 }
