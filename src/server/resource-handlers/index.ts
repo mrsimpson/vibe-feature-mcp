@@ -9,6 +9,7 @@ import { createLogger } from '../../logger.js';
 import { ResourceHandler, ResourceRegistry } from '../types.js';
 import { DevelopmentPlanResourceHandler } from './development-plan.js';
 import { ConversationStateResourceHandler } from './conversation-state.js';
+import { WorkflowResourceHandler } from './workflow-resource.js';
 
 const logger = createLogger('ResourceRegistry');
 
@@ -49,9 +50,10 @@ export function createResourceRegistry(): ResourceRegistry {
   // Register all standard resource handlers
   registry.register('plan://current', new DevelopmentPlanResourceHandler());
   registry.register('state://current', new ConversationStateResourceHandler());
+  registry.register('workflow://', new WorkflowResourceHandler());
   
   logger.info('Resource registry created with handlers', { 
-    patterns: ['plan://current', 'state://current']
+    patterns: ['plan://current', 'state://current', 'workflow://']
   });
   
   return registry;
@@ -60,3 +62,4 @@ export function createResourceRegistry(): ResourceRegistry {
 // Export all handler types for external use
 export { DevelopmentPlanResourceHandler } from './development-plan.js';
 export { ConversationStateResourceHandler } from './conversation-state.js';
+export { WorkflowResourceHandler } from './workflow-resource.js';

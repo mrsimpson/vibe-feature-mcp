@@ -41,6 +41,24 @@ export class WorkflowManager {
   }
 
   /**
+   * Get available workflows for a specific project
+   * Filters out 'custom' workflow if no custom workflow file exists
+   */
+  public getAvailableWorkflowsForProject(projectPath: string): WorkflowInfo[] {
+    const allWorkflows = this.getAvailableWorkflows();
+    
+    // Check if custom workflow file exists
+    const hasCustomWorkflow = this.validateWorkflowName('custom', projectPath);
+    
+    if (!hasCustomWorkflow) {
+      // Filter out custom workflow if no custom file exists
+      return allWorkflows.filter(w => w.name !== 'custom');
+    }
+    
+    return allWorkflows;
+  }
+
+  /**
    * Get workflow information by name
    */
   public getWorkflowInfo(name: string): WorkflowInfo | undefined {
@@ -117,10 +135,20 @@ export class WorkflowManager {
    */
   private loadPredefinedWorkflows(): void {
     try {
-      // Get the workflows directory path
+      // Get the workflows directory path - more reliable approach
       const currentFileUrl = import.meta.url;
       const currentFilePath = new URL(currentFileUrl).pathname;
-      const projectRoot = path.dirname(path.dirname(currentFilePath));
+      
+      // Navigate from the compiled location to the project root
+      let projectRoot: string;
+      if (currentFilePath.includes('/dist/')) {
+        // Running from compiled code - dist is one level down from project root
+        projectRoot = path.resolve(path.dirname(currentFilePath), '../');
+      } else {
+        // Running from source (development) - src is one level down from project root
+        projectRoot = path.resolve(path.dirname(currentFilePath), '../');
+      }
+      
       const workflowsDir = path.join(projectRoot, 'resources', 'workflows');
 
       if (!fs.existsSync(workflowsDir)) {

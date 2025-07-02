@@ -12,6 +12,7 @@ import { ProceedToPhaseHandler } from './proceed-to-phase.js';
 import { StartDevelopmentHandler } from './start-development.js';
 import { ResumeWorkflowHandler } from './resume-workflow.js';
 import { ResetDevelopmentHandler } from './reset-development.js';
+import { ListWorkflowsHandler } from './list-workflows.js';
 
 const logger = createLogger('ToolRegistry');
 
@@ -47,6 +48,7 @@ export function createToolRegistry(): ToolRegistry {
   registry.register('start_development', new StartDevelopmentHandler());
   registry.register('resume_workflow', new ResumeWorkflowHandler());
   registry.register('reset_development', new ResetDevelopmentHandler());
+  registry.register('list_workflows', new ListWorkflowsHandler());
   
   logger.info('Tool registry created with handlers', { 
     handlers: registry.list() 
@@ -61,6 +63,7 @@ export { ProceedToPhaseHandler } from './proceed-to-phase.js';
 export { StartDevelopmentHandler } from './start-development.js';
 export { ResumeWorkflowHandler } from './resume-workflow.js';
 export { ResetDevelopmentHandler } from './reset-development.js';
+export { ListWorkflowsHandler } from './list-workflows.js';
 export { BaseToolHandler, ConversationRequiredToolHandler } from './base-tool-handler.js';
 
 // Export argument and result types

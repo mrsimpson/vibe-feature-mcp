@@ -7,6 +7,7 @@
 
 import { z } from 'zod';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import { ResourceTemplate } from '@modelcontextprotocol/sdk/server/mcp.js';
 
 import { Database } from '../database.js';
 import { ConversationManager } from '../conversation-manager.js';
@@ -257,6 +258,33 @@ export function registerMcpTools(
     }
   );
 
+  // Register list_workflows tool
+  mcpServer.registerTool(
+    'list_workflows',
+    {
+      description: 'Get an overview of all available workflows with their descriptions and resource URIs. Use this to understand what development workflows are available and access detailed workflow information through the provided resource URIs.',
+      inputSchema: {
+        // No input parameters needed
+      },
+      annotations: {
+        title: 'Workflow Overview Tool',
+        readOnlyHint: true,
+        destructiveHint: false,
+        idempotentHint: true,
+        openWorldHint: false
+      }
+    },
+    async (args) => {
+      const handler = toolRegistry.get('list_workflows');
+      if (!handler) {
+        return responseRenderer.renderError('Tool handler not found: list_workflows');
+      }
+      
+      const result = await handler.handle(args, context);
+      return responseRenderer.renderToolResponse(result);
+    }
+  );
+
   logger.info('MCP tools registered successfully', { 
     tools: toolRegistry.list() 
   });
@@ -334,5 +362,62 @@ export function registerMcpResources(
     }
   );
 
-  logger.info('MCP resources registered successfully');
+  // Register workflow resource template
+  const workflowTemplate = new ResourceTemplate('workflow://{name}', {
+    list: async () => {
+      // List all available workflows as resources
+      const availableWorkflows = context.workflowManager.getAvailableWorkflowsForProject(context.projectPath);
+      return {
+        resources: availableWorkflows.map(workflow => ({
+          uri: `workflow://${workflow.name}`,
+          name: workflow.displayName,
+          description: workflow.description,
+          mimeType: 'application/x-yaml'
+        }))
+      };
+    },
+    complete: {
+      name: async (value: string) => {
+        // Provide completion for workflow names
+        const availableWorkflows = context.workflowManager.getAvailableWorkflowsForProject(context.projectPath);
+        return availableWorkflows
+          .map(w => w.name)
+          .filter(name => name.toLowerCase().includes(value.toLowerCase()));
+      }
+    }
+  });
+
+  mcpServer.resource(
+    'workflows',
+    workflowTemplate,
+    {
+      name: 'Workflow Definitions',
+      description: 'Access workflow definition files by name. Use the list_workflows tool to discover available workflows.',
+      mimeType: 'application/x-yaml'
+    },
+    async (uri, variables) => {
+      const handler = resourceRegistry.resolve(uri.href);
+      if (!handler) {
+        throw new Error(`Workflow resource handler not found for ${uri.href}`);
+      }
+      
+      const result = await handler.handle(uri, context);
+      if (!result.success || !result.data) {
+        throw new Error(result.error || 'Failed to load workflow resource');
+      }
+      
+      return {
+        contents: [{
+          uri: uri.href,
+          mimeType: result.data.mimeType,
+          text: result.data.text
+        }]
+      };
+    }
+  );
+
+  logger.info('MCP resources registered successfully', {
+    resources: ['plan://current', 'state://current'],
+    resourceTemplates: ['workflow://{name}']
+  });
 }
