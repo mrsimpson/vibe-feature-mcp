@@ -8,6 +8,8 @@
 import { BaseToolHandler } from './base-tool-handler.js';
 import { ServerContext } from '../types.js';
 import { validateRequiredArgs } from '../server-helpers.js';
+import { readFileSync, writeFileSync, existsSync } from 'fs';
+import { resolve } from 'path';
 
 /**
  * Arguments for the start_development tool
@@ -126,6 +128,9 @@ Please create a new branch and then call start_development again to begin develo
       conversationContext.gitBranch
     );
     
+    // Ensure .gitignore contains .vibe/*.sqlite entry for git repositories
+    this.ensureGitignoreEntry(conversationContext.projectPath);
+    
     const response: StartDevelopmentResult = {
       phase: transitionResult.newPhase,
       instructions: `Look at the plan file (${conversationContext.planFilePath}). Define entrance criteria for each phase of the workflow except the initial phase. Those criteria shall be based on the contents of the previous phase. 
@@ -195,5 +200,70 @@ Please create a new branch and then call start_development again to begin develo
   private generateBranchSuggestion(): string {
     const timestamp = new Date().toISOString().slice(0, 10).replace(/-/g, '');
     return `feature/development-${timestamp}`;
+  }
+
+  /**
+   * Ensure .vibe/*.sqlite entry exists in .gitignore file for git repositories
+   * This function is idempotent and handles various edge cases gracefully
+   */
+  private ensureGitignoreEntry(projectPath: string): void {
+    try {
+      // Check if this is a git repository
+      if (!existsSync(`${projectPath}/.git`)) {
+        this.logger.debug('Not a git repository, skipping .gitignore management', { projectPath });
+        return;
+      }
+
+      const gitignorePath = resolve(projectPath, '.gitignore');
+      const targetEntry = '.vibe/*.sqlite';
+      
+      // Read existing .gitignore or create empty content
+      let gitignoreContent = '';
+      if (existsSync(gitignorePath)) {
+        try {
+          gitignoreContent = readFileSync(gitignorePath, 'utf-8');
+        } catch (error) {
+          this.logger.warn('Failed to read .gitignore file, will create new one', { 
+            gitignorePath, 
+            error: error instanceof Error ? error.message : String(error) 
+          });
+          gitignoreContent = '';
+        }
+      }
+
+      // Check if entry already exists (case-insensitive and whitespace-tolerant)
+      const lines = gitignoreContent.split('\n');
+      const entryExists = lines.some(line => 
+        line.trim().toLowerCase() === targetEntry.toLowerCase()
+      );
+
+      if (entryExists) {
+        this.logger.debug('.gitignore entry already exists, skipping', { 
+          projectPath, 
+          targetEntry 
+        });
+        return;
+      }
+
+      // Add the entry
+      const newContent = gitignoreContent.endsWith('\n') || gitignoreContent === '' 
+        ? gitignoreContent + targetEntry + '\n'
+        : gitignoreContent + '\n' + targetEntry + '\n';
+
+      // Write the updated .gitignore
+      writeFileSync(gitignorePath, newContent, 'utf-8');
+      
+      this.logger.info('Added .vibe/*.sqlite entry to .gitignore', { 
+        projectPath, 
+        gitignorePath 
+      });
+
+    } catch (error) {
+      // Log warning but don't fail development start
+      this.logger.warn('Failed to manage .gitignore entry, continuing with development start', {
+        projectPath,
+        error: error instanceof Error ? error.message : String(error)
+      });
+    }
   }
 }

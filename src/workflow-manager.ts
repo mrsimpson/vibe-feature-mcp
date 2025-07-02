@@ -131,27 +131,90 @@ export class WorkflowManager {
   }
 
   /**
+   * Find the workflows directory using multiple strategies
+   * This handles both development and npm package deployment scenarios
+   */
+  private findWorkflowsDirectory(): string | null {
+    const currentFileUrl = import.meta.url;
+    const currentFilePath = new URL(currentFileUrl).pathname;
+    
+    // Strategy 1: Try relative to current file (works in development and some npm scenarios)
+    const strategies = [
+      // From dist/workflow-manager.js -> ../resources/workflows
+      path.resolve(path.dirname(currentFilePath), '../resources/workflows'),
+      // From src/workflow-manager.ts -> ../resources/workflows  
+      path.resolve(path.dirname(currentFilePath), '../resources/workflows'),
+      // From node_modules/responsible-vibe-mcp/dist/workflow-manager.js -> ../resources/workflows
+      path.resolve(path.dirname(currentFilePath), '../resources/workflows'),
+    ];
+
+    // Strategy 2: Try to find package root by looking for package.json
+    let currentDir = path.dirname(currentFilePath);
+    for (let i = 0; i < 10; i++) { // Limit search depth
+      const packageJsonPath = path.join(currentDir, 'package.json');
+      if (fs.existsSync(packageJsonPath)) {
+        try {
+          const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf-8'));
+          if (packageJson.name === 'responsible-vibe-mcp') {
+            strategies.push(path.join(currentDir, 'resources/workflows'));
+            break;
+          }
+        } catch (error) {
+          // Ignore JSON parse errors and continue searching
+        }
+      }
+      const parentDir = path.dirname(currentDir);
+      if (parentDir === currentDir) break; // Reached filesystem root
+      currentDir = parentDir;
+    }
+
+    // Strategy 3: Try common npm installation paths
+    const possibleNpmPaths = [
+      // Global npm installation
+      path.join(process.env.NODE_PATH || '', 'responsible-vibe-mcp/resources/workflows'),
+      // Local node_modules
+      path.join(process.cwd(), 'node_modules/responsible-vibe-mcp/resources/workflows'),
+    ].filter(p => p.trim() !== '/resources/workflows'); // Filter out invalid paths
+
+    strategies.push(...possibleNpmPaths);
+
+    // Test each strategy
+    for (const workflowsDir of strategies) {
+      logger.debug('Trying workflows directory', { workflowsDir });
+      if (fs.existsSync(workflowsDir)) {
+        // Verify it contains workflow files
+        try {
+          const files = fs.readdirSync(workflowsDir);
+          const yamlFiles = files.filter(file => file.endsWith('.yaml') || file.endsWith('.yml'));
+          if (yamlFiles.length > 0) {
+            logger.info('Found workflows directory', { 
+              workflowsDir, 
+              yamlFiles: yamlFiles.length 
+            });
+            return workflowsDir;
+          }
+        } catch (error) {
+          // Directory exists but can't read it, continue to next strategy
+          logger.debug('Cannot read workflows directory', { workflowsDir, error });
+        }
+      }
+    }
+
+    logger.error('Could not find workflows directory', new Error('Workflows directory not found'), { 
+      strategiesCount: strategies.length,
+      currentFilePath 
+    });
+    return null;
+  }
+
+  /**
    * Load all predefined workflows from resources/workflows directory
    */
   private loadPredefinedWorkflows(): void {
     try {
-      // Get the workflows directory path - more reliable approach
-      const currentFileUrl = import.meta.url;
-      const currentFilePath = new URL(currentFileUrl).pathname;
-      
-      // Navigate from the compiled location to the project root
-      let projectRoot: string;
-      if (currentFilePath.includes('/dist/')) {
-        // Running from compiled code - dist is one level down from project root
-        projectRoot = path.resolve(path.dirname(currentFilePath), '../');
-      } else {
-        // Running from source (development) - src is one level down from project root
-        projectRoot = path.resolve(path.dirname(currentFilePath), '../');
-      }
-      
-      const workflowsDir = path.join(projectRoot, 'resources', 'workflows');
+      const workflowsDir = this.findWorkflowsDirectory();
 
-      if (!fs.existsSync(workflowsDir)) {
+      if (!workflowsDir || !fs.existsSync(workflowsDir)) {
         logger.warn('Workflows directory not found', { workflowsDir });
         return;
       }

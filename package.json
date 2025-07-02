@@ -12,6 +12,7 @@
   },
   "files": [
     "dist/**/*",
+    "resources/**/*",
     "README.md",
     "SYSTEM_PROMPT.md",
     "LOGGING.md",
