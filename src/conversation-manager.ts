@@ -159,8 +159,8 @@ export class ConversationManager {
   private detectWorkflowForProject(projectPath: string): string {
     // Check for custom workflow files
     const customFilePaths = [
-      resolve(projectPath, '.vibe', 'state-machine.yaml'),
-      resolve(projectPath, '.vibe', 'state-machine.yml')
+      resolve(projectPath, '.vibe', 'workflow.yaml'),
+      resolve(projectPath, '.vibe', 'workflow.yml')
     ];
     
     for (const filePath of customFilePaths) {

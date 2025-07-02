@@ -148,7 +148,7 @@ states:
     transitions: []
 `;
 
-      await fs.writeFile(path.join(vibeDir, 'state-machine.yaml'), customStateMachine);
+      await fs.writeFile(path.join(vibeDir, 'workflow.yaml'), customStateMachine);
 
       // Initialize development with start_development and specify custom workflow
       const result = await client.callTool('start_development', { workflow: 'custom' });
@@ -173,7 +173,7 @@ states:
     transitions: []
 `;
 
-      await fs.writeFile(path.join(vibeDir, 'state-machine.yml'), customStateMachine);
+      await fs.writeFile(path.join(vibeDir, 'workflow.yml'), customStateMachine);
 
       // Initialize development with custom workflow
       await client.callTool('start_development', { workflow: 'custom' });
@@ -193,7 +193,7 @@ states:
       await fs.mkdir(vibeDir, { recursive: true });
 
       // Create invalid YAML
-      await fs.writeFile(path.join(vibeDir, 'state-machine.yaml'), 'invalid: yaml: [');
+      await fs.writeFile(path.join(vibeDir, 'workflow.yaml'), 'invalid: yaml: [');
 
       // Initialize development with waterfall workflow since custom will fail
       await client.callTool('start_development', { workflow: 'waterfall' });

@@ -382,7 +382,7 @@ states:
     transitions: []
 `;
 
-      await fs.writeFile(path.join(vibeDir, 'state-machine.yaml'), customWorkflow);
+      await fs.writeFile(path.join(vibeDir, 'workflow.yaml'), customWorkflow);
 
       // First, initialize development with the custom workflow
       const initResult = await client.callTool('start_development', {

@@ -166,7 +166,7 @@ export class TempProject {
 
     // Create custom state machine if provided
     if (customStateMachine) {
-      writeFileSync(join(this.projectPath, '.vibe', 'state-machine.yaml'), customStateMachine);
+      writeFileSync(join(this.projectPath, '.vibe', 'workflow.yaml'), customStateMachine);
     }
 
     // Create additional files

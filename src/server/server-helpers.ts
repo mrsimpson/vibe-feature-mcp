@@ -128,7 +128,7 @@ export function generateWorkflowDescription(workflows: Array<{ name: string; dis
     description += `• **${workflow.name}**: ${workflow.displayName} - ${workflow.description}\n`;
   }
   
-  description += '• **custom**: Use custom workflow from .vibe/state-machine.yaml in your project\n\n';
+  description += '• **custom**: Use custom workflow from .vibe/workflow.yaml in your project\n\n';
   description += 'Default: waterfall (recommended for larger, design-heavy tasks)';
   
   return description;

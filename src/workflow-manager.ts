@@ -99,8 +99,8 @@ export class WorkflowManager {
     // If workflow name is 'custom', try to load custom workflow
     // Check for custom workflow in project
       const customFilePaths = [
-        path.join(projectPath, '.vibe', 'state-machine.yaml'),
-        path.join(projectPath, '.vibe', 'state-machine.yml')
+        path.join(projectPath, '.vibe', 'workflow.yaml'),
+        path.join(projectPath, '.vibe', 'workflow.yml')
       ];
 
       try {
@@ -222,8 +222,8 @@ export class WorkflowManager {
     // Check if it's 'custom' and custom workflow exists
     if (workflowName === 'custom') {
       const customFilePaths = [
-        path.join(projectPath, '.vibe', 'state-machine.yaml'),
-        path.join(projectPath, '.vibe', 'state-machine.yml')
+        path.join(projectPath, '.vibe', 'workflow.yaml'),
+        path.join(projectPath, '.vibe', 'workflow.yml')
       ];
 
       return customFilePaths.some(filePath => fs.existsSync(filePath));

@@ -2,7 +2,7 @@ import { defineConfig } from 'vitest/config';
 import { existsSync } from 'fs';
 
 // Check if custom state machine exists
-const hasCustomStateMachine = existsSync('.vibe/state-machine.yml') || existsSync('.vibe/state-machine.yaml');
+const hasCustomStateMachine = existsSync('.vibe/workflow.yml') || existsSync('.vibe/workflow.yaml');
 
 export default defineConfig({
   test: {

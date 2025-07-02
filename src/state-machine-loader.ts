@@ -51,8 +51,8 @@ export class StateMachineLoader {
   public loadStateMachine(projectPath: string): YamlStateMachine {
     // Check for custom state machine file in project directory
     const customFilePaths = [
-      path.join(projectPath, '.vibe', 'state-machine.yaml'),
-      path.join(projectPath, '.vibe', 'state-machine.yml')
+      path.join(projectPath, '.vibe', 'workflow.yaml'),
+      path.join(projectPath, '.vibe', 'workflow.yml')
     ];
     
     // Try to load custom state machine file

@@ -122,7 +122,7 @@ describe('StateMachineLoader', () => {
     it('should load custom state machine file if it exists', () => {
       // Mock fs.existsSync to return true for custom file
       vi.mocked(fs.existsSync).mockImplementation((p) => {
-        return String(p) === 'project/.vibe/state-machine.yaml';
+        return String(p) === 'project/.vibe/workflow.yaml';
       });
       
       // Mock fs.readFileSync to return valid YAML content
@@ -130,8 +130,8 @@ describe('StateMachineLoader', () => {
       
       const result = stateMachineLoader.loadStateMachine('project');
       
-      expect(fs.existsSync).toHaveBeenCalledWith('project/.vibe/state-machine.yaml');
-      expect(fs.readFileSync).toHaveBeenCalledWith('project/.vibe/state-machine.yaml', 'utf8');
+      expect(fs.existsSync).toHaveBeenCalledWith('project/.vibe/workflow.yaml');
+      expect(fs.readFileSync).toHaveBeenCalledWith('project/.vibe/workflow.yaml', 'utf8');
       expect(result).toBeDefined();
       expect(result.name).toBe('Test State Machine');
     });
@@ -145,8 +145,8 @@ describe('StateMachineLoader', () => {
       
       const result = stateMachineLoader.loadStateMachine('project');
       
-      expect(fs.existsSync).toHaveBeenCalledWith('project/.vibe/state-machine.yaml');
-      expect(fs.existsSync).toHaveBeenCalledWith('project/.vibe/state-machine.yml');
+      expect(fs.existsSync).toHaveBeenCalledWith('project/.vibe/workflow.yaml');
+      expect(fs.existsSync).toHaveBeenCalledWith('project/.vibe/workflow.yml');
       
       // The path might be absolute or relative depending on the environment
       expect(fs.readFileSync).toHaveBeenCalled();
