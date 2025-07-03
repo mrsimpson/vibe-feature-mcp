@@ -182,7 +182,8 @@ export function registerMcpTools(
       inputSchema: {
         workflow: z.enum(buildWorkflowEnum(context.workflowManager.getWorkflowNames()))
           .default('waterfall')
-          .describe(generateWorkflowDescription(context.workflowManager.getAvailableWorkflows()))
+          .describe(generateWorkflowDescription(context.workflowManager.getAvailableWorkflows())),
+        projectPath: z.string().optional().describe('Optional project directory path. If not provided, uses the current working directory or VIBE_PROJECT_PATH environment variable')
       },
       annotations: {
         title: 'Development Initializer',

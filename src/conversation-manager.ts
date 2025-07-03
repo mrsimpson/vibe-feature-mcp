@@ -114,13 +114,13 @@ export class ConversationManager {
     };
   }
   
-  async createConversationContext(workflowName: string): Promise<ConversationContext> {
-    const projectPath = this.getProjectPath();
-    const gitBranch = this.getGitBranch(projectPath);
+  async createConversationContext(workflowName: string, projectPath?: string): Promise<ConversationContext> {
+    const resolvedProjectPath = projectPath || this.getProjectPath();
+    const gitBranch = this.getGitBranch(resolvedProjectPath);
     
-    logger.debug('Creating conversation context', { projectPath, gitBranch, workflowName });
+    logger.debug('Creating conversation context', { projectPath: resolvedProjectPath, gitBranch, workflowName });
     
-    const conversationId = this.generateConversationId(projectPath, gitBranch);
+    const conversationId = this.generateConversationId(resolvedProjectPath, gitBranch);
     const existingState = await this.database.getConversationState(conversationId);
     
     if (existingState) {
@@ -135,7 +135,7 @@ export class ConversationManager {
       };
     }
     
-    const state = await this.createNewConversationState(conversationId, projectPath, gitBranch, workflowName);
+    const state = await this.createNewConversationState(conversationId, resolvedProjectPath, gitBranch, workflowName);
     
     return {
       conversationId: state.conversationId,

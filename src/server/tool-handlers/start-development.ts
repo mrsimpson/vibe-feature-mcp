@@ -16,6 +16,7 @@ import { resolve } from 'path';
  */
 export interface StartDevelopmentArgs {
   workflow: string;
+  projectPath?: string;
 }
 
 /**
@@ -42,13 +43,15 @@ export class StartDevelopmentHandler extends BaseToolHandler<StartDevelopmentArg
     validateRequiredArgs(args, ['workflow']);
 
     const selectedWorkflow = args.workflow;
+    const projectPath = args.projectPath || context.projectPath;
 
     this.logger.debug('Processing start_development request', { 
-      selectedWorkflow
+      selectedWorkflow,
+      projectPath
     });
 
     // Validate workflow selection
-    if (!context.workflowManager.validateWorkflowName(selectedWorkflow, context.projectPath)) {
+    if (!context.workflowManager.validateWorkflowName(selectedWorkflow, projectPath)) {
       const availableWorkflows = context.workflowManager.getWorkflowNames();
       throw new Error(
         `Invalid workflow: ${selectedWorkflow}. Available workflows: ${availableWorkflows.join(', ')}, custom`
@@ -56,7 +59,7 @@ export class StartDevelopmentHandler extends BaseToolHandler<StartDevelopmentArg
     }
 
     // Check if user is on main/master branch and prompt for branch creation
-    const currentBranch = this.getCurrentGitBranch(context.projectPath);
+    const currentBranch = this.getCurrentGitBranch(projectPath);
     if (currentBranch === 'main' || currentBranch === 'master') {
       const suggestedBranchName = this.generateBranchSuggestion();
       const branchPromptResponse: StartDevelopmentResult = {
@@ -80,12 +83,12 @@ Please create a new branch and then call start_development again to begin develo
     }
 
     // Create or get conversation context with the selected workflow
-    const conversationContext = await context.conversationManager.createConversationContext(selectedWorkflow);
+    const conversationContext = await context.conversationManager.createConversationContext(selectedWorkflow, projectPath);
     const currentPhase = conversationContext.currentPhase;
     
     // Load the selected workflow
     const stateMachine = context.workflowManager.loadWorkflowForProject(
-      conversationContext.projectPath, 
+      projectPath, 
       selectedWorkflow
     );
     const initialState = stateMachine.initial_state;
@@ -104,7 +107,7 @@ Please create a new branch and then call start_development again to begin develo
     const transitionResult = await context.transitionEngine.handleExplicitTransition(
       currentPhase,
       targetPhase,
-      conversationContext.projectPath,
+      projectPath,
       'Development initialization',
       selectedWorkflow
     );
@@ -124,12 +127,12 @@ Please create a new branch and then call start_development again to begin develo
     // Ensure plan file exists
     await context.planManager.ensurePlanFile(
       conversationContext.planFilePath,
-      conversationContext.projectPath,
+      projectPath,
       conversationContext.gitBranch
     );
     
     // Ensure .gitignore contains .vibe/*.sqlite entry for git repositories
-    this.ensureGitignoreEntry(conversationContext.projectPath);
+    this.ensureGitignoreEntry(projectPath);
     
     const response: StartDevelopmentResult = {
       phase: transitionResult.newPhase,
