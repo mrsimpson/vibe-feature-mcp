@@ -150,6 +150,9 @@ export class DirectServerInterface {
       case 'plan://current':
         return await this.getDevelopmentPlan();
       
+      case 'system-prompt://':
+        return await this.getSystemPrompt();
+      
       default:
         throw new Error(`Unknown resource URI: ${uri}`);
     }
@@ -206,6 +209,26 @@ export class DirectServerInterface {
   }
 
   /**
+   * Get system prompt resource directly
+   */
+  async getSystemPrompt(): Promise<any> {
+    // Use the system prompt handler directly with the default workflow
+    const { SystemPromptResourceHandler } = await import('../../src/server/resource-handlers/system-prompt.js');
+    const handler = new SystemPromptResourceHandler();
+    
+    // Create a minimal context - system prompt doesn't need full server context
+    const result = await handler.handle(new URL('system-prompt://'), {} as any);
+    
+    return {
+      contents: [{
+        uri: 'system-prompt://',
+        mimeType: result.mimeType,
+        text: result.text
+      }]
+    };
+  }
+
+  /**
    * List available tools (for testing completeness)
    */
   async listTools(): Promise<{ tools: { name: string }[] }> {
@@ -224,7 +247,8 @@ export class DirectServerInterface {
     return {
       resources: [
         { uri: 'state://current' },
-        { uri: 'plan://current' }
+        { uri: 'plan://current' },
+        { uri: 'system-prompt://' }
       ]
     };
   }

@@ -362,6 +362,35 @@ export function registerMcpResources(
     }
   );
 
+  // System prompt resource
+  mcpServer.resource(
+    'system-prompt',
+    'system-prompt://',
+    {
+      name: 'System Prompt for LLM Integration',
+      description: 'Complete system prompt for LLM integration with responsible-vibe-mcp. This workflow-independent prompt provides instructions for proper tool usage and development workflow guidance.',
+      mimeType: 'text/plain'
+    },
+    async (uri: any) => {
+      const handler = resourceRegistry.resolve(uri.href);
+      if (!handler) {
+        const errorResult = responseRenderer.renderResourceResponse({
+          success: false,
+          error: 'Resource handler not found',
+          data: {
+            uri: uri.href,
+            text: 'Error: System prompt resource handler not found',
+            mimeType: 'text/plain'
+          }
+        });
+        return errorResult;
+      }
+      
+      const result = await handler.handle(new URL(uri.href), context);
+      return responseRenderer.renderResourceResponse(result);
+    }
+  );
+
   // Register workflow resource template
   const workflowTemplate = new ResourceTemplate('workflow://{name}', {
     list: async () => {
@@ -417,7 +446,7 @@ export function registerMcpResources(
   );
 
   logger.info('MCP resources registered successfully', {
-    resources: ['plan://current', 'state://current'],
+    resources: ['plan://current', 'state://current', 'system-prompt://'],
     resourceTemplates: ['workflow://{name}']
   });
 }

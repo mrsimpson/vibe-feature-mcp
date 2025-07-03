@@ -34,9 +34,26 @@ LLM: calls whats_next() again
 
 ## Installation and Usage
 
+### Getting System Prompt for LLM Integration
+
+Before configuring your MCP client, you can get the system prompt needed for proper LLM integration:
+
+```bash
+# Get the system prompt for your LLM
+npx responsible-vibe-mcp --system-prompt
+
+# Get help and usage information
+npx responsible-vibe-mcp --help
+
+# Get version information
+npx responsible-vibe-mcp --version
+```
+
+The `--system-prompt` flag outputs the complete system prompt that you should configure in your LLM client to enable proper integration with responsible-vibe-mcp.
+
 ### For MCP Client Users
 
-This MCP server is designed to be used with MCP-compatible clients (like Claude Desktop, Amazon Q, or other LLM applications). **Do not run `npx responsible-vibe-mcp` directly** - it will start and then exit because MCP servers communicate via stdin/stdout.
+This MCP server is designed to be used with MCP-compatible clients (like Claude Desktop, Amazon Q, or other LLM applications). **Do not run `npx responsible-vibe-mcp` directly without flags** - it will start the MCP server and wait for MCP protocol input via stdin/stdout.
 
 #### Claude Desktop Configuration
 
@@ -615,6 +632,12 @@ This approach ensures users maintain full control over the development process w
 - **URI**: `state://current`
 - **Description**: Current conversation state and phase information
 - **Format**: JSON with phase, progress, and transition history
+
+#### `system-prompt`
+- **URI**: `system-prompt://`
+- **Description**: Complete system prompt for LLM integration
+- **Format**: Plain text system prompt (workflow-independent)
+- **Usage**: Programmatic access to system prompt through MCP protocol
 
 ### Tools
 
