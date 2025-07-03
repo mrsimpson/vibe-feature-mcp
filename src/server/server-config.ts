@@ -181,6 +181,8 @@ export function registerMcpTools(
       description: 'Begin a new development project with a structured workflow. Choose from different development approaches (waterfall, bugfix, epcc) or use a custom workflow. This tool sets up the project plan and initializes the development process.',
       inputSchema: {
         workflow: z.enum(buildWorkflowEnum(context.workflowManager.getWorkflowNames()))
+        projectPath: z.string().optional()
+          .describe('Optional project path to use for development. If not provided, the server will use the configured project path or process.cwd().'),
           .default('waterfall')
           .describe(generateWorkflowDescription(context.workflowManager.getAvailableWorkflows()))
       },

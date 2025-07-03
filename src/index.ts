@@ -20,8 +20,16 @@ async function main() {
   try {
     logger.info('Starting Vibe Feature MCP Server');
     
-    // Create server instance
-    const server = new VibeFeatureMCPServer();
+    // Check for VIBE_PROJECT_PATH environment variable
+    const projectPath = process.env.VIBE_PROJECT_PATH;
+    if (projectPath) {
+      logger.info('Using project path from VIBE_PROJECT_PATH environment variable', { projectPath });
+    }
+    
+    // Create server instance with configuration
+    const server = new VibeFeatureMCPServer({
+      projectPath
+    });
     
     // Initialize server
     await server.initialize();
