@@ -16,6 +16,7 @@ import { resolve } from 'path';
  */
 export interface StartDevelopmentArgs {
   workflow: string;
+  projectPath?: string;
 }
 
 /**
@@ -42,13 +43,17 @@ export class StartDevelopmentHandler extends BaseToolHandler<StartDevelopmentArg
     validateRequiredArgs(args, ['workflow']);
 
     const selectedWorkflow = args.workflow;
+    
+    // Use projectPath from args if provided, otherwise fall back to context.projectPath
+    const effectiveProjectPath = args.projectPath || context.projectPath;
 
     this.logger.debug('Processing start_development request', { 
-      selectedWorkflow
+      selectedWorkflow,
+      projectPath: effectiveProjectPath
     });
 
     // Validate workflow selection
-    if (!context.workflowManager.validateWorkflowName(selectedWorkflow, context.projectPath)) {
+    if (!context.workflowManager.validateWorkflowName(selectedWorkflow, effectiveProjectPath)) {
       const availableWorkflows = context.workflowManager.getWorkflowNames();
       throw new Error(
         `Invalid workflow: ${selectedWorkflow}. Available workflows: ${availableWorkflows.join(', ')}, custom`
@@ -56,7 +61,7 @@ export class StartDevelopmentHandler extends BaseToolHandler<StartDevelopmentArg
     }
 
     // Check if user is on main/master branch and prompt for branch creation
-    const currentBranch = this.getCurrentGitBranch(context.projectPath);
+    const currentBranch = this.getCurrentGitBranch(effectiveProjectPath);
     if (currentBranch === 'main' || currentBranch === 'master') {
       const suggestedBranchName = this.generateBranchSuggestion();
       const branchPromptResponse: StartDevelopmentResult = {
@@ -79,8 +84,11 @@ Please create a new branch and then call start_development again to begin develo
       return branchPromptResponse;
     }
 
-    // Create or get conversation context with the selected workflow
-    const conversationContext = await context.conversationManager.createConversationContext(selectedWorkflow);
+    // Create or get conversation context with the selected workflow and project path
+    const conversationContext = await context.conversationManager.createConversationContext(
+      selectedWorkflow, 
+      effectiveProjectPath
+    );
     const currentPhase = conversationContext.currentPhase;
     
     // Load the selected workflow
