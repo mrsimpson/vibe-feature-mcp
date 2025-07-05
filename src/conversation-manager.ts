@@ -125,7 +125,7 @@ export class ConversationManager {
    */
   async updateConversationState(
     conversationId: string, 
-    updates: Partial<Pick<ConversationState, 'currentPhase' | 'planFilePath' | 'workflowName'>>
+    updates: Partial<Pick<ConversationState, 'currentPhase' | 'planFilePath' | 'workflowName' | 'gitCommitConfig'>>
   ): Promise<void> {
     logger.debug('Updating conversation state', { conversationId, updates });
     

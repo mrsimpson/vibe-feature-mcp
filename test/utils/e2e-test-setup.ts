@@ -347,10 +347,18 @@ export function assertToolSuccess(result: any): any {
  * 
  * @param client - The DirectServerInterface instance
  * @param workflow - The workflow to use (defaults to 'waterfall')
+ * @param commitBehaviour - The commit behavior to use (defaults to 'none' for tests)
  * @returns The response from start_development
  */
-export async function initializeDevelopment(client: DirectServerInterface, workflow: string = 'waterfall'): Promise<any> {
-  const result = await client.callTool('start_development', { workflow });
+export async function initializeDevelopment(
+  client: DirectServerInterface, 
+  workflow: string = 'waterfall',
+  commitBehaviour: 'step' | 'phase' | 'end' | 'none' = 'none'
+): Promise<any> {
+  const result = await client.callTool('start_development', { 
+    workflow,
+    commit_behaviour: commitBehaviour
+  });
   return assertToolSuccess(result);
 }
 

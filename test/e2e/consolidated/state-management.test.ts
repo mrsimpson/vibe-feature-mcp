@@ -151,7 +151,10 @@ states:
       await fs.writeFile(path.join(vibeDir, 'workflow.yaml'), customStateMachine);
 
       // Initialize development with start_development and specify custom workflow
-      const result = await client.callTool('start_development', { workflow: 'custom' });
+      const result = await client.callTool('start_development', { 
+        workflow: 'custom',
+        commit_behaviour: 'none'
+      });
       const response = assertToolSuccess(result);
 
       expect(response.phase).toBe('planning');
@@ -176,7 +179,10 @@ states:
       await fs.writeFile(path.join(vibeDir, 'workflow.yml'), customStateMachine);
 
       // Initialize development with custom workflow
-      await client.callTool('start_development', { workflow: 'custom' });
+      await client.callTool('start_development', { 
+        workflow: 'custom',
+        commit_behaviour: 'none'
+      });
       
       // Then call whats_next
       const result = await client.callTool('whats_next', {
@@ -196,7 +202,10 @@ states:
       await fs.writeFile(path.join(vibeDir, 'workflow.yaml'), 'invalid: yaml: [');
 
       // Initialize development with waterfall workflow since custom will fail
-      await client.callTool('start_development', { workflow: 'waterfall' });
+      await client.callTool('start_development', { 
+        workflow: 'waterfall',
+        commit_behaviour: 'none'
+      });
       
       const result = await client.callTool('whats_next', {
         user_input: 'test fallback'
@@ -210,7 +219,10 @@ states:
 
     it('should use default state machine when no custom configuration exists', async () => {
       // Initialize development with waterfall workflow
-      await client.callTool('start_development', { workflow: 'waterfall' });
+      await client.callTool('start_development', { 
+        workflow: 'waterfall',
+        commit_behaviour: 'none'
+      });
       
       const result = await client.callTool('whats_next', {
         user_input: 'test default'

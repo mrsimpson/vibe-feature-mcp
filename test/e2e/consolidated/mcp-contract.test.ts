@@ -78,7 +78,10 @@ describe('MCP Contract Validation', () => {
     // Start development for all MCP contract tests
     await client.callTool({
       name: 'start_development',
-      arguments: {}
+      arguments: {
+        workflow: 'waterfall',
+        commit_behaviour: 'none'  // Use 'none' for test isolation
+      }
     });
   });
 

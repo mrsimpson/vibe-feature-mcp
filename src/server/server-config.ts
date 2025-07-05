@@ -16,6 +16,7 @@ import { InstructionGenerator } from '../instruction-generator.js';
 import { PlanManager } from '../plan-manager.js';
 import { InteractionLogger } from '../interaction-logger.js';
 import { WorkflowManager } from '../workflow-manager.js';
+import { GitManager } from '../git-manager.js';
 import { createLogger } from '../logger.js';
 
 import { 
@@ -174,7 +175,12 @@ export function registerMcpTools(
     }
   );
 
-  // Register start_development tool
+  // Register start_development tool with dynamic commit_behaviour description
+  const isGitRepo = GitManager.isGitRepository(context.projectPath);
+  const commitBehaviourDescription = isGitRepo 
+    ? 'Git commit behavior: "step" (commit after each step), "phase" (commit before phase transitions), "end" (final commit only), "none" (no automatic commits). Use "end" unless the user specifically requests different behavior.'
+    : 'Git commit behavior: Use "none" as this is not a git repository. Other options ("step", "phase", "end") are not applicable for non-git projects.';
+
   mcpServer.registerTool(
     'start_development',
     {
@@ -182,7 +188,9 @@ export function registerMcpTools(
       inputSchema: {
         workflow: z.enum(buildWorkflowEnum(context.workflowManager.getWorkflowNames()))
           .default('waterfall')
-          .describe(generateWorkflowDescription(context.workflowManager.getAvailableWorkflows()))
+          .describe(generateWorkflowDescription(context.workflowManager.getAvailableWorkflows())),
+        commit_behaviour: z.enum(['step', 'phase', 'end', 'none'])
+          .describe(commitBehaviourDescription)
       },
       annotations: {
         title: 'Development Initializer',

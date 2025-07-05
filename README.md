@@ -464,7 +464,39 @@ For detailed logging documentation, see [LOGGING.md](./LOGGING.md).
 
 ## Features
 
-### 1. Intelligent Phase Management
+### 1. Git Commit Integration
+
+The server provides optional git commit functionality with intelligent defaults and context-aware guidance:
+
+#### Configuration Options
+Configure commit behavior when starting development using the `commit_behaviour` parameter:
+
+```javascript
+start_development({
+  workflow: "waterfall",
+  commit_behaviour: "end"    // Options: "step", "phase", "end", "none"
+})
+```
+
+#### Commit Behavior Options
+- **"step"**: Commit after each development step (frequent commits)
+- **"phase"**: Commit after each phase transition (milestone commits)
+- **"end"**: Single commit at development completion (recommended for git repos)
+- **"none"**: No automatic commits (required for non-git projects)
+
+#### Smart Tool Guidance
+The MCP server automatically detects your project type and provides context-specific guidance to the LLM:
+
+- **Git repositories**: Tool description guides LLM to use `"end"` unless user requests otherwise
+- **Non-git projects**: Tool description instructs LLM to use `"none"` as other options aren't applicable
+- **Always explicit**: LLM receives clear instructions on which option to choose based on project context
+
+#### Benefits
+- **No guesswork**: LLM gets explicit guidance on appropriate commit behavior
+- **Context-aware**: Tool descriptions adapt based on actual project structure
+- **User control**: Users can still override defaults by explicitly requesting different behavior
+
+### 2. Intelligent Phase Management
 
 The server manages five core development phases, each with specific guidance:
 
@@ -498,13 +530,13 @@ The server manages five core development phases, each with specific guidance:
 - Directs the LLM to validate feature completeness
 - Ensures the LLM marks completed testing tasks
 
-### 2. Conversation State Persistence
+### 3. Conversation State Persistence
 
 - **Phase Tracking**: Current development phase and transition history
 - **Context Memory**: Conversation context and progress indicators
 - **Plan Synchronization**: Ensures plan file stays updated with latest progress
 
-### 3. Dynamic Plan Management
+### 4. Dynamic Plan Management
 
 The server ensures the LLM maintains a living development plan document:
 

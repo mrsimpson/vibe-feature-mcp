@@ -7,6 +7,7 @@
 
 import { ConversationRequiredToolHandler } from './base-tool-handler.js';
 import { ServerContext } from '../types.js';
+import { GitManager } from '../../git-manager.js';
 
 /**
  * Arguments for the whats_next tool
@@ -130,6 +131,24 @@ export class WhatsNextHandler extends ConversationRequiredToolHandler<WhatsNextA
         planFileExists: planInfo.exists
       }
     );
+
+    // Handle git commits if configured
+    if (conversationContext.gitCommitConfig?.enabled && conversationContext.gitCommitConfig.commitOnStep) {
+      const commitCreated = GitManager.createWipCommitIfNeeded(
+        conversationContext.projectPath,
+        conversationContext.gitCommitConfig,
+        requestContext || 'Step completion',
+        transitionResult.newPhase
+      );
+      
+      if (commitCreated) {
+        this.logger.info('Created WIP commit after step', {
+          conversationId,
+          phase: transitionResult.newPhase,
+          context: requestContext
+        });
+      }
+    }
 
     // Prepare response
     const response: WhatsNextResult = {
