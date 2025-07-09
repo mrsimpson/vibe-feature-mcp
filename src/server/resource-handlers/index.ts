@@ -10,6 +10,7 @@ import { ResourceHandler, ResourceRegistry } from '../types.js';
 import { DevelopmentPlanResourceHandler } from './development-plan.js';
 import { ConversationStateResourceHandler } from './conversation-state.js';
 import { WorkflowResourceHandler } from './workflow-resource.js';
+import { SystemPromptResourceHandler } from './system-prompt.js';
 
 const logger = createLogger('ResourceRegistry');
 
@@ -51,9 +52,10 @@ export function createResourceRegistry(): ResourceRegistry {
   registry.register('plan://current', new DevelopmentPlanResourceHandler());
   registry.register('state://current', new ConversationStateResourceHandler());
   registry.register('workflow://', new WorkflowResourceHandler());
+  registry.register('system-prompt://', new SystemPromptResourceHandler());
   
   logger.info('Resource registry created with handlers', { 
-    patterns: ['plan://current', 'state://current', 'workflow://']
+    patterns: ['plan://current', 'state://current', 'workflow://', 'system-prompt://']
   });
   
   return registry;
@@ -63,3 +65,4 @@ export function createResourceRegistry(): ResourceRegistry {
 export { DevelopmentPlanResourceHandler } from './development-plan.js';
 export { ConversationStateResourceHandler } from './conversation-state.js';
 export { WorkflowResourceHandler } from './workflow-resource.js';
+export { SystemPromptResourceHandler } from './system-prompt.js';

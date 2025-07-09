@@ -10,12 +10,15 @@ import { ServerContext } from '../types.js';
 import { validateRequiredArgs } from '../server-helpers.js';
 import { readFileSync, writeFileSync, existsSync } from 'fs';
 import { resolve } from 'path';
+import { GitCommitConfig } from '../../types.js';
+import { GitManager } from '../../git-manager.js';
 
 /**
  * Arguments for the start_development tool
  */
 export interface StartDevelopmentArgs {
   workflow: string;
+  commit_behaviour?: 'step' | 'phase' | 'end' | 'none';
 }
 
 /**
@@ -42,9 +45,25 @@ export class StartDevelopmentHandler extends BaseToolHandler<StartDevelopmentArg
     validateRequiredArgs(args, ['workflow']);
 
     const selectedWorkflow = args.workflow;
+    
+    // Process git commit configuration
+    const isGitRepository = GitManager.isGitRepository(context.projectPath);
+    
+    // Translate commit_behaviour to internal git config
+    const commitBehaviour = args.commit_behaviour ?? (isGitRepository ? 'end' : 'none');
+    const gitCommitConfig: GitCommitConfig = {
+      enabled: commitBehaviour !== 'none',
+      commitOnStep: commitBehaviour === 'step',
+      commitOnPhase: commitBehaviour === 'phase',
+      commitOnComplete: commitBehaviour === 'end' || commitBehaviour === 'step' || commitBehaviour === 'phase',
+      initialMessage: 'Development session',
+      startCommitHash: GitManager.getCurrentCommitHash(context.projectPath) || undefined
+    };
 
     this.logger.debug('Processing start_development request', { 
-      selectedWorkflow
+      selectedWorkflow,
+      commitBehaviour,
+      gitCommitConfig
     });
 
     // Validate workflow selection
@@ -114,7 +133,8 @@ Please create a new branch and then call start_development again to begin develo
       conversationContext.conversationId,
       { 
         currentPhase: transitionResult.newPhase,
-        workflowName: selectedWorkflow
+        workflowName: selectedWorkflow,
+        gitCommitConfig: gitCommitConfig
       }
     );
     

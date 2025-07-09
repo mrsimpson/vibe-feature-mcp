@@ -50,9 +50,10 @@ describe('Core Functionality', () => {
     it('should provide resources', async () => {
       const resources = await client.listResources();
       expect(resources.resources).toBeTruthy();
-      expect(resources.resources).toHaveLength(2);
+      expect(resources.resources).toHaveLength(3);
       expect(resources.resources.map(r => r.uri)).toContain('plan://current');
       expect(resources.resources.map(r => r.uri)).toContain('state://current');
+      expect(resources.resources.map(r => r.uri)).toContain('system-prompt://');
     });
   });
 

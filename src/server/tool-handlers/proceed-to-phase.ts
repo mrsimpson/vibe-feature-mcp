@@ -8,6 +8,7 @@
 import { ConversationRequiredToolHandler } from './base-tool-handler.js';
 import { ServerContext } from '../types.js';
 import { validateRequiredArgs } from '../server-helpers.js';
+import { GitManager } from '../../git-manager.js';
 
 /**
  * Arguments for the proceed_to_phase tool
@@ -101,6 +102,25 @@ export class ProceedToPhaseHandler extends ConversationRequiredToolHandler<Proce
         planFileExists: planInfo.exists
       }
     );
+
+    // Handle git commits if configured (before phase transition)
+    if (conversationContext.gitCommitConfig?.enabled && conversationContext.gitCommitConfig.commitOnPhase) {
+      const commitCreated = GitManager.createWipCommitIfNeeded(
+        conversationContext.projectPath,
+        conversationContext.gitCommitConfig,
+        `Phase transition: ${currentPhase} → ${target_phase}`,
+        currentPhase
+      );
+      
+      if (commitCreated) {
+        this.logger.info('Created WIP commit before phase transition', {
+          conversationId,
+          fromPhase: currentPhase,
+          toPhase: target_phase,
+          reason
+        });
+      }
+    }
 
     // Prepare response
     const response: ProceedToPhaseResult = {

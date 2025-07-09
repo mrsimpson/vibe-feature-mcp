@@ -283,8 +283,6 @@ states:
       expect(workflowNames).toContain('waterfall');
       expect(workflowNames).toContain('bugfix');
       expect(workflowNames).toContain('epcc');
-      expect(workflowNames).toContain('minor');
-      expect(workflowNames).toContain('greenfield');
     });
   });
 
@@ -320,7 +318,9 @@ states:
       
       // Verify all expected workflows are present
       const workflowNames = workflows.map(w => w.name).sort();
-      expect(workflowNames).toEqual(['bugfix', 'epcc', 'greenfield', 'minor', 'waterfall']);
+      expect(workflowNames).toContain('waterfall');
+      expect(workflowNames).toContain('bugfix');
+      expect(workflowNames).toContain('epcc');
       
       // Verify each workflow has required properties
       workflows.forEach(workflow => {

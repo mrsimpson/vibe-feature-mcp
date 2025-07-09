@@ -16,6 +16,7 @@ import { InstructionGenerator } from '../instruction-generator.js';
 import { PlanManager } from '../plan-manager.js';
 import { InteractionLogger } from '../interaction-logger.js';
 import { WorkflowManager } from '../workflow-manager.js';
+import { GitManager } from '../git-manager.js';
 import { createLogger } from '../logger.js';
 
 import { 
@@ -174,7 +175,12 @@ export function registerMcpTools(
     }
   );
 
-  // Register start_development tool
+  // Register start_development tool with dynamic commit_behaviour description
+  const isGitRepo = GitManager.isGitRepository(context.projectPath);
+  const commitBehaviourDescription = isGitRepo 
+    ? 'Git commit behavior: "step" (commit after each step), "phase" (commit before phase transitions), "end" (final commit only), "none" (no automatic commits). Use "end" unless the user specifically requests different behavior.'
+    : 'Git commit behavior: Use "none" as this is not a git repository. Other options ("step", "phase", "end") are not applicable for non-git projects.';
+
   mcpServer.registerTool(
     'start_development',
     {
@@ -182,7 +188,9 @@ export function registerMcpTools(
       inputSchema: {
         workflow: z.enum(buildWorkflowEnum(context.workflowManager.getWorkflowNames()))
           .default('waterfall')
-          .describe(generateWorkflowDescription(context.workflowManager.getAvailableWorkflows()))
+          .describe(generateWorkflowDescription(context.workflowManager.getAvailableWorkflows())),
+        commit_behaviour: z.enum(['step', 'phase', 'end', 'none'])
+          .describe(commitBehaviourDescription)
       },
       annotations: {
         title: 'Development Initializer',
@@ -362,6 +370,35 @@ export function registerMcpResources(
     }
   );
 
+  // System prompt resource
+  mcpServer.resource(
+    'system-prompt',
+    'system-prompt://',
+    {
+      name: 'System Prompt for LLM Integration',
+      description: 'Complete system prompt for LLM integration with responsible-vibe-mcp. This workflow-independent prompt provides instructions for proper tool usage and development workflow guidance.',
+      mimeType: 'text/plain'
+    },
+    async (uri: any) => {
+      const handler = resourceRegistry.resolve(uri.href);
+      if (!handler) {
+        const errorResult = responseRenderer.renderResourceResponse({
+          success: false,
+          error: 'Resource handler not found',
+          data: {
+            uri: uri.href,
+            text: 'Error: System prompt resource handler not found',
+            mimeType: 'text/plain'
+          }
+        });
+        return errorResult;
+      }
+      
+      const result = await handler.handle(new URL(uri.href), context);
+      return responseRenderer.renderResourceResponse(result);
+    }
+  );
+
   // Register workflow resource template
   const workflowTemplate = new ResourceTemplate('workflow://{name}', {
     list: async () => {
@@ -417,7 +454,7 @@ export function registerMcpResources(
   );
 
   logger.info('MCP resources registered successfully', {
-    resources: ['plan://current', 'state://current'],
+    resources: ['plan://current', 'state://current', 'system-prompt://'],
     resourceTemplates: ['workflow://{name}']
   });
 }

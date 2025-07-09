@@ -5,18 +5,161 @@
  * 
  * Starts the MCP server with stdio transport for process-based usage.
  * The core server logic is in server.ts for better testability.
+ * 
+ * Also handles CLI flags for documentation and setup assistance.
  */
 
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { VibeFeatureMCPServer } from './server.js';
 import { createLogger } from './logger.js';
+import { generateSystemPrompt } from './system-prompt-generator.js';
+import { StateMachineLoader } from './state-machine-loader.js';
+import { readFile } from 'fs/promises';
+import { join, dirname } from 'path';
+import { fileURLToPath } from 'url';
 
 const logger = createLogger('Main');
+
+// Get package.json for version info
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+/**
+ * Parse command line arguments and handle special flags
+ */
+function parseCliArgs(): { shouldStartServer: boolean } {
+  const args = process.argv.slice(2);
+  
+  // Handle help flag
+  if (args.includes('--help') || args.includes('-h')) {
+    showHelp();
+    return { shouldStartServer: false };
+  }
+  
+  // Handle version flag
+  if (args.includes('--version') || args.includes('-v')) {
+    showVersion();
+    return { shouldStartServer: false };
+  }
+  
+  // Handle system prompt flag
+  if (args.includes('--system-prompt')) {
+    showSystemPrompt();
+    return { shouldStartServer: false };
+  }
+  
+  // No special flags, start server normally
+  return { shouldStartServer: true };
+}
+
+/**
+ * Show help information
+ */
+function showHelp(): void {
+  console.log(`
+Responsible Vibe MCP Server
+
+USAGE:
+  responsible-vibe-mcp [OPTIONS]
+
+OPTIONS:
+  --help, -h           Show this help message
+  --version, -v        Show version information
+  --system-prompt      Show the system prompt for LLM integration
+
+DESCRIPTION:
+  A Model Context Protocol server that acts as an intelligent conversation 
+  state manager and development guide for LLMs. This server orchestrates 
+  feature development conversations by maintaining state, determining 
+  development phases, and providing contextual instructions.
+
+MCP CLIENT CONFIGURATION:
+  Add to your MCP client configuration:
+  
+  Claude Desktop (.claude/config.json):
+  {
+    "mcpServers": {
+      "responsible-vibe-mcp": {
+        "command": "npx",
+        "args": ["responsible-vibe-mcp"]
+      }
+    }
+  }
+  
+  Amazon Q (.amazonq/mcp.json):
+  {
+    "mcpServers": {
+      "responsible-vibe-mcp": {
+        "command": "npx", 
+        "args": ["responsible-vibe-mcp"]
+      }
+    }
+  }
+
+SYSTEM PROMPT:
+  Use --system-prompt to get the complete system prompt for your LLM.
+
+MORE INFO:
+  GitHub: https://github.com/mrsimpson/vibe-feature-mcp
+  npm: https://www.npmjs.com/package/responsible-vibe-mcp
+`);
+}
+
+/**
+ * Show version information
+ */
+async function showVersion(): Promise<void> {
+  try {
+    const packageJsonPath = join(__dirname, '..', 'package.json');
+    const packageJson = JSON.parse(await readFile(packageJsonPath, 'utf-8'));
+    console.log(`responsible-vibe-mcp v${packageJson.version}`);
+  } catch (error) {
+    console.log('responsible-vibe-mcp (version unknown)');
+  }
+}
+
+/**
+ * Show system prompt for LLM integration
+ */
+function showSystemPrompt(): void {
+  try {
+    // Load the default state machine for prompt generation
+    const loader = new StateMachineLoader();
+    const stateMachine = loader.loadStateMachine(process.cwd());
+    
+    // Generate the system prompt
+    const systemPrompt = generateSystemPrompt(stateMachine);
+    
+    console.log('='.repeat(80));
+    console.log('SYSTEM PROMPT FOR LLM INTEGRATION');
+    console.log('='.repeat(80));
+    console.log();
+    console.log(systemPrompt);
+    console.log();
+    console.log('='.repeat(80));
+    console.log('Copy the above system prompt to your LLM client configuration.');
+    console.log('This prompt enables proper integration with responsible-vibe-mcp.');
+    console.log('='.repeat(80));
+    
+  } catch (error) {
+    console.error('Error generating system prompt:', error);
+    process.exit(1);
+  }
+}
 
 /**
  * Main entry point for the MCP server process
  */
 async function main() {
+  // Parse CLI arguments first
+  const { shouldStartServer } = parseCliArgs();
+  
+  // If special flags were handled, exit gracefully
+  if (!shouldStartServer) {
+    return;
+  }
+  
+  // Normal MCP server startup
   try {
     logger.info('Starting Vibe Feature MCP Server');
     

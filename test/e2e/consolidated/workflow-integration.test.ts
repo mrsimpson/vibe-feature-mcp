@@ -386,7 +386,8 @@ states:
 
       // First, initialize development with the custom workflow
       const initResult = await client.callTool('start_development', {
-        workflow: 'custom'
+        workflow: 'custom',
+        commit_behaviour: 'none'
       });
       assertToolSuccess(initResult);
       
