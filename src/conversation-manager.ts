@@ -23,7 +23,26 @@ export class ConversationManager {
 
   constructor(database: Database, projectPath?: string) {
     this.database = database;
-    this.projectPath = projectPath || process.cwd();
+    // Use VIBE_PROJECT_PATH environment variable as fallback before process.cwd()
+    this.projectPath = projectPath || process.env.VIBE_PROJECT_PATH || process.cwd();
+    
+    // Log the effective project path for debugging
+    if (process.env.VIBE_PROJECT_PATH && !projectPath) {
+      logger.info('Using VIBE_PROJECT_PATH environment variable', { 
+        projectPath: this.projectPath,
+        source: 'environment' 
+      });
+    } else if (projectPath) {
+      logger.debug('Using provided project path', { 
+        projectPath: this.projectPath,
+        source: 'parameter' 
+      });
+    } else {
+      logger.debug('Using current working directory', { 
+        projectPath: this.projectPath,
+        source: 'process.cwd()' 
+      });
+    }
   }
 
   /**
