@@ -1,10 +1,15 @@
 import { defineConfig } from 'vite';
+import { resolve } from 'path';
 
 export default defineConfig({
   root: '.',
   server: {
     port: 3000,
-    open: true
+    open: true,
+    fs: {
+      // Allow serving files from parent directory
+      allow: ['..']
+    }
   },
   build: {
     outDir: 'dist',
@@ -14,5 +19,7 @@ export default defineConfig({
     alias: {
       '@': '/src'
     }
-  }
+  },
+  // Configure static file serving
+  publicDir: 'public'
 });

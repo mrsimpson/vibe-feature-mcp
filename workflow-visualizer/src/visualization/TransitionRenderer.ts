@@ -212,6 +212,11 @@ export class TransitionRenderer {
   private getLinkStroke(link: DiagramLink): string {
     const element = d3.select(`[data-id="${link.id}"]`);
     
+    // Check if element exists and has classList
+    if (element.empty() || !element.node()) {
+      return this.style.link.stroke;
+    }
+    
     if (element.classed('highlighted')) {
       return '#d97706'; // warning color
     }
@@ -228,6 +233,11 @@ export class TransitionRenderer {
    */
   private getLinkStrokeWidth(link: DiagramLink): number {
     const element = d3.select(`[data-id="${link.id}"]`);
+    
+    // Check if element exists and has classList
+    if (element.empty() || !element.node()) {
+      return this.style.link.strokeWidth;
+    }
     
     if (element.classed('highlighted')) {
       return 4;
@@ -246,6 +256,11 @@ export class TransitionRenderer {
   private getMarkerEnd(link: DiagramLink): string {
     const element = d3.select(`[data-id="${link.id}"]`);
     
+    // Check if element exists and has classList
+    if (element.empty() || !element.node()) {
+      return 'url(#arrow)';
+    }
+    
     if (element.classed('highlighted') || element.classed('selected')) {
       return 'url(#arrow-highlighted)';
     }
@@ -258,6 +273,11 @@ export class TransitionRenderer {
    */
   private getLabelFill(link: DiagramLink): string {
     const element = d3.select(`[data-id="${link.id}"]`);
+    
+    // Check if element exists and has classList
+    if (element.empty() || !element.node()) {
+      return this.style.text.fill;
+    }
     
     if (element.classed('highlighted')) {
       return '#d97706'; // warning color
@@ -275,6 +295,11 @@ export class TransitionRenderer {
    */
   private getLabelWeight(link: DiagramLink): string {
     const element = d3.select(`[data-id="${link.id}"]`);
+    
+    // Check if element exists and has classList
+    if (element.empty() || !element.node()) {
+      return '400';
+    }
     
     if (element.classed('highlighted') || element.classed('selected')) {
       return '600';

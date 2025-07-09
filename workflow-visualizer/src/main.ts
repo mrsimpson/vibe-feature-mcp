@@ -427,6 +427,7 @@ class WorkflowVisualizerApp {
     if (isLoading) {
       this.diagramCanvas.innerHTML = '<div class="loading-message">Loading workflow...</div>';
     }
+    // Note: When not loading, the DiagramRenderer will clear the canvas and render the visualization
   }
 }
 

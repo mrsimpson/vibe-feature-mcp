@@ -127,6 +127,14 @@ export class StateRenderer {
   private getNodeFill(node: DiagramNode): string {
     const element = d3.select(`[data-id="${node.id}"]`);
     
+    // Check if element exists and has classList
+    if (element.empty() || !element.node()) {
+      if (node.isInitial) {
+        return this.style.node.initialFill;
+      }
+      return this.style.node.fill;
+    }
+    
     if (element.classed('highlighted')) {
       return '#d97706'; // warning color
     }
@@ -147,6 +155,14 @@ export class StateRenderer {
    */
   private getNodeStroke(node: DiagramNode): string {
     const element = d3.select(`[data-id="${node.id}"]`);
+    
+    // Check if element exists and has classList
+    if (element.empty() || !element.node()) {
+      if (node.isInitial) {
+        return this.style.node.initialFill;
+      }
+      return this.style.node.stroke;
+    }
     
     if (element.classed('highlighted')) {
       return '#d97706'; // warning color
@@ -169,6 +185,14 @@ export class StateRenderer {
   private getLabelFill(node: DiagramNode): string {
     const element = d3.select(`[data-id="${node.id}"]`);
     
+    // Check if element exists and has classList
+    if (element.empty() || !element.node()) {
+      if (node.isInitial) {
+        return '#ffffff';
+      }
+      return this.style.text.fill;
+    }
+    
     if (element.classed('highlighted') || element.classed('selected') || node.isInitial) {
       return '#ffffff';
     }
@@ -181,6 +205,14 @@ export class StateRenderer {
    */
   private getLabelWeight(node: DiagramNode): string {
     const element = d3.select(`[data-id="${node.id}"]`);
+    
+    // Check if element exists and has classList
+    if (element.empty() || !element.node()) {
+      if (node.isInitial) {
+        return '600';
+      }
+      return '500';
+    }
     
     if (element.classed('highlighted') || element.classed('selected') || node.isInitial) {
       return '600';

@@ -86,6 +86,10 @@ export class DiagramRenderer {
   public renderWorkflow(workflow: YamlStateMachine): void {
     console.log(`Rendering workflow: ${workflow.name}`);
     
+    // Clear any existing loading messages or content
+    const loadingMessages = this.container.querySelectorAll('.loading-message');
+    loadingMessages.forEach(msg => msg.remove());
+    
     this.currentWorkflow = workflow;
     
     // Convert workflow to diagram data

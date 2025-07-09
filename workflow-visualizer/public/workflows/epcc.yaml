@@ -1,0 +1,133 @@
+# yaml-language-server: $schema=../state-machine-schema.json
+---
+name: "epcc"
+description: "A comprehensive development workflow based on Anthropic's best practices: Explore, Plan, Code, Commit - ideal for smaller features and iterative development"
+initial_state: "explore"
+
+# States with default instructions and transitions
+states:
+  explore:
+    description: "Research and exploration phase - understanding the problem space"
+    default_instructions: "Starting exploration phase. Research the codebase, understand existing patterns, and gather context about the problem space. Read relevant files and documentation. Don't write code yet - focus on understanding. Document your findings in the plan file."
+    transitions:
+      - trigger: "continue_exploration"
+        to: "explore"
+        instructions: >
+          Continue exploring. Ask the user for more information. Discuss alternatives.
+          Don't write any code yet - focus on understanding. Document knowledge in the plan file.
+        transition_reason: "More exploration needed to understand the problem space"
+      
+      - trigger: "exploration_complete"
+        to: "plan"
+        instructions: >
+          Exploration is complete! ✅ Now transition to planning phase. Create a detailed implementation strategy.
+          Break down the work into specific, actionable tasks. Consider edge cases, dependencies, and potential challenges.
+          Present the plan to the user, describing the impact of the changes.
+          Document the plan thoroughly and mark completed exploration tasks.
+        transition_reason: "Sufficient understanding gained, ready to create implementation plan"
+      
+      - trigger: "abandon_feature"
+        to: "explore"
+        instructions: >
+          Feature development abandoned. Return to exploration state for new tasks.
+          The plan file will remain for future reference if needed.
+        additional_instructions: "Feature development abandoned. Clean up any work in progress and prepare for new tasks."
+        transition_reason: "User decided to abandon current feature development"
+
+  plan:
+    description: "Planning phase - creating a detailed implementation strategy"
+    default_instructions: "Starting planning phase. Create a detailed implementation strategy based on your exploration. Break down the work into specific, actionable tasks. Consider edge cases, dependencies, and potential challenges. Document the plan thoroughly. Important: Tasks that you identify for the actual coding shall be in the Code section in the plan."
+    transitions:
+      - trigger: "refine_plan"
+        to: "plan"
+        instructions: >
+          Continue refining the implementation plan. Add more detail to tasks, consider additional edge cases,
+          and ensure the approach is solid. Update the plan file with refined details and mark completed planning tasks.
+        transition_reason: "Plan needs more detail and refinement"
+      
+      - trigger: "need_more_exploration"
+        to: "explore"
+        additional_instructions: "Planning revealed gaps in understanding. Focus on the specific areas that need clarification and ask the user about needs and preferences."
+        transition_reason: "Planning work revealed need for more exploration"
+      
+      - trigger: "plan_complete"
+        to: "code"
+        instructions: >
+          Plan is complete! ✅ Now transition to implementation. Follow the plan you've created.
+          Read specific documentation before using libraries or frameworks. Write clean, well-structured code with proper error handling.
+          Modularize your code as per the good practices of the libraries and frameworks involved.
+          Update the plan file with implementation progress and mark completed planning tasks.
+          Stay focused on the current feature, do not implement features that were not planned.
+        transition_reason: "Implementation plan is complete and ready for coding"
+      
+      - trigger: "abandon_feature"
+        to: "explore"
+        instructions: >
+          Feature development abandoned during planning. Return to exploration state for new tasks.
+          The plan file will remain for future reference.
+        additional_instructions: "Feature development abandoned during planning. Clean up any planning work and prepare for new tasks."
+        transition_reason: "User decided to abandon feature during planning phase"
+
+  code:
+    description: "Implementation phase - writing and building the solution"
+    default_instructions: "Starting implementation phase. Follow your plan to build the solution. Write clean, well-structured code with proper error handling. Prevent regression by building, linting and executing existing tests. Stay flexible and adapt the plan as you learn more during implementation. Update progress in the plan file. Important: Tasks that you identify for the actual coding shall be in the Code section in the plan."
+    transitions:
+      - trigger: "need_replanning"
+        to: "plan"
+        additional_instructions: "Implementation revealed issues with the current plan. Consider what you've learned during coding and adjust the plan accordingly. Document the changes and reasons."
+        transition_reason: "Implementation work revealed need to revise the plan"
+      
+      - trigger: "need_more_exploration"
+        to: "explore"
+        additional_instructions: "Implementation revealed gaps in understanding of the codebase or requirements. Focus on the specific areas that are blocking implementation progress."
+        transition_reason: "Implementation work revealed need for more exploration"
+      
+      - trigger: "code_complete"
+        to: "commit"
+        instructions: >
+          Implementation is complete! ✅ Now transition to commit phase. 
+          Summarize the changes for the user. 
+          Review your work, ensure code quality, run tests, and prepare for final delivery. 
+          Clean up any temporary code and ensure everything is ready.
+          Update the plan file and mark completed implementation tasks.
+        transition_reason: "Core implementation is complete, ready for finalization"
+      
+      - trigger: "abandon_feature"
+        to: "explore"
+        instructions: >
+          Feature development abandoned during implementation. Clean up any incomplete code and return to exploration.
+          The plan file and any completed work will remain for future reference.
+        additional_instructions: "Feature development abandoned during implementation. Clean up any incomplete code and prepare for new tasks."
+        transition_reason: "User decided to abandon feature during implementation"
+
+  commit:
+    description: "Finalization phase - committing changes and documentation"
+    default_instructions: "Starting finalization phase. Review your work, ensure code quality, run tests, and prepare for delivery. Clean up temporary code, update documentation, and ensure everything is ready for production."
+    transitions:
+      - trigger: "refine_commit"
+        to: "commit"
+        instructions: >
+          Continue finalization work. Review code quality, run final tests, update documentation, and prepare
+          for delivery. Ensure everything is clean and ready for production. Update the plan file with final tasks.
+        transition_reason: "Finalization work continues, preparing for delivery"
+      
+      - trigger: "need_code_changes"
+        to: "code"
+        additional_instructions: "Finalization revealed issues that require code changes. Focus on the problems identified during final review."
+        transition_reason: "Final review found issues requiring code changes"
+      
+      - trigger: "commit_complete"
+        to: "explore"
+        instructions: >
+          Feature is complete and committed! ✅ All work is finished and ready for delivery.
+          Return to exploration state, ready for the next development task. Mark all commit tasks as complete.
+        additional_instructions: "Feature is complete and committed! All work is finished and ready for delivery. Prepare for the next development task."
+        transition_reason: "Feature delivery complete, ready for next task"
+      
+      - trigger: "abandon_feature"
+        to: "explore"
+        instructions: >
+          Feature development abandoned during finalization. Clean up any finalization artifacts and return to exploration.
+          The completed work will remain for future reference.
+        additional_instructions: "Feature development abandoned during finalization. Clean up any finalization artifacts and prepare for new tasks."
+        transition_reason: "User decided to abandon feature during finalization"

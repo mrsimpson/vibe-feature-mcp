@@ -9,7 +9,7 @@ import { YamlParser } from './YamlParser';
 export class WorkflowLoader {
   private readonly yamlParser: YamlParser;
   
-  // Built-in workflow names (matching the files in resources/workflows/)
+  // Built-in workflow names (matching the files in public/workflows/)
   private readonly BUILTIN_WORKFLOWS: WorkflowMetadata[] = [
     {
       name: 'waterfall',
@@ -40,6 +40,12 @@ export class WorkflowLoader {
       displayName: 'Greenfield',
       description: 'Comprehensive workflow for new projects',
       source: 'builtin'
+    },
+    {
+      name: 'slides',
+      displayName: 'Slides',
+      description: 'Workflow for creating presentations',
+      source: 'builtin'
     }
   ];
 
@@ -65,7 +71,7 @@ export class WorkflowLoader {
     }
 
     try {
-      const response = await fetch(`../resources/workflows/${workflowName}.yaml`);
+      const response = await fetch(`/workflows/${workflowName}.yaml`);
       
       if (!response.ok) {
         throw this.createNetworkError(

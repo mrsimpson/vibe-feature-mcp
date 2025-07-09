@@ -1,0 +1,174 @@
+# yaml-language-server: $schema=../state-machine-schema.json
+---
+name: "greenfield"
+description: "A comprehensive workflow for starting new projects from scratch: Ideation, Architecture, Plan, Code, Document - ideal for greenfield projects requiring thorough upfront planning"
+initial_state: "ideation"
+
+# States with default instructions and transitions
+states:
+  ideation:
+    description: "Deep requirements discovery and PRD creation phase"
+    default_instructions: "Starting ideation phase for greenfield project. Your goal is to create a comprehensive Product Requirements Document (PRD). Ask extensive questions to understand: WHAT the system should do, WHO will use it, WHY it's needed, and WHAT'S in/out of scope. Explore existing solutions and alternatives. Don't discuss technical implementation yet - focus purely on understanding the problem space and requirements. Document all findings in the plan file."
+    transitions:
+      - trigger: "continue_ideation"
+        to: "ideation"
+        instructions: >
+          Continue ideation work. Ask more probing questions about requirements, scope, target audience, and existing solutions.
+          Challenge assumptions and explore edge cases. Focus on creating a thorough PRD.
+          Don't move to technical discussions yet - stay focused on the problem space.
+          Update the plan file with new insights and mark completed ideation tasks.
+        transition_reason: "More ideation needed to fully understand requirements and create comprehensive PRD"
+      
+      - trigger: "ideation_complete"
+        to: "architecture"
+        instructions: >
+          Ideation is complete! ✅ You have a solid PRD with clear requirements, scope, and target audience.
+          Now transition to architecture phase. Start discussing technical approaches, tech stack options, and architectural decisions.
+          Ask about the user's technical preferences, but also challenge them with alternatives.
+          Evaluate pros and cons of different approaches considering non-functional requirements.
+          Document architectural decisions and mark completed ideation tasks.
+        transition_reason: "PRD is complete with clear requirements, ready for technical architecture design"
+      
+      - trigger: "abandon_project"
+        to: "ideation"
+        instructions: >
+          Project development abandoned. Return to ideation state for new projects.
+          The plan file will remain for future reference if needed.
+        additional_instructions: "Project development abandoned. Clean up any ideation work and prepare for new projects."
+        transition_reason: "User decided to abandon current project development"
+
+  architecture:
+    description: "Tech stack selection and architecture design phase"
+    default_instructions: "Starting architecture phase. Based on the PRD from ideation, now design the technical solution. Ask about the user's technical preferences and experience. Challenge their choices by presenting alternatives. Evaluate pros and cons of different tech stacks, frameworks, and architectural patterns. Consider non-functional requirements like scalability, performance, maintainability, and deployment. Create a comprehensive architecture document. Don't start coding yet - focus on technical design decisions."
+    transitions:
+      - trigger: "refine_architecture"
+        to: "architecture"
+        instructions: >
+          Continue refining the technical architecture. Explore more tech stack options, dive deeper into architectural patterns,
+          and consider additional non-functional requirements. Challenge technical decisions with alternatives.
+          Update the architecture document with more detailed technical specifications and mark completed architecture tasks.
+        transition_reason: "Architecture needs more refinement and technical detail"
+      
+      - trigger: "need_more_ideation"
+        to: "ideation"
+        additional_instructions: "Architecture work revealed gaps in requirements understanding. Focus on the specific requirements areas that need clarification before continuing with technical design."
+        transition_reason: "Architecture work revealed need for more requirements clarification"
+      
+      - trigger: "architecture_complete"
+        to: "plan"
+        instructions: >
+          Architecture is complete! ✅ You have a solid technical foundation with clear tech stack choices and architectural decisions.
+          Now transition to planning phase. Create a detailed implementation strategy based on your architecture.
+          Break down the work into specific, actionable tasks. Consider dependencies, risks, and implementation order.
+          Present the implementation plan to the user and document it thoroughly.
+          Mark completed architecture tasks and focus on implementation planning.
+        transition_reason: "Technical architecture is complete, ready for implementation planning"
+      
+      - trigger: "abandon_project"
+        to: "ideation"
+        instructions: >
+          Project development abandoned during architecture phase. Return to ideation state for new projects.
+          The plan file and PRD will remain for future reference.
+        additional_instructions: "Project development abandoned during architecture phase. Clean up any architecture work and prepare for new projects."
+        transition_reason: "User decided to abandon project during architecture phase"
+
+  plan:
+    description: "Implementation planning phase based on established architecture"
+    default_instructions: "Starting planning phase. Based on your completed architecture, create a detailed implementation strategy. Break down the work into specific, actionable tasks considering the chosen tech stack and architectural decisions. Plan the implementation order, identify dependencies, and consider potential risks. Document the plan thoroughly with clear milestones. Important: Tasks for the actual coding should be organized in the Code section of the plan."
+    transitions:
+      - trigger: "refine_plan"
+        to: "plan"
+        instructions: >
+          Continue refining the implementation plan. Add more detail to tasks, consider additional dependencies and risks,
+          and ensure the implementation approach aligns with the architecture. Break down complex tasks into smaller steps.
+          Update the plan file with refined implementation details and mark completed planning tasks.
+        transition_reason: "Implementation plan needs more detail and refinement"
+      
+      - trigger: "need_architecture_changes"
+        to: "architecture"
+        additional_instructions: "Planning revealed issues with the current architecture. Consider what you've learned during planning and adjust the technical design accordingly. Document the changes and reasons."
+        transition_reason: "Planning work revealed need to revise the architecture"
+      
+      - trigger: "plan_complete"
+        to: "code"
+        instructions: >
+          Implementation plan is complete! ✅ Now transition to coding phase. Follow the plan you've created based on your architecture.
+          Read specific documentation before using the chosen libraries and frameworks. Write clean, well-structured code with proper error handling.
+          Follow the architectural patterns and tech stack decisions you've made. Modularize your code according to best practices.
+          Update the plan file with implementation progress and mark completed planning tasks.
+          Stay focused on the current project scope defined in your PRD.
+        transition_reason: "Implementation plan is complete and ready for coding"
+      
+      - trigger: "abandon_project"
+        to: "ideation"
+        instructions: >
+          Project development abandoned during planning. Return to ideation state for new projects.
+          The plan file, PRD, and architecture documentation will remain for future reference.
+        additional_instructions: "Project development abandoned during planning. Clean up any planning work and prepare for new projects."
+        transition_reason: "User decided to abandon project during planning phase"
+
+  code:
+    description: "Implementation phase following the established plan and architecture"
+    default_instructions: "Starting implementation phase. Follow your plan to build the solution using the chosen tech stack and architecture. Write clean, well-structured code with proper error handling. Prevent regression by building, linting, and executing existing tests. Stay flexible and adapt the plan as you learn more during implementation, but maintain alignment with your architecture decisions. Update progress in the plan file. Important: Focus on tasks in the Code section of your plan."
+    transitions:
+      - trigger: "need_replanning"
+        to: "plan"
+        additional_instructions: "Implementation revealed issues with the current plan. Consider what you've learned during coding and adjust the implementation strategy accordingly while maintaining architectural consistency. Document the changes and reasons."
+        transition_reason: "Implementation work revealed need to revise the plan"
+      
+      - trigger: "need_architecture_changes"
+        to: "architecture"
+        additional_instructions: "Implementation revealed fundamental issues with the architecture that require design changes. Focus on the specific architectural problems that are blocking implementation progress."
+        transition_reason: "Implementation work revealed need for architectural changes"
+      
+      - trigger: "code_complete"
+        to: "document"
+        instructions: >
+          Implementation is complete! ✅ Now transition to documentation phase.
+          Create comprehensive project documentation, especially a detailed README that introduces newcomers to the project.
+          Document setup instructions, usage examples, architecture overview, and contribution guidelines.
+          Ensure the documentation reflects your PRD goals and architectural decisions.
+          Update the plan file and mark completed implementation tasks.
+        transition_reason: "Core implementation is complete, ready for comprehensive documentation"
+      
+      - trigger: "abandon_project"
+        to: "ideation"
+        instructions: >
+          Project development abandoned during implementation. Clean up any incomplete code and return to ideation.
+          The plan file, PRD, architecture documentation, and any completed work will remain for future reference.
+        additional_instructions: "Project development abandoned during implementation. Clean up any incomplete code and prepare for new projects."
+        transition_reason: "User decided to abandon project during implementation"
+
+  document:
+    description: "Comprehensive documentation creation phase"
+    default_instructions: "Starting documentation phase. Create comprehensive project documentation that introduces newcomers to your project. Write a detailed README that covers: project overview (based on your PRD), setup instructions, usage examples, architecture overview, API documentation if applicable, contribution guidelines, and troubleshooting. Ensure documentation is beginner-friendly and reflects the goals from your ideation phase and technical decisions from your architecture phase."
+    transitions:
+      - trigger: "refine_documentation"
+        to: "document"
+        instructions: >
+          Continue improving project documentation. Add more examples, clarify setup instructions, expand troubleshooting sections,
+          and ensure all aspects of the project are well-documented for newcomers. Consider adding diagrams or screenshots if helpful.
+          Update the plan file with documentation progress and mark completed documentation tasks.
+        transition_reason: "Documentation needs more detail and refinement for newcomers"
+      
+      - trigger: "need_code_changes"
+        to: "code"
+        additional_instructions: "Documentation work revealed issues that require code changes. Focus on the problems identified during documentation that affect usability or functionality."
+        transition_reason: "Documentation revealed issues requiring code changes"
+      
+      - trigger: "project_complete"
+        to: "ideation"
+        instructions: >
+          Greenfield project is complete! ✅ All phases finished: PRD created, architecture designed, implementation completed, and comprehensive documentation written.
+          The project is ready for users and contributors. Return to ideation state, ready for the next greenfield project.
+          Mark all documentation tasks as complete and celebrate the successful project delivery!
+        additional_instructions: "Greenfield project is complete and ready for delivery! All phases successfully finished. Prepare for the next greenfield project."
+        transition_reason: "Project delivery complete with full documentation, ready for next greenfield project"
+      
+      - trigger: "abandon_project"
+        to: "ideation"
+        instructions: >
+          Project development abandoned during documentation. Clean up any documentation artifacts and return to ideation.
+          The completed implementation and other project artifacts will remain for future reference.
+        additional_instructions: "Project development abandoned during documentation. Clean up any documentation artifacts and prepare for new projects."
+        transition_reason: "User decided to abandon project during documentation phase"
