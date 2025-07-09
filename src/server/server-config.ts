@@ -50,11 +50,11 @@ export async function initializeServerComponents(config: ServerConfig = {}): Pro
   logger.debug('Initializing server components', config);
   
   // Set project path with support for environment variable
-  const projectPath = normalizeProjectPath(config.projectPath || process.env.VIBE_PROJECT_PATH);
+  const projectPath = normalizeProjectPath(config.projectPath || process.env.PROJECT_PATH);
   
   logger.info('Using project path', { 
     projectPath, 
-    source: config.projectPath ? 'config' : (process.env.VIBE_PROJECT_PATH ? 'env' : 'default')
+    source: config.projectPath ? 'config' : (process.env.PROJECT_PATH ? 'env' : 'default')
   });
   
   // Initialize MCP server
@@ -195,9 +195,7 @@ export function registerMcpTools(
           .default('waterfall')
           .describe(generateWorkflowDescription(context.workflowManager.getAvailableWorkflows())),
         commit_behaviour: z.enum(['step', 'phase', 'end', 'none'])
-          .describe(commitBehaviourDescription),
-        projectPath: z.string().optional()
-          .describe('Optional project path to use for development. If not provided, the server will use the configured project path or process.cwd().')
+          .describe(commitBehaviourDescription)
       },
       annotations: {
         title: 'Development Initializer',

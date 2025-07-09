@@ -19,7 +19,6 @@ import { GitManager } from '../../git-manager.js';
 export interface StartDevelopmentArgs {
   workflow: string;
   commit_behaviour?: 'step' | 'phase' | 'end' | 'none';
-  projectPath?: string;
 }
 
 /**
@@ -47,11 +46,8 @@ export class StartDevelopmentHandler extends BaseToolHandler<StartDevelopmentArg
 
     const selectedWorkflow = args.workflow;
     
-    // Use projectPath from args if provided, otherwise fall back to context.projectPath
-    const effectiveProjectPath = args.projectPath || context.projectPath;
-    
     // Process git commit configuration
-    const isGitRepository = GitManager.isGitRepository(effectiveProjectPath);
+    const isGitRepository = GitManager.isGitRepository(context.projectPath);
     
     // Translate commit_behaviour to internal git config
     const commitBehaviour = args.commit_behaviour ?? (isGitRepository ? 'end' : 'none');
@@ -61,18 +57,18 @@ export class StartDevelopmentHandler extends BaseToolHandler<StartDevelopmentArg
       commitOnPhase: commitBehaviour === 'phase',
       commitOnComplete: commitBehaviour === 'end' || commitBehaviour === 'step' || commitBehaviour === 'phase',
       initialMessage: 'Development session',
-      startCommitHash: GitManager.getCurrentCommitHash(effectiveProjectPath) || undefined
+      startCommitHash: GitManager.getCurrentCommitHash(context.projectPath) || undefined
     };
 
     this.logger.debug('Processing start_development request', { 
       selectedWorkflow,
-      projectPath: effectiveProjectPath,
+      projectPath: context.projectPath,
       commitBehaviour,
       gitCommitConfig
     });
 
     // Validate workflow selection
-    if (!context.workflowManager.validateWorkflowName(selectedWorkflow, effectiveProjectPath)) {
+    if (!context.workflowManager.validateWorkflowName(selectedWorkflow, context.projectPath)) {
       const availableWorkflows = context.workflowManager.getWorkflowNames();
       throw new Error(
         `Invalid workflow: ${selectedWorkflow}. Available workflows: ${availableWorkflows.join(', ')}, custom`
@@ -80,7 +76,7 @@ export class StartDevelopmentHandler extends BaseToolHandler<StartDevelopmentArg
     }
 
     // Check if user is on main/master branch and prompt for branch creation
-    const currentBranch = this.getCurrentGitBranch(effectiveProjectPath);
+    const currentBranch = this.getCurrentGitBranch(context.projectPath);
     if (currentBranch === 'main' || currentBranch === 'master') {
       const suggestedBranchName = this.generateBranchSuggestion();
       const branchPromptResponse: StartDevelopmentResult = {
@@ -99,11 +95,8 @@ export class StartDevelopmentHandler extends BaseToolHandler<StartDevelopmentArg
       return branchPromptResponse;
     }
 
-    // Create or get conversation context with the selected workflow and project path
-    const conversationContext = await context.conversationManager.createConversationContext(
-      selectedWorkflow, 
-      effectiveProjectPath
-    );
+    // Create or get conversation context with the selected workflow
+    const conversationContext = await context.conversationManager.createConversationContext(selectedWorkflow);
     const currentPhase = conversationContext.currentPhase;
     
     // Load the selected workflow

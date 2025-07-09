@@ -51,9 +51,15 @@ npx responsible-vibe-mcp --version
 
 The `--system-prompt` flag outputs the complete system prompt that you should configure in your LLM client to enable proper integration with responsible-vibe-mcp.
 
+### Configuration
+
+#### Project Path Configuration
+
+By default, responsible-vibe-mcp operates in the current working directory. You can configure it to work with a different project directory using the `PROJECT_PATH` environment variable.
+
 ### For MCP Client Users
 
-This MCP server is designed to be used with MCP-compatible clients (like Claude Desktop, Amazon Q, or other LLM applications). **Do not run `npx responsible-vibe-mcp` directly without flags** - it will start the MCP server and wait for MCP protocol input via stdin/stdout.
+This MCP server is designed to be used with MCP-compatible clients (like Claude Desktop, Amazon Q, or other LLM applications). **Do not run `npx responsible-vibe-mcp` directly without flags** - it would start the MCP server and wait for MCP protocol input via stdin/stdout which is most likely not what you want.
 
 #### Claude Desktop Configuration
 
@@ -70,6 +76,21 @@ Add to your Claude Desktop configuration file:
 }
 ```
 
+**With custom project path:**
+```json
+{
+  "mcpServers": {
+    "responsible-vibe-mcp": {
+      "command": "npx",
+      "args": ["responsible-vibe-mcp"],
+      "env": {
+        "PROJECT_PATH": "/path/to/your/project"
+      }
+    }
+  }
+}
+```
+
 #### Amazon Q Configuration
 
 Add to your `.amazonq/mcp.json` file:
@@ -80,6 +101,21 @@ Add to your `.amazonq/mcp.json` file:
     "responsible-vibe-mcp": {
       "command": "npx",
       "args": ["responsible-vibe-mcp"]
+    }
+  }
+}
+```
+
+**With custom project path:**
+```json
+{
+  "mcpServers": {
+    "responsible-vibe-mcp": {
+      "command": "npx",
+      "args": ["responsible-vibe-mcp"],
+      "env": {
+        "PROJECT_PATH": "/path/to/your/project"
+      }
     }
   }
 }

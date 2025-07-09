@@ -108,7 +108,7 @@ describe('Project Path Configuration', () => {
     vi.clearAllMocks();
     // Reset environment variables to clean state
     process.env = { ...originalEnv };
-    delete process.env.VIBE_PROJECT_PATH;
+    delete process.env.PROJECT_PATH;
   });
   
   afterEach(() => {
@@ -117,10 +117,10 @@ describe('Project Path Configuration', () => {
   });
 
   describe('Environment Variable Support', () => {
-    it('should use VIBE_PROJECT_PATH when provided', async () => {
+    it('should use PROJECT_PATH when provided', async () => {
       // Set environment variable
       const testProjectPath = '/custom/project/path';
-      process.env.VIBE_PROJECT_PATH = testProjectPath;
+      process.env.PROJECT_PATH = testProjectPath;
       
       // Create server instance
       const server = new VibeFeatureMCPServer();
@@ -136,7 +136,7 @@ describe('Project Path Configuration', () => {
 
     it('should use config projectPath over environment variable', async () => {
       // Set environment variable
-      process.env.VIBE_PROJECT_PATH = '/env/project/path';
+      process.env.PROJECT_PATH = '/env/project/path';
       
       // Create server with explicit config
       const configProjectPath = '/config/project/path';
@@ -155,7 +155,7 @@ describe('Project Path Configuration', () => {
 
     it('should fall back to process.cwd() when no project path is provided', async () => {
       // Ensure no environment variable is set
-      delete process.env.VIBE_PROJECT_PATH;
+      delete process.env.PROJECT_PATH;
       
       // Create server without project path
       const server = new VibeFeatureMCPServer();
@@ -171,27 +171,26 @@ describe('Project Path Configuration', () => {
   });
 
   describe('start_development Tool Schema', () => {
-    it('should accept projectPath parameter and use it correctly', async () => {
+    it('should work with environment variable configuration', async () => {
       const server = new VibeFeatureMCPServer();
       await server.initialize();
       
       const mockConversationManager = server.getConversationManager();
       const mockCreateConversationContext = vi.fn().mockResolvedValue({
         conversationId: 'test-id',
-        projectPath: '/custom/path',
+        projectPath: server.getProjectPath(),
         gitBranch: 'main',
         currentPhase: 'ideation',
-        planFilePath: '/custom/path/.vibe/plan.md',
+        planFilePath: `${server.getProjectPath()}/.vibe/plan.md`,
         workflowName: 'waterfall'
       });
       
       // Replace the conversation manager method
       mockConversationManager.createConversationContext = mockCreateConversationContext;
       
-      // Test start_development with projectPath parameter
+      // Test start_development (no projectPath parameter needed)
       const result = await server.handleStartDevelopment({
         workflow: 'waterfall',
-        projectPath: '/custom/path',
         commit_behaviour: 'none'
       });
       
@@ -200,14 +199,14 @@ describe('Project Path Configuration', () => {
       expect(result).toHaveProperty('instructions');
       expect(result).toHaveProperty('conversation_id', 'test-id');
       
-      // Verify createConversationContext was called with the correct project path
-      expect(mockCreateConversationContext).toHaveBeenCalledWith('waterfall', '/custom/path');
+      // Verify createConversationContext was called with workflow only
+      expect(mockCreateConversationContext).toHaveBeenCalledWith('waterfall');
       
       // Clean up
       await server.cleanup();
     });
 
-    it('should work without projectPath parameter (backward compatibility)', async () => {
+    it('should work without any optional parameters (backward compatibility)', async () => {
       const server = new VibeFeatureMCPServer();
       await server.initialize();
       
@@ -224,10 +223,9 @@ describe('Project Path Configuration', () => {
       // Replace the conversation manager method
       mockConversationManager.createConversationContext = mockCreateConversationContext;
       
-      // Test start_development without projectPath parameter
+      // Test start_development with minimal parameters
       const result = await server.handleStartDevelopment({
-        workflow: 'waterfall',
-        commit_behaviour: 'none'
+        workflow: 'waterfall'
       });
       
       // Verify the result
@@ -235,8 +233,8 @@ describe('Project Path Configuration', () => {
       expect(result).toHaveProperty('instructions');
       expect(result).toHaveProperty('conversation_id', 'test-id');
       
-      // Verify createConversationContext was called with the server's project path
-      expect(mockCreateConversationContext).toHaveBeenCalledWith('waterfall', process.cwd());
+      // Verify createConversationContext was called with workflow only
+      expect(mockCreateConversationContext).toHaveBeenCalledWith('waterfall');
       
       // Clean up
       await server.cleanup();
@@ -247,7 +245,7 @@ describe('Project Path Configuration', () => {
     it('should properly pass environment variable through server initialization', async () => {
       // Set environment variable
       const testProjectPath = '/integration/test/path';
-      process.env.VIBE_PROJECT_PATH = testProjectPath;
+      process.env.PROJECT_PATH = testProjectPath;
       
       // Create and initialize server
       const server = new VibeFeatureMCPServer();
@@ -276,42 +274,8 @@ describe('Project Path Configuration', () => {
       
       // Verify the project path was used correctly
       expect(result).toHaveProperty('conversation_id', 'integration-test-id');
-      expect(mockCreateConversationContext).toHaveBeenCalledWith('waterfall', testProjectPath);
-      
-      // Clean up
-      await server.cleanup();
-    });
-
-    it('should handle tool parameter override of environment variable', async () => {
-      // Set environment variable
-      process.env.VIBE_PROJECT_PATH = '/env/project/path';
-      
-      // Create and initialize server
-      const server = new VibeFeatureMCPServer();
-      await server.initialize();
-      
-      const mockConversationManager = server.getConversationManager();
-      const mockCreateConversationContext = vi.fn().mockResolvedValue({
-        conversationId: 'override-test-id',
-        projectPath: '/tool/override/path',
-        gitBranch: 'main',
-        currentPhase: 'ideation',
-        planFilePath: '/tool/override/path/.vibe/plan.md',
-        workflowName: 'waterfall'
-      });
-      
-      // Replace the conversation manager method
-      mockConversationManager.createConversationContext = mockCreateConversationContext;
-      
-      const result = await server.handleStartDevelopment({
-        workflow: 'waterfall',
-        projectPath: '/tool/override/path',
-        commit_behaviour: 'none'
-      });
-      
-      // Verify tool parameter overrides environment variable
-      expect(result).toHaveProperty('conversation_id', 'override-test-id');
-      expect(mockCreateConversationContext).toHaveBeenCalledWith('waterfall', '/tool/override/path');
+      // Environment variable support works at server level, not tool parameter level
+      expect(mockCreateConversationContext).toHaveBeenCalledWith('waterfall');
       
       // Clean up
       await server.cleanup();

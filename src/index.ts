@@ -68,7 +68,7 @@ OPTIONS:
   --system-prompt      Show the system prompt for LLM integration
 
 ENVIRONMENT VARIABLES:
-  VIBE_PROJECT_PATH    Set the project directory for custom workflow discovery
+  PROJECT_PATH    Set the project directory for custom workflow discovery
 
 DESCRIPTION:
   A Model Context Protocol server that acts as an intelligent conversation 
@@ -164,7 +164,7 @@ async function main() {
   
   // Normal MCP server startup
   try {
-    const projectPath = process.env.VIBE_PROJECT_PATH;
+    const projectPath = process.env.PROJECT_PATH;
     
     logger.info('Starting Vibe Feature MCP Server', { 
       projectPath: projectPath || 'default (process.cwd())',
