@@ -19,6 +19,7 @@ import { GitManager } from '../../git-manager.js';
 export interface StartDevelopmentArgs {
   workflow: string;
   commit_behaviour?: 'step' | 'phase' | 'end' | 'none';
+  projectPath?: string;
 }
 
 /**
@@ -46,8 +47,11 @@ export class StartDevelopmentHandler extends BaseToolHandler<StartDevelopmentArg
 
     const selectedWorkflow = args.workflow;
     
+    // Use projectPath from args if provided, otherwise fall back to context.projectPath
+    const effectiveProjectPath = args.projectPath || context.projectPath;
+    
     // Process git commit configuration
-    const isGitRepository = GitManager.isGitRepository(context.projectPath);
+    const isGitRepository = GitManager.isGitRepository(effectiveProjectPath);
     
     // Translate commit_behaviour to internal git config
     const commitBehaviour = args.commit_behaviour ?? (isGitRepository ? 'end' : 'none');
@@ -57,17 +61,18 @@ export class StartDevelopmentHandler extends BaseToolHandler<StartDevelopmentArg
       commitOnPhase: commitBehaviour === 'phase',
       commitOnComplete: commitBehaviour === 'end' || commitBehaviour === 'step' || commitBehaviour === 'phase',
       initialMessage: 'Development session',
-      startCommitHash: GitManager.getCurrentCommitHash(context.projectPath) || undefined
+      startCommitHash: GitManager.getCurrentCommitHash(effectiveProjectPath) || undefined
     };
 
     this.logger.debug('Processing start_development request', { 
       selectedWorkflow,
+      projectPath: effectiveProjectPath,
       commitBehaviour,
       gitCommitConfig
     });
 
     // Validate workflow selection
-    if (!context.workflowManager.validateWorkflowName(selectedWorkflow, context.projectPath)) {
+    if (!context.workflowManager.validateWorkflowName(selectedWorkflow, effectiveProjectPath)) {
       const availableWorkflows = context.workflowManager.getWorkflowNames();
       throw new Error(
         `Invalid workflow: ${selectedWorkflow}. Available workflows: ${availableWorkflows.join(', ')}, custom`
@@ -75,16 +80,12 @@ export class StartDevelopmentHandler extends BaseToolHandler<StartDevelopmentArg
     }
 
     // Check if user is on main/master branch and prompt for branch creation
-    const currentBranch = this.getCurrentGitBranch(context.projectPath);
+    const currentBranch = this.getCurrentGitBranch(effectiveProjectPath);
     if (currentBranch === 'main' || currentBranch === 'master') {
       const suggestedBranchName = this.generateBranchSuggestion();
       const branchPromptResponse: StartDevelopmentResult = {
         phase: 'branch-prompt',
-        instructions: `You're currently on the ${currentBranch} branch. It's recommended to create a feature branch for development. Propose a branch creation by suggesting a branch command to the user call start_development again.
-
-Suggested command: \`git checkout -b ${suggestedBranchName}\`
-
-Please create a new branch and then call start_development again to begin development.`,
+        instructions: `You're currently on the ${currentBranch} branch. It's recommended to create a feature branch for development. Propose a branch creation by suggesting a branch command to the user call start_development again.\n\nSuggested command: \`git checkout -b ${suggestedBranchName}\`\n\nPlease create a new branch and then call start_development again to begin development.`,
         plan_file_path: '',
         conversation_id: '',
         workflow: {}
@@ -98,8 +99,11 @@ Please create a new branch and then call start_development again to begin develo
       return branchPromptResponse;
     }
 
-    // Create or get conversation context with the selected workflow
-    const conversationContext = await context.conversationManager.createConversationContext(selectedWorkflow);
+    // Create or get conversation context with the selected workflow and project path
+    const conversationContext = await context.conversationManager.createConversationContext(
+      selectedWorkflow, 
+      effectiveProjectPath
+    );
     const currentPhase = conversationContext.currentPhase;
     
     // Load the selected workflow
@@ -128,7 +132,7 @@ Please create a new branch and then call start_development again to begin develo
       selectedWorkflow
     );
     
-    // Update conversation state with workflow and phase
+    // Update conversation state with workflow, phase, and git commit configuration
     await context.conversationManager.updateConversationState(
       conversationContext.conversationId,
       { 
@@ -153,18 +157,7 @@ Please create a new branch and then call start_development again to begin develo
     
     const response: StartDevelopmentResult = {
       phase: transitionResult.newPhase,
-      instructions: `Look at the plan file (${conversationContext.planFilePath}). Define entrance criteria for each phase of the workflow except the initial phase. Those criteria shall be based on the contents of the previous phase. 
-      Example: 
-      \`\`\`
-      ## Design
-
-      ### Phase Entrance Criteria:
-      - [ ] The requirements have been thoroughly defined.
-      - [ ] Alternatives have been evaluated and are documented. 
-      - [ ] It's clear what's in scope and out of scope
-      \`\`\`
-      
-      IMPORTANT: Once you added reasonable entrance call the whats_next() tool to get guided instructions for the next current phase.`,
+      instructions: `Look at the plan file (${conversationContext.planFilePath}). Define entrance criteria for each phase of the workflow except the initial phase. Those criteria shall be based on the contents of the previous phase. \n      Example: \n      \`\`\`\n      ## Design\n\n      ### Phase Entrance Criteria:\n      - [ ] The requirements have been thoroughly defined.\n      - [ ] Alternatives have been evaluated and are documented. \n      - [ ] It's clear what's in scope and out of scope\n      \`\`\`\n      \n      IMPORTANT: Once you added reasonable entrance call the whats_next() tool to get guided instructions for the next current phase.`,
       plan_file_path: conversationContext.planFilePath,
       conversation_id: conversationContext.conversationId,
       workflow: stateMachine
