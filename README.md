@@ -464,7 +464,29 @@ For detailed logging documentation, see [LOGGING.md](./LOGGING.md).
 
 ## Features
 
-### 1. Git Commit Integration
+### 1. Workflow Visualizer
+
+The project includes a modern web application for visualizing workflow state machines, designed for workflow authors who need to understand and debug YAML-defined development workflows.
+
+**Key Features:**
+- **Interactive State Machine Diagrams**: Visual representation of workflow states and transitions using D3.js
+- **Side Panel Details**: Comprehensive information about selected states and transitions
+- **Path Highlighting**: Visual feedback when clicking transitions to show workflow flow
+- **Dual Workflow Loading**: Built-in workflows from `/resources/workflows/` + custom YAML file upload
+- **Modern UI/UX**: Split-panel layout, responsive design, professional styling
+- **TypeScript**: Full type safety with comprehensive error handling
+
+**Quick Start:**
+```bash
+cd workflow-visualizer
+npm install
+npm run dev
+# Open http://localhost:3000
+```
+
+For detailed documentation, see [workflow-visualizer/README.md](./workflow-visualizer/README.md).
+
+### 2. Git Commit Integration
 
 The server provides optional git commit functionality with intelligent defaults and context-aware guidance:
 
@@ -496,7 +518,7 @@ The MCP server automatically detects your project type and provides context-spec
 - **Context-aware**: Tool descriptions adapt based on actual project structure
 - **User control**: Users can still override defaults by explicitly requesting different behavior
 
-### 2. Intelligent Phase Management
+### 3. Intelligent Phase Management
 
 The server manages five core development phases, each with specific guidance:
 
@@ -530,13 +552,13 @@ The server manages five core development phases, each with specific guidance:
 - Directs the LLM to validate feature completeness
 - Ensures the LLM marks completed testing tasks
 
-### 3. Conversation State Persistence
+### 4. Conversation State Persistence
 
 - **Phase Tracking**: Current development phase and transition history
 - **Context Memory**: Conversation context and progress indicators
 - **Plan Synchronization**: Ensures plan file stays updated with latest progress
 
-### 4. Dynamic Plan Management
+### 5. Dynamic Plan Management
 
 The server ensures the LLM maintains a living development plan document:
 

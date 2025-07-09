@@ -1,0 +1,317 @@
+/**
+ * UI component styles
+ * Specific styling for interactive components
+ */
+
+/* Side panel components */
+.detail-section {
+  margin-bottom: var(--spacing-lg);
+  padding-bottom: var(--spacing-lg);
+  border-bottom: 1px solid var(--color-gray-200);
+}
+
+.detail-section:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.detail-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--color-gray-900);
+  margin-bottom: var(--spacing-sm);
+}
+
+.detail-subtitle {
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--color-gray-800);
+  margin-bottom: var(--spacing-sm);
+}
+
+.detail-content {
+  color: var(--color-gray-700);
+  line-height: 1.6;
+}
+
+.detail-content p {
+  margin-bottom: var(--spacing-sm);
+}
+
+.detail-content p:last-child {
+  margin-bottom: 0;
+}
+
+/* Code blocks */
+.code-block {
+  background-color: var(--color-gray-100);
+  border: 1px solid var(--color-gray-200);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-md);
+  font-family: var(--font-family-mono);
+  font-size: 0.875rem;
+  color: var(--color-gray-800);
+  overflow-x: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* Badges and tags */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.5rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+}
+
+.badge-primary {
+  background-color: var(--color-primary);
+  color: var(--color-white);
+}
+
+.badge-secondary {
+  background-color: var(--color-gray-200);
+  color: var(--color-gray-800);
+}
+
+.badge-success {
+  background-color: var(--color-success);
+  color: var(--color-white);
+}
+
+.badge-warning {
+  background-color: var(--color-warning);
+  color: var(--color-white);
+}
+
+/* Lists */
+.detail-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.detail-list-item {
+  padding: var(--spacing-sm);
+  margin-bottom: var(--spacing-xs);
+  background-color: var(--color-gray-50);
+  border-radius: var(--radius-sm);
+  border-left: 3px solid var(--color-gray-300);
+}
+
+.detail-list-item:last-child {
+  margin-bottom: 0;
+}
+
+.detail-list-item.active {
+  background-color: var(--color-primary);
+  color: var(--color-white);
+  border-left-color: var(--color-primary-hover);
+}
+
+/* Transitions list */
+.transitions-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.transition-item {
+  padding: var(--spacing-md);
+  margin-bottom: var(--spacing-sm);
+  background-color: var(--color-white);
+  border: 1px solid var(--color-gray-200);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.transition-item:hover {
+  border-color: var(--color-primary);
+  box-shadow: var(--shadow-sm);
+}
+
+.transition-item.selected {
+  border-color: var(--color-primary);
+  background-color: var(--color-primary);
+  color: var(--color-white);
+}
+
+.transition-trigger {
+  font-family: var(--font-family-mono);
+  font-size: 0.875rem;
+  font-weight: 600;
+  margin-bottom: var(--spacing-xs);
+}
+
+.transition-target {
+  font-size: 0.875rem;
+  color: var(--color-gray-600);
+  margin-bottom: var(--spacing-xs);
+}
+
+.transition-item.selected .transition-target {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.transition-reason {
+  font-size: 0.75rem;
+  color: var(--color-gray-500);
+  font-style: italic;
+}
+
+.transition-item.selected .transition-reason {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+/* Workflow selector enhancements */
+.workflow-selector option {
+  padding: var(--spacing-sm);
+}
+
+.workflow-selector:disabled {
+  background-color: var(--color-gray-100);
+  color: var(--color-gray-500);
+  cursor: not-allowed;
+}
+
+/* File upload enhancements */
+.file-upload-label:disabled {
+  background-color: var(--color-gray-300);
+  color: var(--color-gray-500);
+  cursor: not-allowed;
+}
+
+.file-upload-label:disabled:hover {
+  background-color: var(--color-gray-300);
+}
+
+/* Progress indicators */
+.progress-bar {
+  width: 100%;
+  height: 0.5rem;
+  background-color: var(--color-gray-200);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background-color: var(--color-primary);
+  transition: width 0.3s ease;
+}
+
+/* Tooltips */
+.tooltip {
+  position: absolute;
+  background-color: var(--color-gray-900);
+  color: var(--color-white);
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: var(--radius-md);
+  font-size: 0.875rem;
+  white-space: nowrap;
+  z-index: 1000;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.tooltip.visible {
+  opacity: 1;
+}
+
+.tooltip::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  margin-left: -5px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: var(--color-gray-900) transparent transparent transparent;
+}
+
+/* Scrollbars */
+.side-panel-content::-webkit-scrollbar {
+  width: 0.5rem;
+}
+
+.side-panel-content::-webkit-scrollbar-track {
+  background-color: var(--color-gray-100);
+}
+
+.side-panel-content::-webkit-scrollbar-thumb {
+  background-color: var(--color-gray-300);
+  border-radius: var(--radius-sm);
+}
+
+.side-panel-content::-webkit-scrollbar-thumb:hover {
+  background-color: var(--color-gray-400);
+}
+
+/* Animation utilities */
+.fade-in {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.fade-out {
+  animation: fadeOut 0.3s ease-in-out;
+}
+
+.slide-in-right {
+  animation: slideInRight 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes fadeOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* Focus styles for accessibility */
+.workflow-selector:focus,
+.file-upload-label:focus,
+.transition-item:focus,
+.zoom-button:focus {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  :root {
+    --color-gray-100: #e0e0e0;
+    --color-gray-200: #c0c0c0;
+    --color-gray-300: #a0a0a0;
+    --color-gray-400: #808080;
+    --color-gray-500: #606060;
+  }
+  
+  .state-node circle {
+    stroke-width: 3px;
+  }
+  
+  .transition-link path {
+    stroke-width: 3px;
+  }
+}

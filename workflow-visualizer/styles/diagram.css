@@ -1,0 +1,254 @@
+/**
+ * State machine diagram visualization styles
+ * D3.js SVG styling for nodes, links, and interactions
+ */
+
+/* SVG container */
+.diagram-svg {
+  width: 100%;
+  height: 100%;
+  background-color: var(--color-white);
+  cursor: grab;
+}
+
+.diagram-svg:active {
+  cursor: grabbing;
+}
+
+/* State nodes */
+.state-node {
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.state-node circle {
+  fill: var(--color-white);
+  stroke: var(--color-primary);
+  stroke-width: 2px;
+  transition: all 0.2s ease;
+}
+
+.state-node:hover circle {
+  fill: var(--color-gray-50);
+  stroke: var(--color-primary-hover);
+  stroke-width: 3px;
+}
+
+.state-node.selected circle {
+  fill: var(--color-primary);
+  stroke: var(--color-primary-hover);
+  stroke-width: 3px;
+}
+
+.state-node.initial circle {
+  fill: var(--color-success);
+  stroke: var(--color-success);
+}
+
+.state-node.initial:hover circle {
+  fill: var(--color-success);
+  stroke: var(--color-success);
+  opacity: 0.8;
+}
+
+.state-node.highlighted circle {
+  fill: var(--color-warning);
+  stroke: var(--color-warning);
+  stroke-width: 4px;
+  filter: drop-shadow(0 0 8px rgba(217, 119, 6, 0.3));
+}
+
+/* State labels */
+.state-label {
+  font-family: var(--font-family-sans);
+  font-size: 14px;
+  font-weight: 500;
+  fill: var(--color-gray-900);
+  text-anchor: middle;
+  dominant-baseline: central;
+  pointer-events: none;
+  user-select: none;
+}
+
+.state-node.selected .state-label {
+  fill: var(--color-white);
+  font-weight: 600;
+}
+
+.state-node.initial .state-label {
+  fill: var(--color-white);
+  font-weight: 600;
+}
+
+.state-node.highlighted .state-label {
+  fill: var(--color-white);
+  font-weight: 600;
+}
+
+/* Transition links */
+.transition-link {
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.transition-link path {
+  fill: none;
+  stroke: var(--color-gray-400);
+  stroke-width: 2px;
+  transition: all 0.2s ease;
+}
+
+.transition-link:hover path {
+  stroke: var(--color-primary);
+  stroke-width: 3px;
+}
+
+.transition-link.selected path {
+  stroke: var(--color-primary);
+  stroke-width: 3px;
+}
+
+.transition-link.highlighted path {
+  stroke: var(--color-warning);
+  stroke-width: 4px;
+  filter: drop-shadow(0 0 4px rgba(217, 119, 6, 0.3));
+}
+
+/* Arrow markers */
+.arrow-marker {
+  fill: var(--color-gray-400);
+  transition: fill 0.2s ease;
+}
+
+.transition-link:hover .arrow-marker,
+.transition-link.selected .arrow-marker {
+  fill: var(--color-primary);
+}
+
+.transition-link.highlighted .arrow-marker {
+  fill: var(--color-warning);
+}
+
+/* Transition labels */
+.transition-label {
+  font-family: var(--font-family-sans);
+  font-size: 12px;
+  font-weight: 400;
+  fill: var(--color-gray-600);
+  text-anchor: middle;
+  dominant-baseline: central;
+  pointer-events: none;
+  user-select: none;
+  background-color: var(--color-white);
+}
+
+.transition-link:hover .transition-label,
+.transition-link.selected .transition-label {
+  fill: var(--color-primary);
+  font-weight: 500;
+}
+
+.transition-link.highlighted .transition-label {
+  fill: var(--color-warning);
+  font-weight: 600;
+}
+
+/* Self-loop transitions */
+.transition-link.self-loop path {
+  stroke-dasharray: 5, 5;
+}
+
+.transition-link.self-loop .transition-label {
+  font-size: 11px;
+}
+
+/* Zoom and pan controls */
+.zoom-controls {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  z-index: 10;
+}
+
+.zoom-button {
+  width: 2.5rem;
+  height: 2.5rem;
+  background-color: var(--color-white);
+  border: 1px solid var(--color-gray-300);
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 1.25rem;
+  color: var(--color-gray-600);
+  box-shadow: var(--shadow-sm);
+  transition: all 0.2s ease;
+}
+
+.zoom-button:hover {
+  background-color: var(--color-gray-50);
+  border-color: var(--color-gray-400);
+  color: var(--color-gray-800);
+}
+
+.zoom-button:active {
+  transform: scale(0.95);
+}
+
+/* Loading overlay */
+.diagram-loading {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(255, 255, 255, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 20;
+}
+
+.diagram-loading.hidden {
+  display: none;
+}
+
+.loading-spinner {
+  width: 2rem;
+  height: 2rem;
+  border: 2px solid var(--color-gray-200);
+  border-top: 2px solid var(--color-primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .state-label {
+    font-size: 12px;
+  }
+  
+  .transition-label {
+    font-size: 10px;
+  }
+  
+  .zoom-controls {
+    top: 0.5rem;
+    right: 0.5rem;
+  }
+  
+  .zoom-button {
+    width: 2rem;
+    height: 2rem;
+    font-size: 1rem;
+  }
+}
