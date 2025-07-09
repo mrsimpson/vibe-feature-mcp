@@ -77,16 +77,23 @@ export class ConversationManager {
    * create a new conversation with a selected workflow.
    * 
    * @param workflowName - The workflow to use for this conversation
+   * @param projectPath - Optional project path to use (overrides instance default)
    * @returns The newly created conversation context
    */
-  async createConversationContext(workflowName: string): Promise<ConversationContext> {
-    const projectPath = this.getProjectPath();
-    const gitBranch = this.getGitBranch(projectPath);
+  async createConversationContext(workflowName: string, projectPath?: string): Promise<ConversationContext> {
+    // Use provided project path or fall back to instance default
+    const effectiveProjectPath = projectPath || this.getProjectPath();
+    const gitBranch = this.getGitBranch(effectiveProjectPath);
     
-    logger.debug('Creating conversation context', { projectPath, gitBranch, workflowName });
+    logger.debug('Creating conversation context', { 
+      projectPath: effectiveProjectPath, 
+      gitBranch, 
+      workflowName,
+      projectPathSource: projectPath ? 'parameter' : 'instance'
+    });
     
     // Generate a unique conversation ID based on project path and git branch
-    const conversationId = this.generateConversationId(projectPath, gitBranch);
+    const conversationId = this.generateConversationId(effectiveProjectPath, gitBranch);
     
     // Check if a conversation already exists
     const existingState = await this.database.getConversationState(conversationId);
@@ -104,7 +111,7 @@ export class ConversationManager {
     }
     
     // Create a new conversation state
-    const state = await this.createNewConversationState(conversationId, projectPath, gitBranch, workflowName);
+    const state = await this.createNewConversationState(conversationId, effectiveProjectPath, gitBranch, workflowName);
     
     // Return the conversation context
     return {
@@ -125,7 +132,7 @@ export class ConversationManager {
    */
   async updateConversationState(
     conversationId: string, 
-    updates: Partial<Pick<ConversationState, 'currentPhase' | 'planFilePath' | 'workflowName'>>
+    updates: Partial<Pick<ConversationState, 'currentPhase' | 'planFilePath' | 'workflowName' | 'gitCommitConfig'>>
   ): Promise<void> {
     logger.debug('Updating conversation state', { conversationId, updates });
     
