@@ -119,6 +119,8 @@ body {
   border-right: 1px solid var(--color-gray-200);
   position: relative;
   overflow: hidden;
+  height: 100%;
+  min-height: 400px; /* Ensure minimum height for visualization */
 }
 
 .diagram-canvas {

@@ -6,6 +6,12 @@
         "responsible-vibe-mcp"
       ]
     },
+    "playwright": {
+      "command": "npx",
+      "args": [
+        "@playwright/mcp@latest"
+      ]
+    },
     "modelcontextprotocol Docs": {
       "command": "npx",
       "args": [
