@@ -67,6 +67,9 @@ OPTIONS:
   --version, -v        Show version information
   --system-prompt      Show the system prompt for LLM integration
 
+ENVIRONMENT VARIABLES:
+  VIBE_PROJECT_PATH    Set the project directory for custom workflow discovery
+
 DESCRIPTION:
   A Model Context Protocol server that acts as an intelligent conversation 
   state manager and development guide for LLMs. This server orchestrates 
@@ -161,10 +164,18 @@ async function main() {
   
   // Normal MCP server startup
   try {
-    logger.info('Starting Vibe Feature MCP Server');
+    const projectPath = process.env.VIBE_PROJECT_PATH;
     
-    // Create server instance
-    const server = new VibeFeatureMCPServer();
+    logger.info('Starting Vibe Feature MCP Server', { 
+      projectPath: projectPath || 'default (process.cwd())',
+      nodeVersion: process.version,
+      platform: process.platform
+    });
+    
+    // Create server instance with project path configuration
+    const server = new VibeFeatureMCPServer({
+      projectPath: projectPath
+    });
     
     // Initialize server
     await server.initialize();
