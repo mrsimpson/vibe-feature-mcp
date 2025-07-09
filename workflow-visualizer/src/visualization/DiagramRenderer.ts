@@ -53,12 +53,19 @@ export class DiagramRenderer {
     // Clear existing content
     d3.select(this.container).selectAll('*').remove();
     
-    // Create SVG element
+    // Get container dimensions
+    const containerRect = this.container.getBoundingClientRect();
+    const width = containerRect.width || 800;
+    const height = containerRect.height || 600;
+    
+    // Create SVG element with explicit dimensions
     this.svg = d3.select(this.container)
       .append('svg')
       .attr('class', 'diagram-svg')
-      .attr('width', '100%')
-      .attr('height', '100%');
+      .attr('width', width)
+      .attr('height', height)
+      .style('width', '100%')
+      .style('height', '100%');
     
     // Create main group for zoom/pan
     this.g = this.svg.append('g')
