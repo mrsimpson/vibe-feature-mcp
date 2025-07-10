@@ -148,9 +148,16 @@ export class StartDevelopmentHandler extends BaseToolHandler<StartDevelopmentArg
     // Ensure .gitignore contains .vibe/*.sqlite entry for git repositories
     this.ensureGitignoreEntry(conversationContext.projectPath);
     
+    // Generate instructions with simple i18n guidance
+    const baseInstructions = `Look at the plan file (${conversationContext.planFilePath}). Define entrance criteria for each phase of the workflow except the initial phase. Those criteria shall be based on the contents of the previous phase. \n      Example: \n      \`\`\`\n      ## Design\n\n      ### Phase Entrance Criteria:\n      - [ ] The requirements have been thoroughly defined.\n      - [ ] Alternatives have been evaluated and are documented. \n      - [ ] It's clear what's in scope and out of scope\n      \`\`\`\n      \n      IMPORTANT: Once you added reasonable entrance call the whats_next() tool to get guided instructions for the next current phase.`;
+    
+    const i18nGuidance = `\n\nNOTE: If the user is communicating in a non-English language, please translate the plan file content to that language while keeping the structure intact, and continue all interactions in the user's language.`;
+    
+    const finalInstructions = baseInstructions + i18nGuidance;
+    
     const response: StartDevelopmentResult = {
       phase: transitionResult.newPhase,
-      instructions: `Look at the plan file (${conversationContext.planFilePath}). Define entrance criteria for each phase of the workflow except the initial phase. Those criteria shall be based on the contents of the previous phase. \n      Example: \n      \`\`\`\n      ## Design\n\n      ### Phase Entrance Criteria:\n      - [ ] The requirements have been thoroughly defined.\n      - [ ] Alternatives have been evaluated and are documented. \n      - [ ] It's clear what's in scope and out of scope\n      \`\`\`\n      \n      IMPORTANT: Once you added reasonable entrance call the whats_next() tool to get guided instructions for the next current phase.`,
+      instructions: finalInstructions,
       plan_file_path: conversationContext.planFilePath,
       conversation_id: conversationContext.conversationId,
       workflow: stateMachine
