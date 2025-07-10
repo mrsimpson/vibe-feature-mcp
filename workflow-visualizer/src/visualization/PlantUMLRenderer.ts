@@ -51,29 +51,15 @@ export class PlantUMLRenderer {
     `;
     diagramContainer.appendChild(title);
     
-    // Add PlantUML diagram
-    const img = document.createElement('img');
-    img.src = diagramUrl;
-    img.alt = `${workflow.name} workflow diagram`;
-    img.style.maxWidth = '100%';
-    img.style.height = 'auto';
-    img.style.border = '1px solid #e2e8f0';
-    img.style.borderRadius = '8px';
-    img.style.backgroundColor = 'white';
+    // Add PlantUML diagram with SVG proxy for interactivity
+    const diagramWrapper = document.createElement('div');
+    diagramWrapper.style.position = 'relative';
+    diagramWrapper.style.display = 'inline-block';
     
-    // Add loading and error handling
-    img.onload = () => {
-      console.log('PlantUML diagram loaded successfully');
-      this.addInteractiveOverlay(diagramContainer, workflow);
-    };
+    // Instead of img, fetch the SVG directly and embed it
+    this.loadInteractiveSVG(diagramUrl, diagramWrapper, workflow);
     
-    img.onerror = () => {
-      console.error('Failed to load PlantUML diagram');
-      this.showError('Failed to load diagram. Using fallback layout.');
-      this.renderFallbackDiagram(workflow);
-    };
-    
-    diagramContainer.appendChild(img);
+    diagramContainer.appendChild(diagramWrapper);
     
     // Add legend
     const legend = document.createElement('div');
@@ -171,10 +157,141 @@ export class PlantUMLRenderer {
   }
 
   /**
-   * Add interactive overlay for click handling (simplified - no button lists)
+   * Load SVG directly and make it interactive
    */
-  private addInteractiveOverlay(container: HTMLElement, workflow: YamlStateMachine): void {
-    // Add a simple instruction for users
+  private async loadInteractiveSVG(svgUrl: string, container: HTMLElement, workflow: YamlStateMachine): Promise<void> {
+    try {
+      console.log('Fetching SVG from:', svgUrl);
+      const response = await fetch(svgUrl);
+      
+      if (!response.ok) {
+        throw new Error(`Failed to fetch SVG: ${response.status}`);
+      }
+      
+      const svgText = await response.text();
+      console.log('SVG loaded, making interactive...');
+      
+      // Create a div to hold the SVG
+      const svgContainer = document.createElement('div');
+      svgContainer.innerHTML = svgText;
+      svgContainer.style.border = '1px solid #e2e8f0';
+      svgContainer.style.borderRadius = '8px';
+      svgContainer.style.backgroundColor = 'white';
+      svgContainer.style.overflow = 'hidden';
+      
+      const svgElement = svgContainer.querySelector('svg');
+      if (svgElement) {
+        // Make SVG responsive
+        svgElement.style.maxWidth = '100%';
+        svgElement.style.height = 'auto';
+        svgElement.style.display = 'block';
+        
+        // Add interactivity to SVG elements
+        this.makeSVGInteractive(svgElement, workflow);
+      }
+      
+      container.appendChild(svgContainer);
+      
+      // Add simplified interactive cards (no transitions)
+      this.addSimplifiedInteractiveCards(container.parentElement!, workflow);
+      
+    } catch (error) {
+      console.error('Failed to load interactive SVG:', error);
+      this.showError('Failed to load interactive diagram. Using fallback.');
+      this.renderFallbackDiagram(workflow);
+    }
+  }
+
+  /**
+   * Make SVG elements interactive by adding click handlers
+   */
+  private makeSVGInteractive(svgElement: SVGSVGElement, workflow: YamlStateMachine): void {
+    // Find all text elements that might be state names
+    const textElements = svgElement.querySelectorAll('text');
+    const states = Object.keys(workflow.states);
+    
+    textElements.forEach(textEl => {
+      const textContent = textEl.textContent?.trim();
+      if (textContent && states.includes(textContent)) {
+        // This text element represents a state
+        const stateName = textContent;
+        
+        // Find the parent group or rect element
+        let clickableElement = textEl.parentElement;
+        if (clickableElement?.tagName === 'g') {
+          // Look for rect or ellipse in the group
+          const shape = clickableElement.querySelector('rect, ellipse, polygon');
+          if (shape) {
+            clickableElement = shape as SVGElement;
+          }
+        }
+        
+        if (clickableElement) {
+          // Make it clickable
+          clickableElement.style.cursor = 'pointer';
+          clickableElement.style.transition = 'all 0.2s ease';
+          
+          // Add hover effects
+          const originalFill = clickableElement.getAttribute('fill') || '#ffffff';
+          const originalStroke = clickableElement.getAttribute('stroke') || '#000000';
+          
+          clickableElement.addEventListener('mouseenter', () => {
+            clickableElement.setAttribute('fill', '#e0f2fe');
+            clickableElement.setAttribute('stroke', '#2563eb');
+            clickableElement.setAttribute('stroke-width', '2');
+          });
+          
+          clickableElement.addEventListener('mouseleave', () => {
+            clickableElement.setAttribute('fill', originalFill);
+            clickableElement.setAttribute('stroke', originalStroke);
+            clickableElement.setAttribute('stroke-width', '1');
+          });
+          
+          // Add click handler
+          clickableElement.addEventListener('click', (e) => {
+            e.stopPropagation();
+            console.log('SVG state clicked:', stateName);
+            if (this.onElementClick) {
+              this.onElementClick('state', stateName, workflow.states[stateName]);
+            }
+          });
+          
+          console.log(`Made state "${stateName}" interactive in SVG`);
+        }
+      }
+    });
+    
+    // Also make transition arrows clickable
+    const pathElements = svgElement.querySelectorAll('path[marker-end]');
+    pathElements.forEach(pathEl => {
+      pathEl.style.cursor = 'pointer';
+      pathEl.style.transition = 'all 0.2s ease';
+      
+      const originalStroke = pathEl.getAttribute('stroke') || '#000000';
+      
+      pathEl.addEventListener('mouseenter', () => {
+        pathEl.setAttribute('stroke', '#2563eb');
+        pathEl.setAttribute('stroke-width', '3');
+      });
+      
+      pathEl.addEventListener('mouseleave', () => {
+        pathEl.setAttribute('stroke', originalStroke);
+        pathEl.setAttribute('stroke-width', '1');
+      });
+      
+      // For now, clicking arrows just shows a message
+      // In a full implementation, you'd parse the SVG to determine which transition this represents
+      pathEl.addEventListener('click', (e) => {
+        e.stopPropagation();
+        console.log('Transition arrow clicked - check side panel for transition details');
+      });
+    });
+  }
+
+  /**
+   * Add simplified interactive cards (states only, no transitions)
+   */
+  private addSimplifiedInteractiveCards(container: HTMLElement, workflow: YamlStateMachine): void {
     const instructionDiv = document.createElement('div');
     instructionDiv.style.marginTop = '15px';
     instructionDiv.style.textAlign = 'center';
@@ -182,17 +299,15 @@ export class PlantUMLRenderer {
     instructionDiv.style.fontSize = '14px';
     instructionDiv.innerHTML = `
       <div style="padding: 10px; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0;">
-        💡 <strong>Tip:</strong> Click on states in the diagram above to see details in the right panel
+        💡 <strong>Tip:</strong> Click on states in the diagram above or cards below. Transitions are shown in the right panel.
       </div>
     `;
     
     container.appendChild(instructionDiv);
     
-    // Create invisible clickable areas that map to the PlantUML diagram
-    // This is a workaround since we can't directly click on the PlantUML SVG
+    // Add state cards only (no transitions)
     const clickableDiv = document.createElement('div');
     clickableDiv.style.marginTop = '20px';
-    clickableDiv.innerHTML = '<div style="font-size: 14px; color: #64748b; margin-bottom: 15px; text-align: center;"><strong>Interactive Elements:</strong></div>';
     
     const elementsGrid = document.createElement('div');
     elementsGrid.style.display = 'grid';
@@ -201,7 +316,7 @@ export class PlantUMLRenderer {
     elementsGrid.style.maxWidth = '800px';
     elementsGrid.style.margin = '0 auto';
     
-    // Add clickable state elements
+    // Add clickable state elements (simplified)
     Object.entries(workflow.states).forEach(([stateName, stateConfig]) => {
       const stateCard = document.createElement('div');
       stateCard.style.cssText = `
@@ -221,11 +336,6 @@ export class PlantUMLRenderer {
         <div style="font-size: 12px; color: #64748b; line-height: 1.3;">
           ${stateConfig.description || 'No description'}
         </div>
-        ${stateConfig.transitions ? `
-          <div style="font-size: 11px; color: #94a3b8; margin-top: 6px;">
-            ${stateConfig.transitions.length} transition${stateConfig.transitions.length !== 1 ? 's' : ''}
-          </div>
-        ` : ''}
       `;
       
       stateCard.addEventListener('click', () => {

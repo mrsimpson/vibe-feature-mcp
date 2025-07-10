@@ -369,7 +369,7 @@ class WorkflowVisualizerApp {
         <h4 class="detail-subtitle">Transitions (${stateData.transitions.length})</h4>
         <ul class="transitions-list">
           ${stateData.transitions.map((transition: any) => `
-            <li class="transition-item">
+            <li class="transition-item clickable-transition" data-from="${stateId}" data-to="${transition.to}" data-trigger="${transition.trigger}">
               <div class="transition-trigger">${transition.trigger}</div>
               <div class="transition-target">→ ${transition.to}</div>
               <div class="transition-reason">${transition.transition_reason}</div>
@@ -378,6 +378,49 @@ class WorkflowVisualizerApp {
         </ul>
       </div>
     `;
+    
+    // Add click handlers to transitions
+    const transitionItems = this.sidePanelContent.querySelectorAll('.clickable-transition');
+    transitionItems.forEach(item => {
+      item.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const fromState = item.getAttribute('data-from');
+        const toState = item.getAttribute('data-to');
+        const trigger = item.getAttribute('data-trigger');
+        
+        if (fromState && toState && trigger) {
+          console.log('Side panel transition clicked:', `${fromState}->${toState}`);
+          
+          // Find the full transition data
+          const fullTransition = stateData.transitions.find((t: any) => 
+            t.to === toState && t.trigger === trigger
+          );
+          
+          if (fullTransition) {
+            this.selectTransition(`${fromState}->${toState}`, {
+              from: fromState,
+              to: toState,
+              trigger: trigger,
+              instructions: fullTransition.instructions,
+              additional_instructions: fullTransition.additional_instructions,
+              transition_reason: fullTransition.transition_reason
+            });
+          }
+        }
+      });
+      
+      // Add hover effects
+      item.addEventListener('mouseenter', () => {
+        (item as HTMLElement).style.backgroundColor = '#f0f9ff';
+        (item as HTMLElement).style.cursor = 'pointer';
+      });
+      
+      item.addEventListener('mouseleave', () => {
+        (item as HTMLElement).style.backgroundColor = '';
+        (item as HTMLElement).style.cursor = '';
+      });
+    });
+  }
   }
 
   /**
