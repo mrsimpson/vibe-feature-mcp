@@ -171,106 +171,85 @@ export class PlantUMLRenderer {
   }
 
   /**
-   * Add interactive overlay for click handling
+   * Add interactive overlay for click handling (simplified - no button lists)
    */
   private addInteractiveOverlay(container: HTMLElement, workflow: YamlStateMachine): void {
-    // Create clickable areas for states and transitions
-    const interactiveDiv = document.createElement('div');
-    interactiveDiv.style.marginTop = '10px';
-    interactiveDiv.style.display = 'flex';
-    interactiveDiv.style.flexWrap = 'wrap';
-    interactiveDiv.style.gap = '10px';
-    interactiveDiv.style.justifyContent = 'center';
+    // Add a simple instruction for users
+    const instructionDiv = document.createElement('div');
+    instructionDiv.style.marginTop = '15px';
+    instructionDiv.style.textAlign = 'center';
+    instructionDiv.style.color = '#64748b';
+    instructionDiv.style.fontSize = '14px';
+    instructionDiv.innerHTML = `
+      <div style="padding: 10px; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0;">
+        💡 <strong>Tip:</strong> Click on states in the diagram above to see details in the right panel
+      </div>
+    `;
     
-    // Add clickable state buttons
+    container.appendChild(instructionDiv);
+    
+    // Create invisible clickable areas that map to the PlantUML diagram
+    // This is a workaround since we can't directly click on the PlantUML SVG
+    const clickableDiv = document.createElement('div');
+    clickableDiv.style.marginTop = '20px';
+    clickableDiv.innerHTML = '<div style="font-size: 14px; color: #64748b; margin-bottom: 15px; text-align: center;"><strong>Interactive Elements:</strong></div>';
+    
+    const elementsGrid = document.createElement('div');
+    elementsGrid.style.display = 'grid';
+    elementsGrid.style.gridTemplateColumns = 'repeat(auto-fit, minmax(200px, 1fr))';
+    elementsGrid.style.gap = '10px';
+    elementsGrid.style.maxWidth = '800px';
+    elementsGrid.style.margin = '0 auto';
+    
+    // Add clickable state elements
     Object.entries(workflow.states).forEach(([stateName, stateConfig]) => {
-      const stateButton = document.createElement('button');
-      stateButton.textContent = stateName;
-      stateButton.style.cssText = `
-        padding: 8px 16px;
+      const stateCard = document.createElement('div');
+      stateCard.style.cssText = `
+        padding: 12px;
         border: 2px solid ${stateName === workflow.initial_state ? '#059669' : '#2563eb'};
-        border-radius: 20px;
-        background: ${stateName === workflow.initial_state ? '#059669' : '#ffffff'};
-        color: ${stateName === workflow.initial_state ? '#ffffff' : '#2563eb'};
+        border-radius: 8px;
+        background: ${stateName === workflow.initial_state ? '#f0fdf4' : '#ffffff'};
         cursor: pointer;
-        font-size: 12px;
-        font-weight: 500;
         transition: all 0.2s ease;
+        text-align: left;
       `;
       
-      stateButton.addEventListener('click', () => {
+      stateCard.innerHTML = `
+        <div style="font-weight: 600; color: ${stateName === workflow.initial_state ? '#059669' : '#2563eb'}; margin-bottom: 4px;">
+          ${stateName} ${stateName === workflow.initial_state ? '(Initial)' : ''}
+        </div>
+        <div style="font-size: 12px; color: #64748b; line-height: 1.3;">
+          ${stateConfig.description || 'No description'}
+        </div>
+        ${stateConfig.transitions ? `
+          <div style="font-size: 11px; color: #94a3b8; margin-top: 6px;">
+            ${stateConfig.transitions.length} transition${stateConfig.transitions.length !== 1 ? 's' : ''}
+          </div>
+        ` : ''}
+      `;
+      
+      stateCard.addEventListener('click', () => {
+        console.log('State card clicked:', stateName);
         if (this.onElementClick) {
           this.onElementClick('state', stateName, stateConfig);
         }
       });
       
-      stateButton.addEventListener('mouseenter', () => {
-        stateButton.style.transform = 'scale(1.05)';
+      stateCard.addEventListener('mouseenter', () => {
+        stateCard.style.transform = 'translateY(-2px)';
+        stateCard.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)';
       });
       
-      stateButton.addEventListener('mouseleave', () => {
-        stateButton.style.transform = 'scale(1)';
+      stateCard.addEventListener('mouseleave', () => {
+        stateCard.style.transform = 'translateY(0)';
+        stateCard.style.boxShadow = 'none';
       });
       
-      interactiveDiv.appendChild(stateButton);
+      elementsGrid.appendChild(stateCard);
     });
     
-    container.appendChild(interactiveDiv);
-    
-    // Add transition buttons
-    const transitionsDiv = document.createElement('div');
-    transitionsDiv.style.marginTop = '15px';
-    transitionsDiv.innerHTML = '<div style="font-size: 14px; color: #64748b; margin-bottom: 10px;"><strong>Transitions:</strong></div>';
-    
-    const transitionsList = document.createElement('div');
-    transitionsList.style.display = 'flex';
-    transitionsList.style.flexWrap = 'wrap';
-    transitionsList.style.gap = '8px';
-    transitionsList.style.justifyContent = 'center';
-    
-    Object.entries(workflow.states).forEach(([fromState, stateConfig]) => {
-      if (stateConfig.transitions) {
-        stateConfig.transitions.forEach(transition => {
-          const transitionButton = document.createElement('button');
-          transitionButton.textContent = `${fromState} → ${transition.to}`;
-          transitionButton.style.cssText = `
-            padding: 6px 12px;
-            border: 1px solid #94a3b8;
-            border-radius: 15px;
-            background: #f1f5f9;
-            color: #475569;
-            cursor: pointer;
-            font-size: 11px;
-            transition: all 0.2s ease;
-          `;
-          
-          transitionButton.addEventListener('click', () => {
-            if (this.onElementClick) {
-              this.onElementClick('transition', `${fromState}->${transition.to}`, {
-                from: fromState,
-                to: transition.to,
-                trigger: transition.trigger
-              });
-            }
-          });
-          
-          transitionButton.addEventListener('mouseenter', () => {
-            transitionButton.style.backgroundColor = '#e2e8f0';
-            transitionButton.style.borderColor = '#2563eb';
-          });
-          
-          transitionButton.addEventListener('mouseleave', () => {
-            transitionButton.style.backgroundColor = '#f1f5f9';
-            transitionButton.style.borderColor = '#94a3b8';
-          });
-          
-          transitionsList.appendChild(transitionButton);
-        });
-      }
-    });
-    
-    transitionsDiv.appendChild(transitionsList);
-    container.appendChild(transitionsDiv);
+    clickableDiv.appendChild(elementsGrid);
+    container.appendChild(clickableDiv);
   }
 
   /**
@@ -286,7 +265,8 @@ export class PlantUMLRenderer {
     
     fallbackDiv.innerHTML = `
       <div style="color: #64748b; margin-bottom: 20px;">
-        <strong>Fallback View - PlantUML diagram failed to load</strong>
+        <strong>⚠️ PlantUML diagram failed to load</strong><br>
+        <span style="font-size: 14px;">Using fallback interactive view</span>
       </div>
     `;
     

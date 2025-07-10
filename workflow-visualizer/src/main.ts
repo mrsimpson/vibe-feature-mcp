@@ -41,16 +41,18 @@ class WorkflowVisualizerApp {
     
     // Set up click handler for interactive elements
     this.plantUMLRenderer.setClickHandler((elementType, elementId, data) => {
+      console.log('PlantUML element clicked:', elementType, elementId, data);
+      
       if (elementType === 'state') {
         this.handleElementClick({
-          type: 'state',
-          id: elementId,
+          elementType: 'node',
+          elementId: elementId,
           data: data
         });
       } else if (elementType === 'transition') {
         this.handleElementClick({
-          type: 'transition',
-          id: elementId,
+          elementType: 'link',
+          elementId: elementId,
           data: data
         });
       }
@@ -193,11 +195,13 @@ class WorkflowVisualizerApp {
    * Handle element clicks in the diagram
    */
   private handleElementClick(event: InteractionEvent): void {
-    console.log('Element clicked:', event.elementType, event.elementId);
+    console.log('Element clicked:', event.elementType, event.elementId, event.data);
     
     if (event.elementType === 'node' && event.data) {
+      console.log('Selecting state:', event.elementId);
       this.selectState(event.elementId!, event.data);
     } else if (event.elementType === 'link' && event.data) {
+      console.log('Selecting transition:', event.elementId);
       this.selectTransition(event.elementId!, event.data);
     }
   }
@@ -228,54 +232,41 @@ class WorkflowVisualizerApp {
       data: state
     };
     
-    // Clear the diagram and update side panel
-    this.plantUMLRenderer.clear();
+    // Update side panel to show selected state details
     this.updateSidePanel();
+    
+    console.log('State selected and side panel updated:', stateId);
   }
 
   /**
    * Select a transition link
    */
-  private selectTransition(transitionId: string, _linkData: any): void {
+  private selectTransition(transitionId: string, linkData: any): void {
     const workflow = this.appState.currentWorkflow;
     if (!workflow) return;
     
-    // Parse transition ID to get source, trigger, and target
-    const parts = transitionId.split('-');
-    if (parts.length < 3) return;
-    
-    const sourceState = parts[0];
-    const trigger = parts[1];
-    const targetState = parts[2];
-    
-    // Find the transition data
-    const sourceStateData = workflow.states[sourceState];
-    if (!sourceStateData) return;
-    
-    const transition = sourceStateData.transitions.find(t => 
-      t.trigger === trigger && t.to === targetState
-    );
-    
-    if (!transition) return;
-    
-    const transitionData: TransitionData = {
-      trigger: transition.trigger,
-      from: sourceState,
-      to: transition.to,
-      instructions: transition.instructions,
-      additional_instructions: transition.additional_instructions,
-      transition_reason: transition.transition_reason
-    };
-    
-    this.appState.selectedElement = {
-      type: 'transition',
-      id: transitionId,
-      data: transitionData
-    };
-    
-    // Highlight the transition path
-    this.highlightTransitionPath(sourceState, targetState);
-    this.updateSidePanel();
+    // Use the linkData passed from the PlantUML renderer
+    if (linkData && linkData.from && linkData.to && linkData.trigger) {
+      const transitionData: TransitionData = {
+        trigger: linkData.trigger,
+        from: linkData.from,
+        to: linkData.to,
+        instructions: linkData.instructions || '',
+        additional_instructions: linkData.additional_instructions || '',
+        transition_reason: linkData.transition_reason || ''
+      };
+      
+      this.appState.selectedElement = {
+        type: 'transition',
+        id: transitionId,
+        data: transitionData
+      };
+      
+      // Update side panel to show selected transition details
+      this.updateSidePanel();
+      
+      console.log('Transition selected and side panel updated:', transitionId);
+    }
   }
 
   /**
