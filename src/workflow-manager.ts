@@ -89,16 +89,16 @@ export class WorkflowManager {
 
   /**
    * Load a workflow (predefined or custom) for a project
+   * FIXED: Now respects the workflow parameter correctly
    */
   public loadWorkflowForProject(projectPath: string, workflowName?: string): YamlStateMachine {
-    // If no workflow specified, check for custom workflow first, then default to waterfall
+    // If no workflow specified, default to waterfall
     if (!workflowName) {
-      // Default to waterfall
       workflowName = 'waterfall';
     }
 
     // If workflow name is 'custom', try to load custom workflow
-    // Check for custom workflow in project
+    if (workflowName === 'custom') {
       const customFilePaths = [
         path.join(projectPath, '.vibe', 'workflow.yaml'),
         path.join(projectPath, '.vibe', 'workflow.yml')
@@ -111,13 +111,13 @@ export class WorkflowManager {
             return this.stateMachineLoader.loadFromFile(filePath);
           }
         }
+        // If custom workflow was requested but not found, throw error
+        throw new Error(`Custom workflow not found. Expected .vibe/workflow.yaml or .vibe/workflow.yml in ${projectPath}`);
       } catch (error) {
-        logger.warn('Could not load custom state machine:', error as Error)
-        logger.info('Falling back to default workflow', { workflowName: 'waterfall' })
-
-        workflowName = 'waterfall';
+        logger.error('Could not load custom state machine:', error as Error);
+        throw error;
       }
-
+    }
 
     // If it's a predefined workflow, return it
     if (this.isPredefinedWorkflow(workflowName)) {
