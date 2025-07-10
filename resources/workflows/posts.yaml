@@ -1,0 +1,228 @@
+name: posts
+description: "A comprehensive workflow for writing posts - from blog posts to short-form content, with research, story development, and multi-platform publishing"
+initial_state: discovery
+
+states:
+  discovery:
+    description: "Research topic, decide format, and analyze competitive landscape"
+    default_instructions: |
+      Starting discovery phase for post development. This is where you define the foundation of your post.
+
+      Focus on understanding the topic and format:
+      - Help user decide post format: Ask about goal (quick insight vs deep exploration), topic complexity, available time
+      - Research existing content on this topic to identify gaps and opportunities
+      - Guide user to articulate personal motivation and unique angle
+      - Conduct competitive landscape analysis to avoid duplication
+      - Define target audience and platform considerations
+      - Gather initial sources and reference materials
+
+      Work with the user to establish clear direction before moving to story development.
+      Update the plan file with discovery progress and key decisions.
+
+    transitions:
+      - trigger: discovery_complete
+        to: story
+        instructions: |
+          Discovery complete! ✅ You have clear format decision, unique angle, and research foundation.
+
+          Now transition to story phase to create narrative structure:
+          - Create story outline with clear narrative arc
+          - Identify key messages and supporting metaphors
+          - Define content scope boundaries to avoid adjacent topics
+          - Plan platform adaptation strategy
+          - Ensure story structure matches chosen format (tight for short, comprehensive for long)
+
+          Update the plan file with story development tasks and mark completed discovery work.
+        transition_reason: "Topic researched and format decided, ready for story structure development"
+
+      - trigger: abandon_post
+        to: discovery
+        instructions: |
+          Post development abandoned. Clean up any discovery work and prepare for new post topics.
+          The plan file will remain for future reference if needed.
+        additional_instructions: "Post development abandoned. Prepare for new post topics."
+        transition_reason: "User decided to abandon current post development"
+
+  story:
+    description: "Create narrative structure and story outline"
+    default_instructions: |
+      Working on story development phase. Focus on creating a compelling narrative structure.
+
+      Key activities for this phase:
+      - Create detailed story outline with clear beginning, middle, end
+      - Identify key messages and memorable metaphors/examples
+      - Define content scope boundaries to maintain focus and avoid adjacent topics
+      - Plan how content will adapt across different platforms
+      - Ensure narrative arc matches chosen format (concise for short posts, comprehensive for long-form)
+      - Structure content to maintain user's personal voice and conversational style
+
+      Work with the user to create a solid story foundation before moving to writing.
+      Update the plan file with story decisions and structural progress.
+
+    transitions:
+      - trigger: story_complete
+        to: writing
+        instructions: |
+          Story complete! ✅ You have a clear narrative structure and content outline.
+
+          Now transition to writing phase for content creation:
+          - Write content following the story outline
+          - Maintain narrative consistency and personal voice
+          - Focus purely on text content creation
+          - Ensure length matches chosen format
+          - Keep content within defined scope boundaries
+          - Create engaging, conversational content that reflects user's style
+
+          Update the plan file with writing tasks and mark completed story work.
+        transition_reason: "Story structure and outline complete, ready for content creation"
+
+      - trigger: need_more_discovery
+        to: discovery
+        additional_instructions: "Story development revealed gaps in research or format clarity. Focus on clarifying these foundational aspects."
+        transition_reason: "Story work revealed need for additional discovery or research"
+
+      - trigger: abandon_post
+        to: discovery
+        instructions: |
+          Post development abandoned during story phase. Clean up story work and return to discovery.
+          The plan file and any completed work will remain for future reference.
+        additional_instructions: "Post abandoned during story phase. Clean up and prepare for new topics."
+        transition_reason: "User decided to abandon post during story phase"
+
+  writing:
+    description: "Create the actual post content following story outline"
+    default_instructions: |
+      Working on writing phase. Focus purely on creating engaging content.
+
+      Key activities for this phase:
+      - Write content following the established story outline
+      - Maintain consistent narrative flow and personal voice
+      - Create engaging, conversational content in user's style
+      - Ensure content length matches chosen format (3-10 lines for short, 2000-5000+ words for long)
+      - Stay within defined content scope to avoid adjacent topics
+      - Include concrete examples and metaphors as planned
+      - Create clear section structure with appropriate headings (for long-form)
+
+      Focus on high-quality content creation without visual elements.
+      Update the plan file with writing progress and content decisions.
+
+    transitions:
+      - trigger: writing_complete
+        to: illustration
+        instructions: |
+          Writing complete! ✅ You have solid content that follows your story outline.
+
+          Now transition to illustration phase for visual enhancement:
+          - Identify where visuals would enhance understanding or break up text
+          - Plan visual content (screenshots, diagrams, metaphorical images)
+          - Consider format-appropriate visual density (minimal for short posts)
+          - Create or source appropriate visual elements
+          - Ensure visuals support the story and maintain professional appearance
+
+          Update the plan file with illustration tasks and mark completed writing work.
+        transition_reason: "Content creation complete, ready for visual enhancement"
+
+      - trigger: need_story_revision
+        to: story
+        additional_instructions: "Writing revealed issues with story structure or narrative flow. Focus on refining the story foundation."
+        transition_reason: "Content creation revealed need for story structure refinement"
+
+      - trigger: abandon_post
+        to: discovery
+        instructions: |
+          Post development abandoned during writing. Clean up writing work and return to discovery.
+          The plan file and any completed work will remain for future reference.
+        additional_instructions: "Post abandoned during writing phase. Clean up and prepare for new topics."
+        transition_reason: "User decided to abandon post during writing phase"
+
+  illustration:
+    description: "Create and integrate visual elements"
+    default_instructions: |
+      Working on illustration phase. Focus on visual enhancement of your content.
+
+      Key activities for this phase:
+      - Identify strategic locations for visual elements
+      - Create or source appropriate visuals (screenshots, diagrams, metaphorical images)
+      - Ensure visual density matches format (minimal for short posts, comprehensive for long-form)
+      - Maintain visual consistency and professional appearance
+      - Ensure visuals support and enhance the written content
+      - Consider accessibility and platform compatibility
+      - Plan visual integration and placement
+
+      Focus on creating visuals that enhance rather than distract from the content.
+      Update the plan file with illustration progress and visual decisions.
+
+    transitions:
+      - trigger: illustration_complete
+        to: distribution
+        instructions: |
+          Illustration complete! ✅ You have visually enhanced content ready for publishing.
+
+          Now transition to distribution phase for optimization and publishing:
+          - Optimize for SEO (titles, descriptions, tags)
+          - Adapt content for different platforms while maintaining core message
+          - Format content appropriately for each target platform
+          - Conduct final quality review and polish
+          - Prepare for multi-platform publishing
+
+          Update the plan file with distribution tasks and mark completed illustration work.
+        transition_reason: "Visual elements complete, ready for SEO optimization and publishing"
+
+      - trigger: need_more_content
+        to: writing
+        additional_instructions: "Illustration work revealed gaps in written content. Focus on completing the content foundation."
+        transition_reason: "Visual work revealed need for additional written content"
+
+      - trigger: abandon_post
+        to: discovery
+        instructions: |
+          Post development abandoned during illustration. Clean up illustration work and return to discovery.
+          The plan file and any completed work will remain for future reference.
+        additional_instructions: "Post abandoned during illustration phase. Clean up and prepare for new topics."
+        transition_reason: "User decided to abandon post during illustration phase"
+
+  distribution:
+    description: "Optimize for SEO and publish across platforms"
+    default_instructions: |
+      Working on distribution phase. Focus on optimization and multi-platform publishing.
+
+      Key activities for this phase:
+      - Create compelling, SEO-optimized titles and descriptions
+      - Add appropriate tags and metadata for discoverability
+      - Adapt content formatting for different platforms (LinkedIn, Medium, HN)
+      - Maintain core message while adjusting for platform-specific requirements
+      - Conduct final quality review and polish
+      - Prepare publishing materials and schedule
+      - Execute multi-platform publishing strategy
+
+      Focus on maximizing reach while maintaining content quality and consistency.
+      Update the plan file with distribution progress and publishing decisions.
+
+    transitions:
+      - trigger: distribution_complete
+        to: discovery
+        instructions: |
+          Distribution complete! ✅ Your post has been successfully published across platforms.
+
+          Return to discovery phase, ready for the next post project:
+          - Document lessons learned and successful approaches
+          - Archive post materials and research
+          - Note improvements for future posts
+          - Prepare for new post topics and projects
+
+          Mark all distribution tasks as complete and prepare for new work.
+        additional_instructions: "Post successfully published. Ready for next post project."
+        transition_reason: "Post publishing completed successfully, ready for new projects"
+
+      - trigger: need_final_review
+        to: illustration
+        additional_instructions: "Distribution preparation revealed issues with visuals or content presentation. Focus on final refinements."
+        transition_reason: "Publishing preparation identified issues requiring visual or content refinement"
+
+      - trigger: abandon_post
+        to: discovery
+        instructions: |
+          Post development abandoned before distribution. Clean up distribution preparation and return to discovery.
+          The plan file and completed work will remain for future reference.
+        additional_instructions: "Post abandoned before distribution. Clean up and prepare for new topics."
+        transition_reason: "User decided to abandon post before distribution"
