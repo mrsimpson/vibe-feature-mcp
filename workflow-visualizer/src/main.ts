@@ -39,6 +39,23 @@ class WorkflowVisualizerApp {
     // Initialize PlantUML renderer
     this.plantUMLRenderer = new PlantUMLRenderer(this.diagramCanvas);
     
+    // Set up click handler for interactive elements
+    this.plantUMLRenderer.setClickHandler((elementType, elementId, data) => {
+      if (elementType === 'state') {
+        this.handleElementClick({
+          type: 'state',
+          id: elementId,
+          data: data
+        });
+      } else if (elementType === 'transition') {
+        this.handleElementClick({
+          type: 'transition',
+          id: elementId,
+          data: data
+        });
+      }
+    });
+    
     // Initialize file upload handler
     this.fileUploadHandler = new FileUploadHandler(this.fileUploadInput, this.workflowLoader);
     
