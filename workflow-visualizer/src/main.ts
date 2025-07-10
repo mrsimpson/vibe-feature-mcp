@@ -67,7 +67,8 @@ class WorkflowVisualizerApp {
       selectedElement: null,
       highlightedPath: null,
       isLoading: false,
-      error: null
+      error: null,
+      parentState: null
     };
     
     this.initialize();
@@ -338,19 +339,52 @@ class WorkflowVisualizerApp {
     const element = this.appState.selectedElement!;
     
     if (element.type === 'state') {
-      this.renderStateDetails(element.id, element.data);
+      this.renderStateDetailsWithHeader(element.id, element.data);
     } else if (element.type === 'transition') {
-      this.renderTransitionDetails(element.data as TransitionData);
+      this.renderTransitionDetailsWithHeader(element.data as TransitionData);
     }
   }
 
   /**
-   * Render state details
+   * Render state details with back button in header
    */
-  private renderStateDetails(stateId: string, stateData: any): void {
+  private renderStateDetailsWithHeader(stateId: string, stateData: any): void {
     const workflow = this.appState.currentWorkflow!;
     const isInitial = stateId === workflow.initial_state;
     
+    // Update header with back button
+    const header = this.container.querySelector('.side-panel-header') as HTMLElement;
+    if (header) {
+      header.innerHTML = `
+        <button class="back-button" style="
+          background: none;
+          border: none;
+          color: #6b7280;
+          cursor: pointer;
+          font-size: 18px;
+          padding: 4px;
+          margin-right: 8px;
+          border-radius: 4px;
+          transition: all 0.2s ease;
+        " title="Back to Overview">←</button>
+        <h2>State: ${stateId}</h2>
+      `;
+      
+      const backButton = header.querySelector('.back-button');
+      backButton?.addEventListener('click', () => {
+        this.clearSelection();
+      });
+      
+      backButton?.addEventListener('mouseenter', () => {
+        (backButton as HTMLElement).style.backgroundColor = '#f3f4f6';
+      });
+      
+      backButton?.addEventListener('mouseleave', () => {
+        (backButton as HTMLElement).style.backgroundColor = 'transparent';
+      });
+    }
+    
+    // Render state content
     this.sidePanelContent.innerHTML = `
       <div class="detail-section">
         <h3 class="detail-title">
@@ -397,6 +431,186 @@ class WorkflowVisualizerApp {
           );
           
           if (fullTransition) {
+            // Store the parent state for back navigation
+            this.appState.parentState = { id: stateId, data: stateData };
+            
+            this.selectTransition(`${fromState}->${toState}`, {
+              from: fromState,
+              to: toState,
+              trigger: trigger,
+              instructions: fullTransition.instructions,
+              additional_instructions: fullTransition.additional_instructions,
+              transition_reason: fullTransition.transition_reason
+            });
+          }
+        }
+      });
+      
+      // Add hover effects
+      item.addEventListener('mouseenter', () => {
+        (item as HTMLElement).style.backgroundColor = '#f0f9ff';
+        (item as HTMLElement).style.cursor = 'pointer';
+      });
+      
+      item.addEventListener('mouseleave', () => {
+        (item as HTMLElement).style.backgroundColor = '';
+        (item as HTMLElement).style.cursor = '';
+      });
+    });
+  }
+
+  /**
+   * Render transition details with back button in header
+   */
+  private renderTransitionDetailsWithHeader(transitionData: TransitionData): void {
+    // Update header with back button
+    const header = this.container.querySelector('.side-panel-header') as HTMLElement;
+    if (header) {
+      header.innerHTML = `
+        <button class="back-button" style="
+          background: none;
+          border: none;
+          color: #6b7280;
+          cursor: pointer;
+          font-size: 18px;
+          padding: 4px;
+          margin-right: 8px;
+          border-radius: 4px;
+          transition: all 0.2s ease;
+        " title="Back to State">←</button>
+        <h2>Transition: ${transitionData.trigger}</h2>
+      `;
+      
+      const backButton = header.querySelector('.back-button');
+      backButton?.addEventListener('click', () => {
+        this.goBackToParentState();
+      });
+      
+      backButton?.addEventListener('mouseenter', () => {
+        (backButton as HTMLElement).style.backgroundColor = '#f3f4f6';
+      });
+      
+      backButton?.addEventListener('mouseleave', () => {
+        (backButton as HTMLElement).style.backgroundColor = 'transparent';
+      });
+    }
+    
+    // Render transition content
+    this.sidePanelContent.innerHTML = `
+      <div class="detail-section">
+        <h3 class="detail-title">Transition: ${transitionData.trigger}</h3>
+        <p class="detail-content">
+          <strong>${transitionData.from}</strong> → <strong>${transitionData.to}</strong>
+        </p>
+      </div>
+      
+      <div class="detail-section">
+        <h4 class="detail-subtitle">Reason</h4>
+        <p class="detail-content">${transitionData.transition_reason}</p>
+      </div>
+      
+      ${transitionData.instructions ? `
+        <div class="detail-section">
+          <h4 class="detail-subtitle">Instructions</h4>
+          <div class="code-block">${transitionData.instructions}</div>
+        </div>
+      ` : ''}
+      
+      ${transitionData.additional_instructions ? `
+        <div class="detail-section">
+          <h4 class="detail-subtitle">Additional Instructions</h4>
+          <div class="code-block">${transitionData.additional_instructions}</div>
+        </div>
+      ` : ''}
+    `;
+  }
+
+  /**
+   * Go back to parent state from transition view
+   */
+  private goBackToParentState(): void {
+    if (this.appState.parentState) {
+      this.appState.selectedElement = {
+        type: 'state',
+        id: this.appState.parentState.id,
+        data: this.appState.parentState.data
+      };
+      this.appState.parentState = null;
+      this.updateSidePanel();
+    } else {
+      this.clearSelection();
+    }
+  }
+
+  /**
+   * Clear selection and return to overview
+   */
+  private clearSelection(): void {
+    this.appState.selectedElement = null;
+    this.appState.parentState = null;
+    
+    // Reset header
+    const header = this.container.querySelector('.side-panel-header') as HTMLElement;
+    if (header) {
+      header.innerHTML = '<h2>Workflow Details</h2>';
+    }
+    
+    this.updateSidePanel();
+  }
+
+  /**
+   * Render state details
+   */
+  private renderStateDetails(stateId: string, stateData: any, container: HTMLElement): void {
+    const workflow = this.appState.currentWorkflow!;
+    const isInitial = stateId === workflow.initial_state;
+    
+    container.innerHTML = `
+      <div class="detail-section">
+        <h3 class="detail-title">
+          ${stateId}
+          ${isInitial ? '<span class="badge badge-success">Initial</span>' : ''}
+        </h3>
+        <p class="detail-content">${stateData.description}</p>
+      </div>
+      
+      <div class="detail-section">
+        <h4 class="detail-subtitle">Default Instructions</h4>
+        <div class="code-block">${stateData.default_instructions}</div>
+      </div>
+      
+      <div class="detail-section">
+        <h4 class="detail-subtitle">Transitions (${stateData.transitions.length})</h4>
+        <ul class="transitions-list">
+          ${stateData.transitions.map((transition: any) => `
+            <li class="transition-item clickable-transition" data-from="${stateId}" data-to="${transition.to}" data-trigger="${transition.trigger}">
+              <div class="transition-trigger">${transition.trigger}</div>
+              <div class="transition-target">→ ${transition.to}</div>
+              <div class="transition-reason">${transition.transition_reason}</div>
+            </li>
+          `).join('')}
+        </ul>
+      </div>
+    `;
+    
+    // Add click handlers to transitions
+    const transitionItems = container.querySelectorAll('.clickable-transition');
+    transitionItems.forEach(item => {
+      item.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const fromState = item.getAttribute('data-from');
+        const toState = item.getAttribute('data-to');
+        const trigger = item.getAttribute('data-trigger');
+        
+        if (fromState && toState && trigger) {
+          console.log('Side panel transition clicked:', `${fromState}->${toState}`);
+          
+          // Find the full transition data
+          const fullTransition = stateData.transitions.find((t: any) => 
+            t.to === toState && t.trigger === trigger
+          );
+          
+          if (fullTransition) {
             this.selectTransition(`${fromState}->${toState}`, {
               from: fromState,
               to: toState,
@@ -425,8 +639,8 @@ class WorkflowVisualizerApp {
   /**
    * Render transition details
    */
-  private renderTransitionDetails(transitionData: TransitionData): void {
-    this.sidePanelContent.innerHTML = `
+  private renderTransitionDetails(transitionData: TransitionData, container: HTMLElement): void {
+    container.innerHTML = `
       <div class="detail-section">
         <h3 class="detail-title">Transition: ${transitionData.trigger}</h3>
         <p class="detail-content">

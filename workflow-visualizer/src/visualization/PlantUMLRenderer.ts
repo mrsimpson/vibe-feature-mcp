@@ -206,85 +206,127 @@ export class PlantUMLRenderer {
    * Make SVG elements interactive by adding click handlers
    */
   private makeSVGInteractive(svgElement: SVGSVGElement, workflow: YamlStateMachine): void {
-    // Find all text elements that might be state names
-    const textElements = svgElement.querySelectorAll('text');
+    // Find all group elements with state IDs
+    const stateGroups = svgElement.querySelectorAll('g[id]');
     const states = Object.keys(workflow.states);
     
-    textElements.forEach(textEl => {
-      const textContent = textEl.textContent?.trim();
-      if (textContent && states.includes(textContent)) {
-        // This text element represents a state
-        const stateName = textContent;
+    stateGroups.forEach(group => {
+      const groupId = group.getAttribute('id');
+      if (groupId && states.includes(groupId)) {
+        // This group represents a state
+        const stateName = groupId;
         
-        // Find the parent group or rect element
-        let clickableElement = textEl.parentElement;
-        if (clickableElement?.tagName === 'g') {
-          // Look for rect or ellipse in the group
-          const shape = clickableElement.querySelector('rect, ellipse, polygon');
+        // Make the entire group clickable
+        group.style.cursor = 'pointer';
+        group.style.transition = 'all 0.2s ease';
+        
+        // Find the rect/shape element for hover effects
+        const shape = group.querySelector('rect, ellipse, polygon');
+        const originalFill = shape?.getAttribute('fill') || '#ffffff';
+        const originalStroke = shape?.getAttribute('stroke') || '#000000';
+        
+        // Add hover effects
+        group.addEventListener('mouseenter', () => {
           if (shape) {
-            clickableElement = shape as SVGElement;
+            shape.setAttribute('fill', '#e0f2fe');
+            shape.setAttribute('stroke', '#2563eb');
+            shape.setAttribute('stroke-width', '2');
           }
-        }
+        });
         
-        if (clickableElement) {
-          // Make it clickable
-          clickableElement.style.cursor = 'pointer';
-          clickableElement.style.transition = 'all 0.2s ease';
-          
-          // Add hover effects
-          const originalFill = clickableElement.getAttribute('fill') || '#ffffff';
-          const originalStroke = clickableElement.getAttribute('stroke') || '#000000';
-          
-          clickableElement.addEventListener('mouseenter', () => {
-            clickableElement.setAttribute('fill', '#e0f2fe');
-            clickableElement.setAttribute('stroke', '#2563eb');
-            clickableElement.setAttribute('stroke-width', '2');
-          });
-          
-          clickableElement.addEventListener('mouseleave', () => {
-            clickableElement.setAttribute('fill', originalFill);
-            clickableElement.setAttribute('stroke', originalStroke);
-            clickableElement.setAttribute('stroke-width', '1');
-          });
-          
-          // Add click handler
-          clickableElement.addEventListener('click', (e) => {
-            e.stopPropagation();
-            console.log('SVG state clicked:', stateName);
-            if (this.onElementClick) {
-              this.onElementClick('state', stateName, workflow.states[stateName]);
-            }
-          });
-          
-          console.log(`Made state "${stateName}" interactive in SVG`);
-        }
+        group.addEventListener('mouseleave', () => {
+          if (shape) {
+            shape.setAttribute('fill', originalFill);
+            shape.setAttribute('stroke', originalStroke);
+            shape.setAttribute('stroke-width', '1');
+          }
+        });
+        
+        // Add click handler
+        group.addEventListener('click', (e) => {
+          e.stopPropagation();
+          console.log('SVG state clicked:', stateName);
+          if (this.onElementClick) {
+            this.onElementClick('state', stateName, workflow.states[stateName]);
+          }
+        });
+        
+        console.log(`Made state "${stateName}" interactive in SVG using group ID`);
       }
     });
     
-    // Also make transition arrows clickable
-    const pathElements = svgElement.querySelectorAll('path[marker-end]');
-    pathElements.forEach(pathEl => {
-      pathEl.style.cursor = 'pointer';
-      pathEl.style.transition = 'all 0.2s ease';
-      
-      const originalStroke = pathEl.getAttribute('stroke') || '#000000';
-      
-      pathEl.addEventListener('mouseenter', () => {
-        pathEl.setAttribute('stroke', '#2563eb');
-        pathEl.setAttribute('stroke-width', '3');
-      });
-      
-      pathEl.addEventListener('mouseleave', () => {
-        pathEl.setAttribute('stroke', originalStroke);
-        pathEl.setAttribute('stroke-width', '1');
-      });
-      
-      // For now, clicking arrows just shows a message
-      // In a full implementation, you'd parse the SVG to determine which transition this represents
-      pathEl.addEventListener('click', (e) => {
-        e.stopPropagation();
-        console.log('Transition arrow clicked - check side panel for transition details');
-      });
+    // Also make transition links clickable using link_<source>_<target> pattern
+    const linkGroups = svgElement.querySelectorAll('g.link[id^="link_"]');
+    linkGroups.forEach(linkGroup => {
+      const linkId = linkGroup.getAttribute('id');
+      if (linkId && linkId.startsWith('link_')) {
+        // Parse link ID to get source and target
+        const parts = linkId.replace('link_', '').split('_');
+        if (parts.length >= 2) {
+          const fromState = parts[0];
+          const toState = parts[1];
+          
+          // Verify these are valid states
+          if (states.includes(fromState) && states.includes(toState)) {
+            // Make the entire link group clickable
+            linkGroup.style.cursor = 'pointer';
+            linkGroup.style.transition = 'all 0.2s ease';
+            
+            // Find path and text elements for hover effects
+            const pathEl = linkGroup.querySelector('path');
+            const textEl = linkGroup.querySelector('text');
+            const originalStroke = pathEl?.getAttribute('stroke') || '#94A3B8';
+            const originalTextFill = textEl?.getAttribute('fill') || '#64748B';
+            
+            // Add hover effects
+            linkGroup.addEventListener('mouseenter', () => {
+              if (pathEl) {
+                pathEl.setAttribute('stroke', '#2563eb');
+                pathEl.setAttribute('stroke-width', '3');
+              }
+              if (textEl) {
+                textEl.setAttribute('fill', '#2563eb');
+                textEl.style.fontWeight = 'bold';
+              }
+            });
+            
+            linkGroup.addEventListener('mouseleave', () => {
+              if (pathEl) {
+                pathEl.setAttribute('stroke', originalStroke);
+                pathEl.setAttribute('stroke-width', '1');
+              }
+              if (textEl) {
+                textEl.setAttribute('fill', originalTextFill);
+                textEl.style.fontWeight = 'normal';
+              }
+            });
+            
+            // Add click handler
+            linkGroup.addEventListener('click', (e) => {
+              e.stopPropagation();
+              console.log('SVG transition clicked:', `${fromState}->${toState}`);
+              
+              // Find the transition data
+              const sourceState = workflow.states[fromState];
+              if (sourceState && sourceState.transitions) {
+                const transition = sourceState.transitions.find(t => t.to === toState);
+                if (transition && this.onElementClick) {
+                  this.onElementClick('transition', `${fromState}->${toState}`, {
+                    from: fromState,
+                    to: toState,
+                    trigger: transition.trigger,
+                    instructions: transition.instructions,
+                    additional_instructions: transition.additional_instructions,
+                    transition_reason: transition.transition_reason
+                  });
+                }
+              }
+            });
+            
+            console.log(`Made transition "${fromState} -> ${toState}" interactive in SVG`);
+          }
+        }
+      }
     });
   }
 

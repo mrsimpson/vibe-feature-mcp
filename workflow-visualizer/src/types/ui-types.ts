@@ -17,6 +17,7 @@ export interface AppState {
   highlightedPath: string[] | null;
   isLoading: boolean;
   error: string | null;
+  parentState: { id: string; data: any } | null;
 }
 
 /**
