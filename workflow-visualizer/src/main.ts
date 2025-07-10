@@ -6,16 +6,15 @@
 import { WorkflowLoader } from './services/WorkflowLoader';
 import { FileUploadHandler } from './services/FileUploadHandler';
 import { ErrorHandler } from './utils/ErrorHandler';
-import { DiagramRenderer } from './visualization/DiagramRenderer';
+import { PlantUMLRenderer } from './visualization/PlantUMLRenderer';
 import { getRequiredElement } from './utils/DomHelpers';
 import { YamlStateMachine, AppState, TransitionData } from './types/ui-types';
-import { InteractionEvent } from './types/visualization-types';
 
 class WorkflowVisualizerApp {
   private readonly workflowLoader: WorkflowLoader;
   private readonly fileUploadHandler: FileUploadHandler;
   private readonly errorHandler: ErrorHandler;
-  private readonly diagramRenderer: DiagramRenderer;
+  private readonly plantUMLRenderer: PlantUMLRenderer;
   
   // DOM elements
   private readonly workflowSelector: HTMLSelectElement;
@@ -37,8 +36,8 @@ class WorkflowVisualizerApp {
     this.diagramCanvas = getRequiredElement('#diagram-canvas');
     this.sidePanelContent = getRequiredElement('.side-panel-content');
     
-    // Initialize diagram renderer
-    this.diagramRenderer = new DiagramRenderer(this.diagramCanvas);
+    // Initialize PlantUML renderer
+    this.plantUMLRenderer = new PlantUMLRenderer(this.diagramCanvas);
     
     // Initialize file upload handler
     this.fileUploadHandler = new FileUploadHandler(this.fileUploadInput, this.workflowLoader);
@@ -88,9 +87,8 @@ class WorkflowVisualizerApp {
     this.fileUploadHandler.onWorkflowLoaded = this.handleWorkflowLoaded.bind(this);
     this.fileUploadHandler.onUploadError = this.handleUploadError.bind(this);
     
-    // Diagram interaction handlers
-    this.diagramRenderer.onElementClick = this.handleElementClick.bind(this);
-    this.diagramRenderer.onElementHover = this.handleElementHover.bind(this);
+    // Note: PlantUML renderer doesn't need interaction handlers
+    // Interactions will be handled through the side panel
   }
 
   /**
@@ -137,7 +135,7 @@ class WorkflowVisualizerApp {
       console.log(`Loading workflow: ${workflowName}`);
       
       const workflow = await this.workflowLoader.loadBuiltinWorkflow(workflowName);
-      this.handleWorkflowLoaded(workflow, workflowName);
+      await this.handleWorkflowLoaded(workflow, workflowName);
       
     } catch (error) {
       console.error(`Failed to load workflow ${workflowName}:`, error);
@@ -152,15 +150,15 @@ class WorkflowVisualizerApp {
   /**
    * Handle successful workflow loading
    */
-  private handleWorkflowLoaded(workflow: YamlStateMachine, source: string): void {
+  private async handleWorkflowLoaded(workflow: YamlStateMachine, source: string): Promise<void> {
     console.log(`Workflow loaded successfully: ${workflow.name} (from ${source})`);
     
     this.appState.currentWorkflow = workflow;
     this.appState.selectedElement = null;
     this.appState.highlightedPath = null;
     
-    // Render the workflow using D3.js
-    this.diagramRenderer.renderWorkflow(workflow);
+    // Render the workflow using PlantUML
+    await this.plantUMLRenderer.renderWorkflow(workflow);
     
     // Update side panel
     this.updateSidePanel();
@@ -213,8 +211,8 @@ class WorkflowVisualizerApp {
       data: state
     };
     
-    // Clear highlights and update side panel
-    this.diagramRenderer.clearHighlights();
+    // Clear the diagram and update side panel
+    this.plantUMLRenderer.clear();
     this.updateSidePanel();
   }
 
@@ -267,9 +265,10 @@ class WorkflowVisualizerApp {
    * Highlight a transition path
    */
   private highlightTransitionPath(fromState: string, toState: string): void {
+    // Note: PlantUML diagrams don't support interactive path highlighting
+    // Path information is shown in the side panel instead
     const pathElements = [fromState, toState];
     this.appState.highlightedPath = pathElements;
-    this.diagramRenderer.highlightPath(pathElements);
   }
 
   /**
@@ -427,7 +426,7 @@ class WorkflowVisualizerApp {
     if (isLoading) {
       this.diagramCanvas.innerHTML = '<div class="loading-message">Loading workflow...</div>';
     }
-    // Note: When not loading, the DiagramRenderer will clear the canvas and render the visualization
+    // Note: When not loading, the PlantUMLRenderer will clear the canvas and render the visualization
   }
 }
 
