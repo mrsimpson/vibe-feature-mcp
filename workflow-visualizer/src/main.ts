@@ -421,7 +421,6 @@ class WorkflowVisualizerApp {
       });
     });
   }
-  }
 
   /**
    * Render transition details
