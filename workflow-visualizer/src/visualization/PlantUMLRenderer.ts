@@ -60,19 +60,7 @@ export class PlantUMLRenderer {
     this.loadInteractiveSVG(diagramUrl, diagramWrapper, workflow);
     
     diagramContainer.appendChild(diagramWrapper);
-    
-    // Add legend
-    const legend = document.createElement('div');
-    legend.innerHTML = `
-      <div style="margin-top: 20px; padding: 15px; background: #f8fafc; border-radius: 8px; font-size: 14px; color: #64748b; text-align: left; max-width: 400px; margin-left: auto; margin-right: auto;">
-        <strong>How to interact:</strong>
-        <div style="margin-top: 8px;">• Click on states to see details</div>
-        <div>• Click on transitions to see transition info</div>
-        <div>• Diagram uses PlantUML auto-layout for optimal positioning</div>
-      </div>
-    `;
-    diagramContainer.appendChild(legend);
-    
+
     this.container.appendChild(diagramContainer);
   }
 
@@ -97,11 +85,7 @@ export class PlantUMLRenderer {
     lines.push('  FontSize 10');
     lines.push('}');
     lines.push('');
-    
-    // Add title
-    lines.push(`title ${workflow.name} State Machine`);
-    lines.push('');
-    
+
     // Add initial state
     lines.push(`[*] --> ${workflow.initial_state}`);
     lines.push('');
@@ -346,62 +330,6 @@ export class PlantUMLRenderer {
     `;
     
     container.appendChild(instructionDiv);
-    
-    // Add state cards only (no transitions)
-    const clickableDiv = document.createElement('div');
-    clickableDiv.style.marginTop = '20px';
-    
-    const elementsGrid = document.createElement('div');
-    elementsGrid.style.display = 'grid';
-    elementsGrid.style.gridTemplateColumns = 'repeat(auto-fit, minmax(200px, 1fr))';
-    elementsGrid.style.gap = '10px';
-    elementsGrid.style.maxWidth = '800px';
-    elementsGrid.style.margin = '0 auto';
-    
-    // Add clickable state elements (simplified)
-    Object.entries(workflow.states).forEach(([stateName, stateConfig]) => {
-      const stateCard = document.createElement('div');
-      stateCard.style.cssText = `
-        padding: 12px;
-        border: 2px solid ${stateName === workflow.initial_state ? '#059669' : '#2563eb'};
-        border-radius: 8px;
-        background: ${stateName === workflow.initial_state ? '#f0fdf4' : '#ffffff'};
-        cursor: pointer;
-        transition: all 0.2s ease;
-        text-align: left;
-      `;
-      
-      stateCard.innerHTML = `
-        <div style="font-weight: 600; color: ${stateName === workflow.initial_state ? '#059669' : '#2563eb'}; margin-bottom: 4px;">
-          ${stateName} ${stateName === workflow.initial_state ? '(Initial)' : ''}
-        </div>
-        <div style="font-size: 12px; color: #64748b; line-height: 1.3;">
-          ${stateConfig.description || 'No description'}
-        </div>
-      `;
-      
-      stateCard.addEventListener('click', () => {
-        console.log('State card clicked:', stateName);
-        if (this.onElementClick) {
-          this.onElementClick('state', stateName, stateConfig);
-        }
-      });
-      
-      stateCard.addEventListener('mouseenter', () => {
-        stateCard.style.transform = 'translateY(-2px)';
-        stateCard.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)';
-      });
-      
-      stateCard.addEventListener('mouseleave', () => {
-        stateCard.style.transform = 'translateY(0)';
-        stateCard.style.boxShadow = 'none';
-      });
-      
-      elementsGrid.appendChild(stateCard);
-    });
-    
-    clickableDiv.appendChild(elementsGrid);
-    container.appendChild(clickableDiv);
   }
 
   /**
