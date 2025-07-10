@@ -21,6 +21,7 @@ class WorkflowVisualizerApp {
   private readonly fileUploadInput: HTMLInputElement;
   private readonly diagramCanvas: HTMLElement;
   private readonly sidePanelContent: HTMLElement;
+  private readonly sidePanelHeader: HTMLElement;
   
   // Application state
   private appState: AppState;
@@ -35,6 +36,7 @@ class WorkflowVisualizerApp {
     this.fileUploadInput = getRequiredElement<HTMLInputElement>('#file-upload');
     this.diagramCanvas = getRequiredElement('#diagram-canvas');
     this.sidePanelContent = getRequiredElement('.side-panel-content');
+    this.sidePanelHeader = getRequiredElement('.side-panel-header');
     
     // Initialize PlantUML renderer
     this.plantUMLRenderer = new PlantUMLRenderer(this.diagramCanvas);
@@ -285,6 +287,7 @@ class WorkflowVisualizerApp {
    */
   private updateSidePanel(): void {
     if (!this.appState.currentWorkflow) {
+      this.sidePanelHeader.innerHTML = '<h2>Details</h2>';
       this.sidePanelContent.innerHTML = '<div class="empty-state">Select a workflow to see details</div>';
       return;
     }
@@ -292,44 +295,10 @@ class WorkflowVisualizerApp {
     if (this.appState.selectedElement) {
       this.renderSelectedElementDetails();
     } else {
-      this.renderWorkflowOverview();
+      // No overview needed - just show empty state
+      this.sidePanelHeader.innerHTML = '<h2>Details</h2>';
+      this.sidePanelContent.innerHTML = '<div class="empty-state">Click on a state or transition to see details</div>';
     }
-  }
-
-  /**
-   * Render workflow overview in side panel
-   */
-  private renderWorkflowOverview(): void {
-    const workflow = this.appState.currentWorkflow!;
-    
-    this.sidePanelContent.innerHTML = `
-      <div class="detail-section">
-        <h3 class="detail-title">${workflow.name}</h3>
-        <p class="detail-content">${workflow.description}</p>
-      </div>
-      
-      <div class="detail-section">
-        <h4 class="detail-subtitle">Initial State</h4>
-        <div class="code-block">${workflow.initial_state}</div>
-      </div>
-      
-      <div class="detail-section">
-        <h4 class="detail-subtitle">States (${Object.keys(workflow.states).length})</h4>
-        <ul class="detail-list">
-          ${Object.keys(workflow.states).map(stateName => `
-            <li class="detail-list-item ${stateName === workflow.initial_state ? 'active' : ''}">
-              ${stateName}
-            </li>
-          `).join('')}
-        </ul>
-      </div>
-      
-      <div class="detail-section">
-        <p class="detail-content" style="font-style: italic; color: var(--color-gray-500);">
-          Click on a state or transition to see detailed information.
-        </p>
-      </div>
-    `;
   }
 
   /**
@@ -353,36 +322,33 @@ class WorkflowVisualizerApp {
     const isInitial = stateId === workflow.initial_state;
     
     // Update header with back button
-    const header = this.container.querySelector('.side-panel-header') as HTMLElement;
-    if (header) {
-      header.innerHTML = `
-        <button class="back-button" style="
-          background: none;
-          border: none;
-          color: #6b7280;
-          cursor: pointer;
-          font-size: 18px;
-          padding: 4px;
-          margin-right: 8px;
-          border-radius: 4px;
-          transition: all 0.2s ease;
-        " title="Back to Overview">←</button>
-        <h2>State: ${stateId}</h2>
-      `;
-      
-      const backButton = header.querySelector('.back-button');
-      backButton?.addEventListener('click', () => {
-        this.clearSelection();
-      });
-      
-      backButton?.addEventListener('mouseenter', () => {
-        (backButton as HTMLElement).style.backgroundColor = '#f3f4f6';
-      });
-      
-      backButton?.addEventListener('mouseleave', () => {
-        (backButton as HTMLElement).style.backgroundColor = 'transparent';
-      });
-    }
+    this.sidePanelHeader.innerHTML = `
+      <button class="back-button" style="
+        background: none;
+        border: none;
+        color: #6b7280;
+        cursor: pointer;
+        font-size: 18px;
+        padding: 4px;
+        margin-right: 8px;
+        border-radius: 4px;
+        transition: all 0.2s ease;
+      " title="Back to Overview">←</button>
+      <h2>State: ${stateId}</h2>
+    `;
+    
+    const backButton = this.sidePanelHeader.querySelector('.back-button');
+    backButton?.addEventListener('click', () => {
+      this.clearSelection();
+    });
+    
+    backButton?.addEventListener('mouseenter', () => {
+      (backButton as HTMLElement).style.backgroundColor = '#f3f4f6';
+    });
+    
+    backButton?.addEventListener('mouseleave', () => {
+      (backButton as HTMLElement).style.backgroundColor = 'transparent';
+    });
     
     // Render state content
     this.sidePanelContent.innerHTML = `
@@ -464,36 +430,33 @@ class WorkflowVisualizerApp {
    */
   private renderTransitionDetailsWithHeader(transitionData: TransitionData): void {
     // Update header with back button
-    const header = this.container.querySelector('.side-panel-header') as HTMLElement;
-    if (header) {
-      header.innerHTML = `
-        <button class="back-button" style="
-          background: none;
-          border: none;
-          color: #6b7280;
-          cursor: pointer;
-          font-size: 18px;
-          padding: 4px;
-          margin-right: 8px;
-          border-radius: 4px;
-          transition: all 0.2s ease;
-        " title="Back to State">←</button>
-        <h2>Transition: ${transitionData.trigger}</h2>
-      `;
-      
-      const backButton = header.querySelector('.back-button');
-      backButton?.addEventListener('click', () => {
-        this.goBackToParentState();
-      });
-      
-      backButton?.addEventListener('mouseenter', () => {
-        (backButton as HTMLElement).style.backgroundColor = '#f3f4f6';
-      });
-      
-      backButton?.addEventListener('mouseleave', () => {
-        (backButton as HTMLElement).style.backgroundColor = 'transparent';
-      });
-    }
+    this.sidePanelHeader.innerHTML = `
+      <button class="back-button" style="
+        background: none;
+        border: none;
+        color: #6b7280;
+        cursor: pointer;
+        font-size: 18px;
+        padding: 4px;
+        margin-right: 8px;
+        border-radius: 4px;
+        transition: all 0.2s ease;
+      " title="Back to State">←</button>
+      <h2>Transition: ${transitionData.trigger}</h2>
+    `;
+    
+    const backButton = this.sidePanelHeader.querySelector('.back-button');
+    backButton?.addEventListener('click', () => {
+      this.goBackToParentState();
+    });
+    
+    backButton?.addEventListener('mouseenter', () => {
+      (backButton as HTMLElement).style.backgroundColor = '#f3f4f6';
+    });
+    
+    backButton?.addEventListener('mouseleave', () => {
+      (backButton as HTMLElement).style.backgroundColor = 'transparent';
+    });
     
     // Render transition content
     this.sidePanelContent.innerHTML = `
@@ -550,10 +513,7 @@ class WorkflowVisualizerApp {
     this.appState.parentState = null;
     
     // Reset header
-    const header = this.container.querySelector('.side-panel-header') as HTMLElement;
-    if (header) {
-      header.innerHTML = '<h2>Workflow Details</h2>';
-    }
+    this.sidePanelHeader.innerHTML = '<h2>Details</h2>';
     
     this.updateSidePanel();
   }
