@@ -285,6 +285,33 @@ export function registerMcpTools(
     }
   );
 
+  // Register get_tool_info tool
+  mcpServer.registerTool(
+    'get_tool_info',
+    {
+      description: 'Get comprehensive information about the responsible-vibe-mcp development workflow tools for better tool discoverability and AI integration. Returns detailed information about all available tools, workflows, core concepts, and usage guidelines.',
+      inputSchema: {
+        // No input parameters needed
+      },
+      annotations: {
+        title: 'Tool Information Provider',
+        readOnlyHint: true,
+        destructiveHint: false,
+        idempotentHint: true,
+        openWorldHint: false
+      }
+    },
+    async (args) => {
+      const handler = toolRegistry.get('get_tool_info');
+      if (!handler) {
+        return responseRenderer.renderError('Tool handler not found: get_tool_info');
+      }
+      
+      const result = await handler.handle(args, context);
+      return responseRenderer.renderToolResponse(result);
+    }
+  );
+
   logger.info('MCP tools registered successfully', { 
     tools: toolRegistry.list() 
   });
