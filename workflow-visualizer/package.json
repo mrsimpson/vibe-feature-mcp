@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "Web app for visualizing responsible-vibe workflow state machines",
   "type": "module",
+  "bin": {
+    "workflow-visualizer": "bin/visualizer.js"
+  },
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",

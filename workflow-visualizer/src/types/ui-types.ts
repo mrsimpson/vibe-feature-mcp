@@ -9,6 +9,16 @@ import type { YamlStateMachine, YamlState, YamlTransition } from '../../../src/s
 export type { YamlStateMachine, YamlState, YamlTransition };
 
 /**
+ * Interaction event for diagram elements
+ */
+export interface InteractionEvent {
+  elementType: 'node' | 'edge' | 'transition';
+  elementId?: string;
+  data?: any;
+  originalEvent?: Event;
+}
+
+/**
  * Application state interface
  */
 export interface AppState {

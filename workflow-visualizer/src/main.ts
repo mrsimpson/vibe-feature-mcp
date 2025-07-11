@@ -8,6 +8,7 @@ import { FileUploadHandler } from './services/FileUploadHandler';
 import { ErrorHandler } from './utils/ErrorHandler';
 import { PlantUMLRenderer } from './visualization/PlantUMLRenderer';
 import { getRequiredElement } from './utils/DomHelpers';
+import type { InteractionEvent } from './types/ui-types';
 import { YamlStateMachine, AppState, TransitionData } from './types/ui-types';
 
 class WorkflowVisualizerApp {
@@ -53,7 +54,7 @@ class WorkflowVisualizerApp {
         });
       } else if (elementType === 'transition') {
         this.handleElementClick({
-          elementType: 'link',
+          elementType: 'transition',
           elementId: elementId,
           data: data
         });
@@ -203,20 +204,9 @@ class WorkflowVisualizerApp {
     if (event.elementType === 'node' && event.data) {
       console.log('Selecting state:', event.elementId);
       this.selectState(event.elementId!, event.data);
-    } else if (event.elementType === 'link' && event.data) {
+    } else if (event.elementType === 'transition' && event.data) {
       console.log('Selecting transition:', event.elementId);
       this.selectTransition(event.elementId!, event.data);
-    }
-  }
-
-  /**
-   * Handle element hover in the diagram
-   */
-  private handleElementHover(event: InteractionEvent): void {
-    // For now, just log hover events
-    // Could be extended to show tooltips
-    if (event.type === 'hover') {
-      console.log('Element hovered:', event.elementType, event.elementId);
     }
   }
 
@@ -270,16 +260,6 @@ class WorkflowVisualizerApp {
       
       console.log('Transition selected and side panel updated:', transitionId);
     }
-  }
-
-  /**
-   * Highlight a transition path
-   */
-  private highlightTransitionPath(fromState: string, toState: string): void {
-    // Note: PlantUML diagrams don't support interactive path highlighting
-    // Path information is shown in the side panel instead
-    const pathElements = [fromState, toState];
-    this.appState.highlightedPath = pathElements;
   }
 
   /**
@@ -519,116 +499,6 @@ class WorkflowVisualizerApp {
   }
 
   /**
-   * Render state details
-   */
-  private renderStateDetails(stateId: string, stateData: any, container: HTMLElement): void {
-    const workflow = this.appState.currentWorkflow!;
-    const isInitial = stateId === workflow.initial_state;
-    
-    container.innerHTML = `
-      <div class="detail-section">
-        <h3 class="detail-title">
-          ${stateId}
-          ${isInitial ? '<span class="badge badge-success">Initial</span>' : ''}
-        </h3>
-        <p class="detail-content">${stateData.description}</p>
-      </div>
-      
-      <div class="detail-section">
-        <h4 class="detail-subtitle">Default Instructions</h4>
-        <div class="code-block">${stateData.default_instructions}</div>
-      </div>
-      
-      <div class="detail-section">
-        <h4 class="detail-subtitle">Transitions (${stateData.transitions.length})</h4>
-        <ul class="transitions-list">
-          ${stateData.transitions.map((transition: any) => `
-            <li class="transition-item clickable-transition" data-from="${stateId}" data-to="${transition.to}" data-trigger="${transition.trigger}">
-              <div class="transition-trigger">${transition.trigger}</div>
-              <div class="transition-target">→ ${transition.to}</div>
-              <div class="transition-reason">${transition.transition_reason}</div>
-            </li>
-          `).join('')}
-        </ul>
-      </div>
-    `;
-    
-    // Add click handlers to transitions
-    const transitionItems = container.querySelectorAll('.clickable-transition');
-    transitionItems.forEach(item => {
-      item.addEventListener('click', (e) => {
-        e.stopPropagation();
-        const fromState = item.getAttribute('data-from');
-        const toState = item.getAttribute('data-to');
-        const trigger = item.getAttribute('data-trigger');
-        
-        if (fromState && toState && trigger) {
-          console.log('Side panel transition clicked:', `${fromState}->${toState}`);
-          
-          // Find the full transition data
-          const fullTransition = stateData.transitions.find((t: any) => 
-            t.to === toState && t.trigger === trigger
-          );
-          
-          if (fullTransition) {
-            this.selectTransition(`${fromState}->${toState}`, {
-              from: fromState,
-              to: toState,
-              trigger: trigger,
-              instructions: fullTransition.instructions,
-              additional_instructions: fullTransition.additional_instructions,
-              transition_reason: fullTransition.transition_reason
-            });
-          }
-        }
-      });
-      
-      // Add hover effects
-      item.addEventListener('mouseenter', () => {
-        (item as HTMLElement).style.backgroundColor = '#f0f9ff';
-        (item as HTMLElement).style.cursor = 'pointer';
-      });
-      
-      item.addEventListener('mouseleave', () => {
-        (item as HTMLElement).style.backgroundColor = '';
-        (item as HTMLElement).style.cursor = '';
-      });
-    });
-  }
-
-  /**
-   * Render transition details
-   */
-  private renderTransitionDetails(transitionData: TransitionData, container: HTMLElement): void {
-    container.innerHTML = `
-      <div class="detail-section">
-        <h3 class="detail-title">Transition: ${transitionData.trigger}</h3>
-        <p class="detail-content">
-          <strong>${transitionData.from}</strong> → <strong>${transitionData.to}</strong>
-        </p>
-      </div>
-      
-      <div class="detail-section">
-        <h4 class="detail-subtitle">Reason</h4>
-        <p class="detail-content">${transitionData.transition_reason}</p>
-      </div>
-      
-      ${transitionData.instructions ? `
-        <div class="detail-section">
-          <h4 class="detail-subtitle">Instructions</h4>
-          <div class="code-block">${transitionData.instructions}</div>
-        </div>
-      ` : ''}
-      
-      ${transitionData.additional_instructions ? `
-        <div class="detail-section">
-          <h4 class="detail-subtitle">Additional Instructions</h4>
-          <div class="code-block">${transitionData.additional_instructions}</div>
-        </div>
-      ` : ''}
-    `;
-  }
-
   /**
    * Clear the visualization
    */

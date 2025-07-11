@@ -1,10 +1,9 @@
-import { YamlStateMachine } from '../types/workflow-types';
+import { YamlStateMachine, YamlState } from '../types/ui-types';
 import * as plantumlEncoder from 'plantuml-encoder';
 
 export class PlantUMLRenderer {
   private container: HTMLElement;
   private onElementClick?: (elementType: 'state' | 'transition', elementId: string, data?: any) => void;
-  private currentWorkflow?: YamlStateMachine;
 
   constructor(container: HTMLElement) {
     this.container = container;
@@ -22,8 +21,6 @@ export class PlantUMLRenderer {
    */
   public async renderWorkflow(workflow: YamlStateMachine): Promise<void> {
     console.log(`Rendering workflow with PlantUML: ${workflow.name}`);
-    
-    this.currentWorkflow = workflow;
     
     // Clear container and set up scrollable area
     this.container.innerHTML = '';
@@ -91,7 +88,7 @@ export class PlantUMLRenderer {
     lines.push('');
     
     // Add states with descriptions
-    Object.entries(workflow.states).forEach(([stateName, stateConfig]) => {
+    Object.entries(workflow.states).forEach(([stateName, stateConfig]: [string, YamlState]) => {
       if (stateConfig.description) {
         lines.push(`${stateName} : ${stateConfig.description}`);
       }
@@ -99,7 +96,7 @@ export class PlantUMLRenderer {
     lines.push('');
     
     // Add transitions
-    Object.entries(workflow.states).forEach(([stateName, stateConfig]) => {
+    Object.entries(workflow.states).forEach(([stateName, stateConfig]: [string, YamlState]) => {
       if (stateConfig.transitions) {
         stateConfig.transitions.forEach(transition => {
           const label = transition.trigger.replace(/_/g, ' ');
@@ -177,12 +174,12 @@ export class PlantUMLRenderer {
       container.appendChild(svgContainer);
       
       // Add simplified interactive cards (no transitions)
-      this.addSimplifiedInteractiveCards(container.parentElement!, workflow);
+      this.addSimplifiedInteractiveCards(container.parentElement!);
       
     } catch (error) {
       console.error('Failed to load interactive SVG:', error);
       this.showError('Failed to load interactive diagram. Using fallback.');
-      this.renderFallbackDiagram(workflow);
+      this.renderFallbackDiagram();
     }
   }
 
@@ -201,8 +198,8 @@ export class PlantUMLRenderer {
         const stateName = groupId;
         
         // Make the entire group clickable
-        group.style.cursor = 'pointer';
-        group.style.transition = 'all 0.2s ease';
+        (group as HTMLElement).style.cursor = 'pointer';
+        (group as HTMLElement).style.transition = 'all 0.2s ease';
         
         // Find the rect/shape element for hover effects
         const shape = group.querySelector('rect, ellipse, polygon');
@@ -253,8 +250,8 @@ export class PlantUMLRenderer {
           // Verify these are valid states
           if (states.includes(fromState) && states.includes(toState)) {
             // Make the entire link group clickable
-            linkGroup.style.cursor = 'pointer';
-            linkGroup.style.transition = 'all 0.2s ease';
+            (linkGroup as HTMLElement).style.cursor = 'pointer';
+            (linkGroup as HTMLElement).style.transition = 'all 0.2s ease';
             
             // Find path and text elements for hover effects
             const pathEl = linkGroup.querySelector('path');
@@ -317,7 +314,7 @@ export class PlantUMLRenderer {
   /**
    * Add simplified interactive cards (states only, no transitions)
    */
-  private addSimplifiedInteractiveCards(container: HTMLElement, workflow: YamlStateMachine): void {
+  private addSimplifiedInteractiveCards(container: HTMLElement): void {
     const instructionDiv = document.createElement('div');
     instructionDiv.style.marginTop = '15px';
     instructionDiv.style.textAlign = 'center';
@@ -335,7 +332,7 @@ export class PlantUMLRenderer {
   /**
    * Render fallback diagram if PlantUML fails
    */
-  private renderFallbackDiagram(workflow: YamlStateMachine): void {
+  private renderFallbackDiagram(): void {
     const fallbackDiv = document.createElement('div');
     fallbackDiv.style.padding = '20px';
     fallbackDiv.style.border = '2px dashed #94a3b8';
@@ -351,7 +348,6 @@ export class PlantUMLRenderer {
     `;
     
     this.container.appendChild(fallbackDiv);
-    this.addInteractiveOverlay(fallbackDiv, workflow);
   }
 
   /**

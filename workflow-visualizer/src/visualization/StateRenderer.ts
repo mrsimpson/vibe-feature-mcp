@@ -38,8 +38,8 @@ export class StateRenderer {
 
     // Add circles for states
     nodeEnter.append('circle')
-      .attr('cx', d => d.x)
-      .attr('cy', d => d.y)
+      .attr('cx', d => d.x || 0)
+      .attr('cy', d => d.y || 0)
       .attr('r', d => this.getNodeRadius(d))
       .style('fill', d => this.getNodeFill(d))
       .style('stroke', d => this.getNodeStroke(d))
@@ -48,8 +48,8 @@ export class StateRenderer {
     // Add labels for states
     nodeEnter.append('text')
       .attr('class', 'state-label')
-      .attr('x', d => d.x)
-      .attr('y', d => d.y)
+      .attr('x', d => d.x || 0)
+      .attr('y', d => d.y || 0)
       .attr('text-anchor', 'middle')
       .attr('dominant-baseline', 'central')
       .style('font-size', this.style.text.fontSize)
