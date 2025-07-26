@@ -146,16 +146,7 @@ function showSystemPrompt(): void {
     // Generate the system prompt
     const systemPrompt = generateSystemPrompt(stateMachine);
     
-    console.log('='.repeat(80));
-    console.log('SYSTEM PROMPT FOR LLM INTEGRATION');
-    console.log('='.repeat(80));
-    console.log();
     console.log(systemPrompt);
-    console.log();
-    console.log('='.repeat(80));
-    console.log('Copy the above system prompt to your LLM client configuration.');
-    console.log('This prompt enables proper integration with responsible-vibe-mcp.');
-    console.log('='.repeat(80));
     
   } catch (error) {
     console.error('Error generating system prompt:', error);
