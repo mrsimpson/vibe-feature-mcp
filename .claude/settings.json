@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__repsonsible-vibe__whats_next",
+      "mcp__repsonsible-vibe__start_development"
+    ],
+    "deny": [
+      "Bash(curl:*)"
+    ]
+  },
+  "env": {
+  }
+}
