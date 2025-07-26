@@ -60,7 +60,6 @@
   },
   "devDependencies": {
     "@modelcontextprotocol/inspector": "0.14.2",
-    "@rollup/rollup-linux-x64-gnu": "^4.45.0",
     "@types/node": "^20.0.0",
     "@types/sqlite3": "^3.1.11",
     "tsx": "4.20.3",
