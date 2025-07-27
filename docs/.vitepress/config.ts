@@ -5,7 +5,6 @@ export default defineConfig({
   title: 'Responsible Vibe MCP',
   description: 'Model Context Protocol server for intelligent conversation state management and development guidance',
   base: '/responsible-vibe-mcp/',
-  srcDir: '../',  // Use root directory as source
   ignoreDeadLinks: true,  // Temporarily ignore dead links
   
   vite: {
@@ -32,7 +31,6 @@ export default defineConfig({
       {
         text: 'Getting Started',
         items: [
-          { text: 'Introduction', link: '/README' },
           { text: 'Workflows Visualizer', link: '/workflows' }
         ]
       }
@@ -53,8 +51,4 @@ export default defineConfig({
     ['link', { rel: 'icon', href: '/responsible-vibe-mcp/favicon.ico' }]
   ],
 
-  // Rewrites to use existing files
-  rewrites: {
-    'README.md': 'index.md'
-  }
 })

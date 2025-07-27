@@ -1,6 +1,6 @@
 <template>
-  <div id="workflow-visualizer-app">
-    <header class="app-header">
+  <div id="workflow-visualizer-app" :class="{ 'fullscreen': !showSidebar }">
+    <header class="app-header" v-if="!hideHeader">
       <h1>Workflow Visualizer</h1>
       <div class="workflow-controls">
         <select id="workflow-selector" class="workflow-selector">
@@ -11,14 +11,14 @@
       </div>
     </header>
 
-    <main class="app-main">
+    <main class="app-main" :class="{ 'no-sidebar': !showSidebar }">
       <div class="diagram-container">
         <div id="diagram-canvas" class="diagram-canvas">
-          <div class="loading-message">Select a workflow to visualize</div>
+          <div class="loading-message">{{ initialWorkflow ? 'Loading workflow...' : 'Select a workflow to visualize' }}</div>
         </div>
       </div>
       
-      <aside class="side-panel">
+      <aside v-if="showSidebar" class="side-panel">
         <div class="side-panel-header">
           <h2>Details</h2>
         </div>
@@ -42,6 +42,19 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted } from 'vue'
 
+// Component props
+interface Props {
+  showSidebar?: boolean
+  hideHeader?: boolean
+  initialWorkflow?: string
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  showSidebar: true,
+  hideHeader: false,
+  initialWorkflow: ''
+})
+
 let workflowVisualizerApp: any = null
 
 onMounted(async () => {
@@ -59,48 +72,69 @@ onMounted(async () => {
     const workflowLoader = new WorkflowLoader()
     const errorHandler = new ErrorHandler()
     
-    // Get DOM elements
-    const workflowSelector = getRequiredElement<HTMLSelectElement>('#workflow-selector')
-    const fileUploadInput = getRequiredElement<HTMLInputElement>('#file-upload')
+    // Get DOM elements (some may not exist if header is hidden)
+    const workflowSelector = document.querySelector<HTMLSelectElement>('#workflow-selector')
+    const fileUploadInput = document.querySelector<HTMLInputElement>('#file-upload')
     const diagramCanvas = getRequiredElement('#diagram-canvas')
-    const sidePanelContent = getRequiredElement('.side-panel-content')
-    const sidePanelHeader = getRequiredElement('.side-panel-header')
+    const sidePanelContent = document.querySelector('.side-panel-content')
+    const sidePanelHeader = document.querySelector('.side-panel-header')
     
     // Initialize PlantUML renderer
     const plantUMLRenderer = new PlantUMLRenderer(diagramCanvas)
     
-    // Initialize file upload handler
-    const fileUploadHandler = new FileUploadHandler(fileUploadInput, workflowLoader)
+    // Initialize file upload handler (only if element exists)
+    let fileUploadHandler = null
+    if (fileUploadInput) {
+      fileUploadHandler = new FileUploadHandler(fileUploadInput, workflowLoader)
+    }
     
-    // Set up event listeners and populate workflow selector
-    workflowSelector.addEventListener('change', async (event) => {
-      const target = event.target as HTMLSelectElement
-      const workflowName = target.value
+    // Set up event listeners and populate workflow selector (only if selector exists)
+    if (workflowSelector) {
+      workflowSelector.addEventListener('change', async (event) => {
+        const target = event.target as HTMLSelectElement
+        const workflowName = target.value
+        
+        if (!workflowName) {
+          diagramCanvas.innerHTML = '<div class="loading-message">Select a workflow to visualize</div>'
+          return
+        }
+        
+        try {
+          diagramCanvas.innerHTML = '<div class="loading-message">Loading workflow...</div>'
+          const workflow = await workflowLoader.loadBuiltinWorkflow(workflowName)
+          await plantUMLRenderer.renderWorkflow(workflow)
+          console.log(`Workflow loaded: ${workflow.name}`)
+        } catch (error) {
+          console.error('Failed to load workflow:', error)
+          diagramCanvas.innerHTML = '<div class="loading-message">Failed to load workflow</div>'
+        }
+      })
       
-      if (!workflowName) {
-        diagramCanvas.innerHTML = '<div class="loading-message">Select a workflow to visualize</div>'
-        return
-      }
-      
+      // Populate workflow selector
+      const workflows = workflowLoader.getAvailableWorkflows()
+      workflows.forEach(workflow => {
+        const option = document.createElement('option')
+        option.value = workflow.name
+        option.textContent = `${workflow.displayName} - ${workflow.description}`
+        workflowSelector.appendChild(option)
+      })
+    }
+    
+    // Load initial workflow if specified
+    if (props.initialWorkflow) {
       try {
-        diagramCanvas.innerHTML = '<div class="loading-message">Loading workflow...</div>'
-        const workflow = await workflowLoader.loadBuiltinWorkflow(workflowName)
+        const workflow = await workflowLoader.loadBuiltinWorkflow(props.initialWorkflow)
         await plantUMLRenderer.renderWorkflow(workflow)
-        console.log(`Workflow loaded: ${workflow.name}`)
+        // Only update selector if it exists (when header is visible)
+        if (workflowSelector) {
+          workflowSelector.value = props.initialWorkflow
+        }
+        console.log(`Initial workflow loaded: ${workflow.name}`)
       } catch (error) {
-        console.error('Failed to load workflow:', error)
+        console.error('Failed to load initial workflow:', error)
         diagramCanvas.innerHTML = '<div class="loading-message">Failed to load workflow</div>'
       }
-    })
-    
-    // Populate workflow selector
-    const workflows = workflowLoader.getAvailableWorkflows()
-    workflows.forEach(workflow => {
-      const option = document.createElement('option')
-      option.value = workflow.name
-      option.textContent = `${workflow.displayName} - ${workflow.description}`
-      workflowSelector.appendChild(option)
-    })
+    }
     
     workflowVisualizerApp = { workflowLoader, plantUMLRenderer, fileUploadHandler, errorHandler }
     console.log('Workflow Visualizer initialized successfully')
@@ -243,6 +277,14 @@ onUnmounted(() => {
 #workflow-visualizer-app .app-main {
   display: flex;
   height: 500px;
+}
+
+#workflow-visualizer-app .app-main.no-sidebar {
+  height: 600px;
+}
+
+#workflow-visualizer-app.fullscreen .app-main {
+  height: 80vh;
 }
 
 #workflow-visualizer-app .diagram-container {

@@ -1,13 +1,12 @@
 {
   "permissions": {
     "allow": [
+      "Bash(ls:*)",
+      "Bash(find:*)",
       "mcp__repsonsible-vibe__whats_next",
       "mcp__repsonsible-vibe__start_development"
     ],
-    "deny": [
-      "Bash(curl:*)"
-    ]
+    "deny": ["Bash(curl:*)"]
   },
-  "env": {
-  }
+  "env": {}
 }
