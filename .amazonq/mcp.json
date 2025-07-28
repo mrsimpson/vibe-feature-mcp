@@ -31,12 +31,14 @@
       "args": [
         "mcp-remote",
         "https://gitmcp.io/modelcontextprotocol/typescript-sdk"
-      ],
-      "plantUML Docs": {
-        "command": "npx",
-        "args": [
-          "mcp-remote",
-          "https://gitmcp.io/plantuml/plantuml.js"
+      ]
+    },
+    "plantUML Docs": {
+      "command": "npx",
+      "args": [
+        "mcp-remote",
+        "https://gitmcp.io/plantuml/plantuml.js"
+      ]
     }
   }
 }

@@ -1,11 +1,9 @@
 {
   "mcpServers": {
-    "repsonsible-vibe": {
+    "responsible-vibe": {
       "type": "stdio",
       "command": "npx",
-      "args": [
-        "responsible-vibe-mcp"
-      ],
+      "args": ["responsible-vibe-mcp"],
       "env": {}
     }
   }
