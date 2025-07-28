@@ -20,4 +20,4 @@ aside: false
 </style>
 
 
-<WorkflowVisualizer :showSidebar="false" />
+<WorkflowVisualizer :showSidebar="true" />

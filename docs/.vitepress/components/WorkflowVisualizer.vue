@@ -56,6 +56,250 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 let workflowVisualizerApp: any = null
+let appState: any = {
+  currentWorkflow: null,
+  selectedElement: null,
+  highlightedPath: null,
+  isLoading: false,
+  error: null,
+  parentState: null
+}
+
+// Helper functions for handling interactions
+function handleElementClick(event: any): void {
+  console.log('Element clicked:', event.elementType, event.elementId, event.data)
+  
+  if (event.elementType === 'node' && event.data) {
+    console.log('Selecting state:', event.elementId)
+    selectState(event.elementId, event.data)
+  } else if (event.elementType === 'transition' && event.data) {
+    console.log('Selecting transition:', event.elementId)
+    selectTransition(event.elementId, event.data)
+  }
+}
+
+function selectState(stateId: string, nodeData: any): void {
+  const workflow = appState.currentWorkflow
+  if (!workflow || !workflow.states[stateId]) return
+  
+  const state = workflow.states[stateId]
+  
+  appState.selectedElement = {
+    type: 'state',
+    id: stateId,
+    data: state
+  }
+  
+  updateSidePanel()
+  console.log('State selected and side panel updated:', stateId)
+}
+
+function selectTransition(transitionId: string, linkData: any): void {
+  const workflow = appState.currentWorkflow
+  if (!workflow) return
+  
+  if (linkData && linkData.from && linkData.to && linkData.trigger) {
+    const transitionData = {
+      trigger: linkData.trigger,
+      from: linkData.from,
+      to: linkData.to,
+      instructions: linkData.instructions || '',
+      additional_instructions: linkData.additional_instructions || '',
+      transition_reason: linkData.transition_reason || ''
+    }
+    
+    appState.selectedElement = {
+      type: 'transition',
+      id: transitionId,
+      data: transitionData
+    }
+    
+    updateSidePanel()
+    console.log('Transition selected and side panel updated:', transitionId)
+  }
+}
+
+function updateSidePanel(): void {
+  const sidePanelContent = document.querySelector('.side-panel-content')
+  const sidePanelHeader = document.querySelector('.side-panel-header')
+  
+  if (!sidePanelContent || !sidePanelHeader) return // Side panel not visible
+  
+  if (!appState.currentWorkflow) {
+    sidePanelHeader.innerHTML = '<h2>Details</h2>'
+    sidePanelContent.innerHTML = '<div class="empty-state">Select a workflow to see details</div>'
+    return
+  }
+  
+  if (appState.selectedElement) {
+    renderSelectedElementDetails()
+  } else {
+    sidePanelHeader.innerHTML = '<h2>Details</h2>'
+    sidePanelContent.innerHTML = '<div class="empty-state">Click on a state or transition to see details</div>'
+  }
+}
+
+function renderSelectedElementDetails(): void {
+  const element = appState.selectedElement
+  
+  if (element.type === 'state') {
+    renderStateDetailsWithHeader(element.id, element.data)
+  } else if (element.type === 'transition') {
+    renderTransitionDetailsWithHeader(element.data)
+  }
+}
+
+function renderStateDetailsWithHeader(stateId: string, stateData: any): void {
+  const workflow = appState.currentWorkflow
+  const isInitial = stateId === workflow.initial_state
+  const sidePanelHeader = document.querySelector('.side-panel-header')
+  const sidePanelContent = document.querySelector('.side-panel-content')
+  
+  if (!sidePanelHeader || !sidePanelContent) return
+  
+  // Update header with back button
+  sidePanelHeader.innerHTML = `
+    <button class="back-button" title="Back to Overview">←</button>
+    <h2>State: ${stateId}</h2>
+  `
+  
+  const backButton = sidePanelHeader.querySelector('.back-button')
+  backButton?.addEventListener('click', () => {
+    clearSelection()
+  })
+  
+  // Render state content
+  sidePanelContent.innerHTML = `
+    <div class="detail-section">
+      <h3 class="detail-title">
+        ${stateId}
+        ${isInitial ? '<span class="badge badge-success">Initial</span>' : ''}
+      </h3>
+      <p class="detail-content">${stateData.description}</p>
+    </div>
+    
+    <div class="detail-section">
+      <h4 class="detail-subtitle">Default Instructions</h4>
+      <div class="code-block">${stateData.default_instructions}</div>
+    </div>
+    
+    <div class="detail-section">
+      <h4 class="detail-subtitle">Transitions (${stateData.transitions.length})</h4>
+      <ul class="transitions-list">
+        ${stateData.transitions.map((transition: any) => `
+          <li class="transition-item clickable-transition" data-from="${stateId}" data-to="${transition.to}" data-trigger="${transition.trigger}">
+            <div class="transition-trigger">${transition.trigger}</div>
+            <div class="transition-target">→ ${transition.to}</div>
+            <div class="transition-reason">${transition.transition_reason}</div>
+          </li>
+        `).join('')}
+      </ul>
+    </div>
+  `
+  
+  // Add click handlers to transitions
+  const transitionItems = sidePanelContent.querySelectorAll('.clickable-transition')
+  transitionItems.forEach(item => {
+    item.addEventListener('click', (e) => {
+      e.stopPropagation()
+      const fromState = item.getAttribute('data-from')
+      const toState = item.getAttribute('data-to')
+      const trigger = item.getAttribute('data-trigger')
+      
+      if (fromState && toState && trigger) {
+        const fullTransition = stateData.transitions.find((t: any) => 
+          t.to === toState && t.trigger === trigger
+        )
+        
+        if (fullTransition) {
+          appState.parentState = { id: stateId, data: stateData }
+          
+          selectTransition(`${fromState}->${toState}`, {
+            from: fromState,
+            to: toState,
+            trigger: trigger,
+            instructions: fullTransition.instructions,
+            additional_instructions: fullTransition.additional_instructions,
+            transition_reason: fullTransition.transition_reason
+          })
+        }
+      }
+    })
+  })
+}
+
+function renderTransitionDetailsWithHeader(transitionData: any): void {
+  const sidePanelHeader = document.querySelector('.side-panel-header')
+  const sidePanelContent = document.querySelector('.side-panel-content')
+  
+  if (!sidePanelHeader || !sidePanelContent) return
+  
+  // Update header with back button
+  sidePanelHeader.innerHTML = `
+    <button class="back-button" title="Back to State">←</button>
+    <h2>Transition: ${transitionData.trigger}</h2>
+  `
+  
+  const backButton = sidePanelHeader.querySelector('.back-button')
+  backButton?.addEventListener('click', () => {
+    goBackToParentState()
+  })
+  
+  // Render transition content
+  sidePanelContent.innerHTML = `
+    <div class="detail-section">
+      <h3 class="detail-title">Transition: ${transitionData.trigger}</h3>
+      <p class="detail-content">
+        <strong>${transitionData.from}</strong> → <strong>${transitionData.to}</strong>
+      </p>
+    </div>
+    
+    <div class="detail-section">
+      <h4 class="detail-subtitle">Reason</h4>
+      <p class="detail-content">${transitionData.transition_reason}</p>
+    </div>
+    
+    ${transitionData.instructions ? `
+      <div class="detail-section">
+        <h4 class="detail-subtitle">Instructions</h4>
+        <div class="code-block">${transitionData.instructions}</div>
+      </div>
+    ` : ''}
+    
+    ${transitionData.additional_instructions ? `
+      <div class="detail-section">
+        <h4 class="detail-subtitle">Additional Instructions</h4>
+        <div class="code-block">${transitionData.additional_instructions}</div>
+      </div>
+    ` : ''}
+  `
+}
+
+function goBackToParentState(): void {
+  if (appState.parentState) {
+    appState.selectedElement = {
+      type: 'state',
+      id: appState.parentState.id,
+      data: appState.parentState.data
+    }
+    appState.parentState = null
+    updateSidePanel()
+  } else {
+    clearSelection()
+  }
+}
+
+function clearSelection(): void {
+  appState.selectedElement = null
+  appState.parentState = null
+  
+  const sidePanelHeader = document.querySelector('.side-panel-header')
+  if (sidePanelHeader) {
+    sidePanelHeader.innerHTML = '<h2>Details</h2>'
+  }
+  
+  updateSidePanel()
+}
 
 onMounted(async () => {
   try {
@@ -82,6 +326,25 @@ onMounted(async () => {
     // Initialize PlantUML renderer
     const plantUMLRenderer = new PlantUMLRenderer(diagramCanvas)
     
+    // Set up click handler for interactive elements
+    plantUMLRenderer.setClickHandler((elementType, elementId, data) => {
+      console.log('PlantUML element clicked:', elementType, elementId, data)
+      
+      if (elementType === 'state') {
+        handleElementClick({
+          elementType: 'node',
+          elementId: elementId,
+          data: data
+        })
+      } else if (elementType === 'transition') {
+        handleElementClick({
+          elementType: 'transition',
+          elementId: elementId,
+          data: data
+        })
+      }
+    })
+    
     // Initialize file upload handler (only if element exists)
     let fileUploadHandler = null
     if (fileUploadInput) {
@@ -102,7 +365,11 @@ onMounted(async () => {
         try {
           diagramCanvas.innerHTML = '<div class="loading-message">Loading workflow...</div>'
           const workflow = await workflowLoader.loadBuiltinWorkflow(workflowName)
+          appState.currentWorkflow = workflow
+          appState.selectedElement = null
+          appState.highlightedPath = null
           await plantUMLRenderer.renderWorkflow(workflow)
+          updateSidePanel()
           console.log(`Workflow loaded: ${workflow.name}`)
         } catch (error) {
           console.error('Failed to load workflow:', error)
@@ -124,11 +391,15 @@ onMounted(async () => {
     if (props.initialWorkflow) {
       try {
         const workflow = await workflowLoader.loadBuiltinWorkflow(props.initialWorkflow)
+        appState.currentWorkflow = workflow
+        appState.selectedElement = null
+        appState.highlightedPath = null
         await plantUMLRenderer.renderWorkflow(workflow)
         // Only update selector if it exists (when header is visible)
         if (workflowSelector) {
           workflowSelector.value = props.initialWorkflow
         }
+        updateSidePanel()
         console.log(`Initial workflow loaded: ${workflow.name}`)
       } catch (error) {
         console.error('Failed to load initial workflow:', error)
@@ -202,7 +473,7 @@ onUnmounted(() => {
 /* Container for the entire visualizer */
 #workflow-visualizer-app {
   width: 100%;
-  min-height: 600px;
+  height: 100%;
   background: var(--color-white);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-lg);
@@ -276,11 +547,7 @@ onUnmounted(() => {
 /* Main Layout */
 #workflow-visualizer-app .app-main {
   display: flex;
-  height: 500px;
-}
-
-#workflow-visualizer-app .app-main.no-sidebar {
-  height: 600px;
+  height: 100%;
 }
 
 #workflow-visualizer-app.fullscreen .app-main {
