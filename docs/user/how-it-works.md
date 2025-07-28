@@ -1,4 +1,8 @@
-# Examples
+---
+aside: false
+---
+
+# How it works
 
 This document provides comprehensive interaction examples and workflows for the Responsible Vibe MCP Server.
 
