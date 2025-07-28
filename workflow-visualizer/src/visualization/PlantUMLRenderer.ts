@@ -181,9 +181,6 @@ export class PlantUMLRenderer {
       
       container.appendChild(svgContainer);
       
-      // Add simplified interactive cards (no transitions)
-      this.addSimplifiedInteractiveCards(container.parentElement!);
-      
     } catch (error) {
       console.error('Failed to load interactive SVG:', error);
       this.showError('Failed to load interactive diagram. Using fallback.');
@@ -317,24 +314,6 @@ export class PlantUMLRenderer {
         }
       }
     });
-  }
-
-  /**
-   * Add simplified interactive cards (states only, no transitions)
-   */
-  private addSimplifiedInteractiveCards(container: HTMLElement): void {
-    const instructionDiv = document.createElement('div');
-    instructionDiv.style.marginTop = '15px';
-    instructionDiv.style.textAlign = 'center';
-    instructionDiv.style.color = '#64748b';
-    instructionDiv.style.fontSize = '14px';
-    instructionDiv.innerHTML = `
-      <div style="padding: 10px; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0;">
-        💡 <strong>Tip:</strong> Click on states in the diagram above or cards below. Transitions are shown in the right panel.
-      </div>
-    `;
-    
-    container.appendChild(instructionDiv);
   }
 
   /**
