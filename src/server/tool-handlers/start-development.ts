@@ -30,6 +30,7 @@ export interface StartDevelopmentResult {
   plan_file_path: string;
   conversation_id: string;
   workflow: any; // State machine object
+  workflowDocumentationUrl?: string;
 }
 
 /**
@@ -45,10 +46,10 @@ export class StartDevelopmentHandler extends BaseToolHandler<StartDevelopmentArg
     validateRequiredArgs(args, ['workflow']);
 
     const selectedWorkflow = args.workflow;
-    
+
     // Process git commit configuration
     const isGitRepository = GitManager.isGitRepository(context.projectPath);
-    
+
     // Translate commit_behaviour to internal git config
     const commitBehaviour = args.commit_behaviour ?? (isGitRepository ? 'end' : 'none');
     const gitCommitConfig: GitCommitConfig = {
@@ -60,7 +61,7 @@ export class StartDevelopmentHandler extends BaseToolHandler<StartDevelopmentArg
       startCommitHash: GitManager.getCurrentCommitHash(context.projectPath) || undefined
     };
 
-    this.logger.debug('Processing start_development request', { 
+    this.logger.debug('Processing start_development request', {
       selectedWorkflow,
       projectPath: context.projectPath,
       commitBehaviour,
@@ -86,36 +87,36 @@ export class StartDevelopmentHandler extends BaseToolHandler<StartDevelopmentArg
         conversation_id: '',
         workflow: {}
       };
-      
-      this.logger.debug('User on main/master branch, prompting for branch creation', { 
-        currentBranch, 
-        suggestedBranchName 
+
+      this.logger.debug('User on main/master branch, prompting for branch creation', {
+        currentBranch,
+        suggestedBranchName
       });
-      
+
       return branchPromptResponse;
     }
 
     // Create or get conversation context with the selected workflow
     const conversationContext = await context.conversationManager.createConversationContext(selectedWorkflow);
     const currentPhase = conversationContext.currentPhase;
-    
+
     // Load the selected workflow
     const stateMachine = context.workflowManager.loadWorkflowForProject(
-      conversationContext.projectPath, 
+      conversationContext.projectPath,
       selectedWorkflow
     );
     const initialState = stateMachine.initial_state;
-    
+
     // Check if development is already started
     if (currentPhase !== initialState) {
       throw new Error(
         `Development already started. Current phase is '${currentPhase}', not initial state '${initialState}'. Use whats_next() to continue development.`
       );
     }
-    
+
     // The initial state IS the first development phase - it's explicitly modeled
     const targetPhase = initialState;
-    
+
     // Transition to the initial development phase
     const transitionResult = await context.transitionEngine.handleExplicitTransition(
       currentPhase,
@@ -124,45 +125,54 @@ export class StartDevelopmentHandler extends BaseToolHandler<StartDevelopmentArg
       'Development initialization',
       selectedWorkflow
     );
-    
+
     // Update conversation state with workflow, phase, and git commit configuration
     await context.conversationManager.updateConversationState(
       conversationContext.conversationId,
-      { 
+      {
         currentPhase: transitionResult.newPhase,
         workflowName: selectedWorkflow,
         gitCommitConfig: gitCommitConfig
       }
     );
-    
+
     // Set state machine on plan manager before creating plan file
     context.planManager.setStateMachine(stateMachine);
-    
+
     // Ensure plan file exists
     await context.planManager.ensurePlanFile(
       conversationContext.planFilePath,
       conversationContext.projectPath,
       conversationContext.gitBranch
     );
-    
+
     // Ensure .gitignore contains .vibe/*.sqlite entry for git repositories
     this.ensureGitignoreEntry(conversationContext.projectPath);
-    
+
+    // Generate workflow documentation URL
+    const workflowDocumentationUrl = this.generateWorkflowDocumentationUrl(selectedWorkflow);
+
     // Generate instructions with simple i18n guidance
     const baseInstructions = `Look at the plan file (${conversationContext.planFilePath}). Define entrance criteria for each phase of the workflow except the initial phase. Those criteria shall be based on the contents of the previous phase. \n      Example: \n      \`\`\`\n      ## Design\n\n      ### Phase Entrance Criteria:\n      - [ ] The requirements have been thoroughly defined.\n      - [ ] Alternatives have been evaluated and are documented. \n      - [ ] It's clear what's in scope and out of scope\n      \`\`\`\n      \n      IMPORTANT: Once you added reasonable entrance call the whats_next() tool to get guided instructions for the next current phase.`;
-    
+
     const i18nGuidance = `\n\nNOTE: If the user is communicating in a non-English language, please translate the plan file content to that language while keeping the structure intact, and continue all interactions in the user's language.`;
-    
-    const finalInstructions = baseInstructions + i18nGuidance;
-    
+
+    // Add workflow documentation information if available
+    const workflowDocumentationInfo = workflowDocumentationUrl
+      ? `\n\nInform the user about the chose workflow: He can visit: ${workflowDocumentationUrl} to get detailed information.`
+      : '';
+
+    const finalInstructions = baseInstructions + workflowDocumentationInfo + i18nGuidance;
+
     const response: StartDevelopmentResult = {
       phase: transitionResult.newPhase,
       instructions: finalInstructions,
       plan_file_path: conversationContext.planFilePath,
       conversation_id: conversationContext.conversationId,
-      workflow: stateMachine
+      workflow: stateMachine,
+      workflowDocumentationUrl
     };
-    
+
     // Log interaction
     await this.logInteraction(
       context,
@@ -172,8 +182,22 @@ export class StartDevelopmentHandler extends BaseToolHandler<StartDevelopmentArg
       response,
       transitionResult.newPhase
     );
-    
+
     return response;
+  }
+
+  /**
+   * Generate workflow documentation URL for predefined workflows
+   * Returns undefined for custom workflows
+   */
+  private generateWorkflowDocumentationUrl(workflowName: string): string | undefined {
+    // Don't generate URL for custom workflows
+    if (workflowName === 'custom') {
+      return undefined;
+    }
+
+    // Generate URL for predefined workflows
+    return `https://mrsimpson.github.io/responsible-vibe-mcp/workflows/${workflowName}`;
   }
 
   /**
@@ -184,22 +208,22 @@ export class StartDevelopmentHandler extends BaseToolHandler<StartDevelopmentArg
     try {
       const { execSync } = require('child_process');
       const { existsSync } = require('fs');
-      
+
       // Check if this is a git repository
       if (!existsSync(`${projectPath}/.git`)) {
         this.logger.debug('Not a git repository, using "default" as branch name', { projectPath });
         return 'default';
       }
-      
+
       // Get current branch name
       const branch = execSync('git rev-parse --abbrev-ref HEAD', {
         cwd: projectPath,
         encoding: 'utf-8',
         stdio: ['ignore', 'pipe', 'ignore'] // Suppress stderr
       }).trim();
-      
+
       this.logger.debug('Detected git branch', { projectPath, branch });
-      
+
       return branch;
     } catch (error) {
       this.logger.debug('Failed to get git branch, using "default" as branch name', { projectPath });
@@ -229,16 +253,16 @@ export class StartDevelopmentHandler extends BaseToolHandler<StartDevelopmentArg
 
       const gitignorePath = resolve(projectPath, '.gitignore');
       const targetEntry = '.vibe/*.sqlite';
-      
+
       // Read existing .gitignore or create empty content
       let gitignoreContent = '';
       if (existsSync(gitignorePath)) {
         try {
           gitignoreContent = readFileSync(gitignorePath, 'utf-8');
         } catch (error) {
-          this.logger.warn('Failed to read .gitignore file, will create new one', { 
-            gitignorePath, 
-            error: error instanceof Error ? error.message : String(error) 
+          this.logger.warn('Failed to read .gitignore file, will create new one', {
+            gitignorePath,
+            error: error instanceof Error ? error.message : String(error)
           });
           gitignoreContent = '';
         }
@@ -246,29 +270,29 @@ export class StartDevelopmentHandler extends BaseToolHandler<StartDevelopmentArg
 
       // Check if entry already exists (case-insensitive and whitespace-tolerant)
       const lines = gitignoreContent.split('\n');
-      const entryExists = lines.some(line => 
+      const entryExists = lines.some(line =>
         line.trim().toLowerCase() === targetEntry.toLowerCase()
       );
 
       if (entryExists) {
-        this.logger.debug('.gitignore entry already exists, skipping', { 
-          projectPath, 
-          targetEntry 
+        this.logger.debug('.gitignore entry already exists, skipping', {
+          projectPath,
+          targetEntry
         });
         return;
       }
 
       // Add the entry
-      const newContent = gitignoreContent.endsWith('\n') || gitignoreContent === '' 
+      const newContent = gitignoreContent.endsWith('\n') || gitignoreContent === ''
         ? gitignoreContent + targetEntry + '\n'
         : gitignoreContent + '\n' + targetEntry + '\n';
 
       // Write the updated .gitignore
       writeFileSync(gitignorePath, newContent, 'utf-8');
-      
-      this.logger.info('Added .vibe/*.sqlite entry to .gitignore', { 
-        projectPath, 
-        gitignorePath 
+
+      this.logger.info('Added .vibe/*.sqlite entry to .gitignore', {
+        projectPath,
+        gitignorePath
       });
 
     } catch (error) {
