@@ -28,6 +28,11 @@ states:
           Evaluate pros and cons of different approaches considering non-functional requirements.
           Document architectural decisions and mark completed ideation tasks.
         transition_reason: "PRD is complete with clear requirements, ready for technical architecture design"
+        review_perspectives:
+          - perspective: "business_analyst"
+            prompt: "Review the Product Requirements Document for completeness, clarity, and business value. Ensure all stakeholder needs are captured, requirements are testable, and scope is well-defined."
+          - perspective: "ux_expert"
+            prompt: "Evaluate user experience requirements and usability considerations. Ensure user personas, workflows, and interaction patterns are properly defined for the greenfield project."
       
       - trigger: "abandon_project"
         to: "ideation"
@@ -63,6 +68,11 @@ states:
           Present the implementation plan to the user and document it thoroughly.
           Mark completed architecture tasks and focus on implementation planning.
         transition_reason: "Technical architecture is complete, ready for implementation planning"
+        review_perspectives:
+          - perspective: "architect"
+            prompt: "Review the technical architecture for completeness, scalability, and maintainability. Ensure technology choices are appropriate and architectural patterns are sound for a greenfield project."
+          - perspective: "security_expert"
+            prompt: "Evaluate security architecture, data protection strategies, and potential vulnerabilities. Ensure security is built into the foundation of the greenfield project from the start."
       
       - trigger: "abandon_project"
         to: "ideation"

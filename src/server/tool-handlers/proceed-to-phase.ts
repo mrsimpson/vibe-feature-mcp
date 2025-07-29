@@ -16,6 +16,7 @@ import { GitManager } from '../../git-manager.js';
 export interface ProceedToPhaseArgs {
   target_phase: string;
   reason?: string;
+  review_state: 'not-required' | 'pending' | 'performed';
 }
 
 /**
@@ -41,9 +42,9 @@ export class ProceedToPhaseHandler extends ConversationRequiredToolHandler<Proce
     conversationContext: any
   ): Promise<ProceedToPhaseResult> {
     // Validate required arguments
-    validateRequiredArgs(args, ['target_phase']);
+    validateRequiredArgs(args, ['target_phase', 'review_state']);
 
-    const { target_phase, reason = '' } = args;
+    const { target_phase, reason = '', review_state } = args;
     const conversationId = conversationContext.conversationId;
     const currentPhase = conversationContext.currentPhase;
 
@@ -51,8 +52,20 @@ export class ProceedToPhaseHandler extends ConversationRequiredToolHandler<Proce
       conversationId, 
       currentPhase,
       targetPhase: target_phase,
-      reason
+      reason,
+      reviewState: review_state
     });
+
+    // Validate review state if reviews are required
+    if (conversationContext.requireReviewsBeforePhaseTransition) {
+      await this.validateReviewState(
+        review_state, 
+        currentPhase, 
+        target_phase, 
+        conversationContext.workflowName,
+        context
+      );
+    }
 
     // Ensure state machine is loaded for this project
     this.ensureStateMachineForProject(context, conversationContext.projectPath);
@@ -143,5 +156,44 @@ export class ProceedToPhaseHandler extends ConversationRequiredToolHandler<Proce
     );
 
     return response;
+  }
+
+  /**
+   * Validate review state for transitions that require reviews
+   */
+  private async validateReviewState(
+    reviewState: string,
+    currentPhase: string,
+    targetPhase: string,
+    workflowName: string,
+    context: ServerContext
+  ): Promise<void> {
+    // Get transition configuration from workflow
+    const stateMachine = context.workflowManager.loadWorkflowForProject(context.projectPath, workflowName);
+    const currentState = stateMachine.states[currentPhase];
+    
+    if (!currentState) {
+      throw new Error(`Invalid current phase: ${currentPhase}`);
+    }
+
+    const transition = currentState.transitions.find((t: any) => t.to === targetPhase);
+    if (!transition) {
+      throw new Error(`No transition found from ${currentPhase} to ${targetPhase}`);
+    }
+
+    const hasReviewPerspectives = transition.review_perspectives && transition.review_perspectives.length > 0;
+
+    if (hasReviewPerspectives) {
+      // This transition has review perspectives defined
+      if (reviewState === 'pending') {
+        throw new Error(`Review is required before proceeding to ${targetPhase}. Please use the conduct_review tool first.`);
+      }
+      if (reviewState === 'not-required') {
+        throw new Error(`This transition requires review, but review_state is 'not-required'. Use 'pending' or 'performed'.`);
+      }
+    } else {
+      // No review perspectives defined - transition proceeds normally
+      // Note: No error thrown when hasReviewPerspectives is false, as per user feedback
+    }
   }
 }

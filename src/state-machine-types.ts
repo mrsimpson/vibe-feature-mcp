@@ -22,6 +22,12 @@ export interface YamlTransition {
   
   /** Reason for this transition */
   transition_reason: string;
+  
+  /** Optional review perspectives for this transition */
+  review_perspectives?: Array<{
+    perspective: string;
+    prompt: string;
+  }>;
 }
 
 /**

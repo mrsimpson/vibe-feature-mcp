@@ -59,6 +59,11 @@ states:
           Update the plan file with implementation progress and mark completed planning tasks.
           Stay focused on the current feature, do not implement features that were not planned.
         transition_reason: "Implementation plan is complete and ready for coding"
+        review_perspectives:
+          - perspective: "architect"
+            prompt: "Review implementation strategy, design decisions, and integration approach for soundness and maintainability. Ensure the plan aligns with existing system architecture and follows best practices."
+          - perspective: "security_expert"
+            prompt: "Assess security considerations and potential risks in the planned implementation approach. Review data handling, authentication, and potential vulnerabilities."
       
       - trigger: "abandon_feature"
         to: "explore"
@@ -91,6 +96,11 @@ states:
           Clean up any temporary code and ensure everything is ready.
           Update the plan file and mark completed implementation tasks.
         transition_reason: "Core implementation is complete, ready for finalization"
+        review_perspectives:
+          - perspective: "senior_software_developer"
+            prompt: "Review code quality, best practices, testing coverage, and readiness for production deployment. Ensure the implementation follows coding standards and is maintainable."
+          - perspective: "performance_engineer"
+            prompt: "Evaluate performance impact, resource efficiency, and scalability of the implemented solution. Check for potential bottlenecks or optimization opportunities."
       
       - trigger: "abandon_feature"
         to: "explore"
