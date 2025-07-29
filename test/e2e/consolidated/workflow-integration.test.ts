@@ -55,7 +55,8 @@ describe('Workflow Integration', () => {
       // 2. Transition to design
       const design = await client.callTool('proceed_to_phase', {
         target_phase: 'design',
-        reason: 'requirements analysis complete'
+        reason: 'requirements analysis complete',
+        review_state: 'not-required'
       });
       const designResponse = assertToolSuccess(design);
       expect(designResponse.phase).toBe('design');
@@ -64,7 +65,8 @@ describe('Workflow Integration', () => {
       // 3. Move to implementation
       const implementation = await client.callTool('proceed_to_phase', {
         target_phase: 'implementation',
-        reason: 'design approved'
+        reason: 'design approved',
+        review_state: 'not-required'
       });
       const implResponse = assertToolSuccess(implementation);
       expect(implResponse.phase).toBe('implementation');
@@ -72,7 +74,8 @@ describe('Workflow Integration', () => {
       // 4. Quality assurance
       const qa = await client.callTool('proceed_to_phase', {
         target_phase: 'qa',
-        reason: 'implementation complete'
+        reason: 'implementation complete',
+        review_state: 'not-required'
       });
       const qaResponse = assertToolSuccess(qa);
       expect(qaResponse.phase).toBe('qa');
@@ -80,7 +83,8 @@ describe('Workflow Integration', () => {
       // 5. Testing phase
       const testing = await client.callTool('proceed_to_phase', {
         target_phase: 'testing',
-        reason: 'qa passed'
+        reason: 'qa passed',
+        review_state: 'not-required'
       });
       const testResponse = assertToolSuccess(testing);
       expect(testResponse.phase).toBe('testing');
@@ -88,7 +92,8 @@ describe('Workflow Integration', () => {
       // 6. Complete
       const complete = await client.callTool('proceed_to_phase', {
         target_phase: 'complete',
-        reason: 'all tests passed'
+        reason: 'all tests passed',
+        review_state: 'not-required'
       });
       const completeResponse = assertToolSuccess(complete);
       expect(completeResponse.phase).toBe('complete');
@@ -107,20 +112,23 @@ describe('Workflow Integration', () => {
       // Go to implementation
       await client.callTool('proceed_to_phase', {
         target_phase: 'implementation',
-        reason: 'quick prototype'
+        reason: 'quick prototype',
+        review_state: 'not-required'
       });
 
       // Realize need to go back to design
       const backToDesign = await client.callTool('proceed_to_phase', {
         target_phase: 'design',
-        reason: 'need to revise architecture'
+        reason: 'need to revise architecture',
+        review_state: 'not-required'
       });
       expect(assertToolSuccess(backToDesign).phase).toBe('design');
 
       // Forward to implementation again
       const backToImpl = await client.callTool('proceed_to_phase', {
         target_phase: 'implementation',
-        reason: 'design revised'
+        reason: 'design revised',
+        review_state: 'not-required'
       });
       expect(assertToolSuccess(backToImpl).phase).toBe('implementation');
 
@@ -139,9 +147,9 @@ describe('Workflow Integration', () => {
       const planPath = startResponse.plan_file_path;
 
       // Progress through phases
-      await client.callTool('proceed_to_phase', { target_phase: 'design', reason: 'test' });
-      await client.callTool('proceed_to_phase', { target_phase: 'implementation', reason: 'test' });
-      await client.callTool('proceed_to_phase', { target_phase: 'qa', reason: 'test' });
+      await client.callTool('proceed_to_phase', { target_phase: 'design', reason: 'test' , review_state: 'not-required'});
+      await client.callTool('proceed_to_phase', { target_phase: 'implementation', reason: 'test' , review_state: 'not-required'});
+      await client.callTool('proceed_to_phase', { target_phase: 'qa', reason: 'test' , review_state: 'not-required'});
 
       // Verify plan file exists and is updated
       const planExists = await fs.access(planPath).then(() => true).catch(() => false);
@@ -212,7 +220,8 @@ describe('Workflow Integration', () => {
       // User ready to move forward
       const ready = await client.callTool('proceed_to_phase', {
         target_phase: 'design',
-        reason: 'requirements clear'
+        reason: 'requirements clear',
+        review_state: 'not-required'
       });
       expect(assertToolSuccess(ready).phase).toBe('design');
     });
@@ -239,10 +248,10 @@ describe('Workflow Integration', () => {
     it('should handle rapid development iterations', async () => {
       // Quick succession of development activities
       await client.callTool('whats_next', { user_input: 'rapid prototype' });
-      await client.callTool('proceed_to_phase', { target_phase: 'implementation', reason: 'skip to coding' });
+      await client.callTool('proceed_to_phase', { target_phase: 'implementation', reason: 'skip to coding' , review_state: 'not-required'});
       await client.callTool('whats_next', { user_input: 'found issues' });
-      await client.callTool('proceed_to_phase', { target_phase: 'design', reason: 'need better design' });
-      await client.callTool('proceed_to_phase', { target_phase: 'implementation', reason: 'design fixed' });
+      await client.callTool('proceed_to_phase', { target_phase: 'design', reason: 'need better design' , review_state: 'not-required'});
+      await client.callTool('proceed_to_phase', { target_phase: 'implementation', reason: 'design fixed' , review_state: 'not-required'});
       
       const final = await client.callTool('whats_next', { user_input: 'check status' });
       const finalResponse = assertToolSuccess(final);
@@ -259,7 +268,8 @@ describe('Workflow Integration', () => {
       // Try invalid transition
       await client.callTool('proceed_to_phase', {
         target_phase: 'invalid_phase',
-        reason: 'test error handling'
+        reason: 'test error handling',
+        review_state: 'not-required'
       });
 
       // Should still be able to continue normally
@@ -409,7 +419,8 @@ states:
       if (currentPhase !== 'development') {
         const development = await client.callTool('proceed_to_phase', {
           target_phase: 'development',
-          reason: 'ready to develop'
+          reason: 'ready to develop',
+        review_state: 'not-required'
         });
         const devResponse = assertToolSuccess(development);
         expect(devResponse.phase).toBe('development');
@@ -419,7 +430,8 @@ states:
       // Verify we can transition to review
       const review = await client.callTool('proceed_to_phase', {
         target_phase: 'review',
-        reason: 'development complete'
+        reason: 'development complete',
+        review_state: 'not-required'
       });
       expect(assertToolSuccess(review).phase).toBe('review');
 

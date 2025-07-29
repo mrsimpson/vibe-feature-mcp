@@ -9,6 +9,7 @@ import { createLogger } from '../../logger.js';
 import { ToolHandler, ToolRegistry } from '../types.js';
 import { WhatsNextHandler } from './whats-next.js';
 import { ProceedToPhaseHandler } from './proceed-to-phase.js';
+import { ConductReviewHandler } from './conduct-review.js';
 import { StartDevelopmentHandler } from './start-development.js';
 import { ResumeWorkflowHandler } from './resume-workflow.js';
 import { ResetDevelopmentHandler } from './reset-development.js';
@@ -46,6 +47,7 @@ export function createToolRegistry(): ToolRegistry {
   // Register all standard tool handlers
   registry.register('whats_next', new WhatsNextHandler());
   registry.register('proceed_to_phase', new ProceedToPhaseHandler());
+  registry.register('conduct_review', new ConductReviewHandler());
   registry.register('start_development', new StartDevelopmentHandler());
   registry.register('resume_workflow', new ResumeWorkflowHandler());
   registry.register('reset_development', new ResetDevelopmentHandler());
@@ -62,6 +64,7 @@ export function createToolRegistry(): ToolRegistry {
 // Export all handler types for external use
 export { WhatsNextHandler } from './whats-next.js';
 export { ProceedToPhaseHandler } from './proceed-to-phase.js';
+export { ConductReviewHandler } from './conduct-review.js';
 export { StartDevelopmentHandler } from './start-development.js';
 export { ResumeWorkflowHandler } from './resume-workflow.js';
 export { ResetDevelopmentHandler } from './reset-development.js';
@@ -72,6 +75,7 @@ export { BaseToolHandler, ConversationRequiredToolHandler } from './base-tool-ha
 // Export argument and result types
 export type { WhatsNextArgs, WhatsNextResult } from './whats-next.js';
 export type { ProceedToPhaseArgs, ProceedToPhaseResult } from './proceed-to-phase.js';
+export type { ConductReviewArgs, ConductReviewResult } from './conduct-review.js';
 export type { StartDevelopmentArgs, StartDevelopmentResult } from './start-development.js';
 export type { ResumeWorkflowArgs, ResumeWorkflowResult } from './resume-workflow.js';
 export type { ResetDevelopmentArgs, ResetDevelopmentResult } from './reset-development.js';

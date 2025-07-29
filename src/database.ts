@@ -173,7 +173,7 @@ export class Database {
         return null;
       }
 
-      const state = {
+      const state: ConversationState = {
         conversationId: row.conversation_id,
         projectPath: row.project_path,
         gitBranch: row.git_branch,
@@ -181,6 +181,7 @@ export class Database {
         planFilePath: row.plan_file_path,
         workflowName: row.workflow_name || 'waterfall',
         gitCommitConfig: row.git_commit_config ? JSON.parse(row.git_commit_config) : undefined,
+        requireReviewsBeforePhaseTransition: Boolean(row.require_reviews_before_phase_transition),
         createdAt: row.created_at,
         updatedAt: row.updated_at
       };
@@ -213,8 +214,8 @@ export class Database {
       await this.runQuery(
         `INSERT OR REPLACE INTO conversation_states (
           conversation_id, project_path, git_branch, current_phase,
-          plan_file_path, workflow_name, git_commit_config, created_at, updated_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          plan_file_path, workflow_name, git_commit_config, require_reviews_before_phase_transition, created_at, updated_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           state.conversationId,
           state.projectPath,
@@ -223,6 +224,7 @@ export class Database {
           state.planFilePath,
           state.workflowName,
           state.gitCommitConfig ? JSON.stringify(state.gitCommitConfig) : null,
+          state.requireReviewsBeforePhaseTransition,
           state.createdAt,
           state.updatedAt
         ]
@@ -261,6 +263,7 @@ export class Database {
       planFilePath: row.plan_file_path,
       workflowName: row.workflow_name || 'waterfall',
       gitCommitConfig: row.git_commit_config ? JSON.parse(row.git_commit_config) : undefined,
+      requireReviewsBeforePhaseTransition: Boolean(row.require_reviews_before_phase_transition),
       createdAt: row.created_at,
       updatedAt: row.updated_at
     };
@@ -382,6 +385,7 @@ export class Database {
         const conversationTableInfo = await this.getAllRows("PRAGMA table_info(conversation_states)");
         const hasWorkflowName = conversationTableInfo.some((col: any) => col.name === 'workflow_name');
         const hasGitCommitConfig = conversationTableInfo.some((col: any) => col.name === 'git_commit_config');
+        const hasRequireReviews = conversationTableInfo.some((col: any) => col.name === 'require_reviews_before_phase_transition');
         
         if (!hasWorkflowName) {
           logger.info('Adding workflow_name column to conversation_states table');
@@ -391,6 +395,11 @@ export class Database {
         if (!hasGitCommitConfig) {
           logger.info('Adding git_commit_config column to conversation_states table');
           await this.runQuery('ALTER TABLE conversation_states ADD COLUMN git_commit_config TEXT');
+        }
+        
+        if (!hasRequireReviews) {
+          logger.info('Adding require_reviews_before_phase_transition column to conversation_states table');
+          await this.runQuery('ALTER TABLE conversation_states ADD COLUMN require_reviews_before_phase_transition BOOLEAN DEFAULT FALSE');
         }
       }
       

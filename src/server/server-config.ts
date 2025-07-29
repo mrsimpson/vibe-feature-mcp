@@ -159,7 +159,8 @@ export function registerMcpTools(
       description: 'Move to a specific development phase when the current phase is complete. Use this tool to explicitly transition between phases. Check your plan file to see available phases for the current workflow. Only transition when current phase tasks are finished and user confirms readiness.',
       inputSchema: {
         target_phase: z.string().describe('The development phase to move to. Check your plan file section headers to see available phases for the current workflow'),
-        reason: z.string().optional().describe('Why you\'re moving to this phase now (e.g., "requirements complete", "user approved design", "implementation finished")')
+        reason: z.string().optional().describe('Why you\'re moving to this phase now (e.g., "requirements complete", "user approved design", "implementation finished")'),
+        review_state: z.enum(['not-required', 'pending', 'performed']).describe('Review state for transitions that require reviews. Use "not-required" when reviews are disabled, "pending" when review is needed, "performed" when review is complete.')
       },
       annotations: {
         title: 'Phase Transition Controller',
@@ -173,6 +174,33 @@ export function registerMcpTools(
       const handler = toolRegistry.get('proceed_to_phase');
       if (!handler) {
         return responseRenderer.renderError('Tool handler not found: proceed_to_phase');
+      }
+      
+      const result = await handler.handle(args, context);
+      return responseRenderer.renderToolResponse(result);
+    }
+  );
+
+  // Register conduct_review tool
+  mcpServer.registerTool(
+    'conduct_review',
+    {
+      description: 'Conduct a review of the current phase before proceeding to the next phase. This tool analyzes artifacts and decisions from the current phase using defined review perspectives. Use this tool when reviews are required before phase transitions.',
+      inputSchema: {
+        target_phase: z.string().describe('The target phase you want to transition to after the review is complete')
+      },
+      annotations: {
+        title: 'Phase Review Conductor',
+        readOnlyHint: true,
+        destructiveHint: false,
+        idempotentHint: true,
+        openWorldHint: false
+      }
+    },
+    async (args) => {
+      const handler = toolRegistry.get('conduct_review');
+      if (!handler) {
+        return responseRenderer.renderError('Tool handler not found: conduct_review');
       }
       
       const result = await handler.handle(args, context);
@@ -195,7 +223,8 @@ export function registerMcpTools(
           .default('waterfall')
           .describe(generateWorkflowDescription(context.workflowManager.getAvailableWorkflows())),
         commit_behaviour: z.enum(['step', 'phase', 'end', 'none'])
-          .describe(commitBehaviourDescription)
+          .describe(commitBehaviourDescription),
+        require_reviews: z.boolean().optional().describe('Whether to require reviews before phase transitions. When enabled, use conduct_review tool before proceeding to next phase.')
       },
       annotations: {
         title: 'Development Initializer',

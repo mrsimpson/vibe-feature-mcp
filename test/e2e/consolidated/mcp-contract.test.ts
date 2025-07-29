@@ -205,7 +205,8 @@ describe('MCP Contract Validation', () => {
         name: 'proceed_to_phase',
         arguments: {
           target_phase: 'design',
-          reason: 'requirements complete'
+          reason: 'requirements complete',
+          review_state: 'not-required'
         }
       });
 
@@ -228,7 +229,8 @@ describe('MCP Contract Validation', () => {
         name: 'proceed_to_phase',
         arguments: {
           target_phase: 'invalid_phase',
-          reason: 'test error handling'
+          reason: 'test error handling',
+          review_state: 'not-required'
         }
       });
 
@@ -397,7 +399,8 @@ describe('MCP Contract Validation', () => {
           name: 'proceed_to_phase',
           arguments: {
             // Missing required target_phase
-            reason: 'test malformed request'
+            reason: 'test malformed request',
+        review_state: 'not-required'
           }
         });
         // Should not reach here if validation works
@@ -442,7 +445,8 @@ describe('MCP Contract Validation', () => {
           name: 'proceed_to_phase',
           arguments: {
             target_phase: 'design',
-            reason: 'requirements analysis complete'
+            reason: 'requirements analysis complete',
+            review_state: 'not-required'
           }
         });
 

@@ -27,6 +27,11 @@ states:
             Focus on HOW to build what was defined in requirements. Suggest alternative solutions and present tradeoffs.
             Document design decisions in the plan file and mark completed requirements tasks.
         transition_reason: "All requirements tasks completed, moving to technical design"
+        review_perspectives:
+          - perspective: "business_analyst"
+            prompt: "Review requirements completeness, clarity, and business value. Ensure all stakeholder needs are captured and requirements are testable. Check for missing edge cases or unclear acceptance criteria."
+          - perspective: "ux_expert"
+            prompt: "Evaluate user experience implications and usability requirements. Ensure user needs and workflows are properly defined. Identify potential UX challenges or accessibility concerns."
 
   design:
     description: "Technical design and architecture planning"
@@ -52,6 +57,11 @@ states:
             Focus on code quality, error handling, and maintainability. Update the plan file with implementation progress
             and mark completed design tasks.
         transition_reason: "Technical design is complete, ready for implementation"
+        review_perspectives:
+          - perspective: "architect"
+            prompt: "Review technical architecture, design patterns, and system integration. Ensure scalability, maintainability, and alignment with existing systems. Evaluate technology choices and architectural decisions."
+          - perspective: "security_expert"
+            prompt: "Evaluate security considerations, data protection, and potential vulnerabilities in the proposed design. Review authentication, authorization, data handling, and potential attack vectors."
 
   implementation:
     description: "Building the solution according to design"
@@ -81,6 +91,11 @@ states:
             for code quality, security, performance, and compliance with requirements. Run syntax checks, build verification,
             linting, and existing tests. Conduct comprehensive code review and update the plan file with QA progress.
         transition_reason: "Core implementation is complete, ready for quality assurance"
+        review_perspectives:
+          - perspective: "senior_software_developer"
+            prompt: "Review code quality, best practices, and implementation approach. Ensure clean, maintainable, and efficient code. Check for proper error handling, logging, and code organization."
+          - perspective: "performance_engineer"
+            prompt: "Assess performance implications, resource usage, and potential bottlenecks in the implementation. Review algorithms, data structures, and system resource utilization."
 
   qa:
     description: "Quality assurance and code review"
@@ -140,6 +155,11 @@ states:
             Summarize what was accomplished, ensure all documentation is finalized, and prepare for delivery.
             Mark all testing tasks as complete.
         transition_reason: "All testing is complete, feature is ready for delivery"
+        review_perspectives:
+          - perspective: "business_analyst"
+            prompt: "Verify that all requirements have been met and business objectives are achieved. Ensure the solution delivers the expected business value and meets acceptance criteria."
+          - perspective: "ux_expert"
+            prompt: "Confirm user experience goals are met and the solution is user-friendly and accessible. Validate that user workflows are intuitive and efficient."
 
   complete:
     description: "Feature completion and delivery"

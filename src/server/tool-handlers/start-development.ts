@@ -19,6 +19,7 @@ import { GitManager } from '../../git-manager.js';
 export interface StartDevelopmentArgs {
   workflow: string;
   commit_behaviour?: 'step' | 'phase' | 'end' | 'none';
+  require_reviews?: boolean;
 }
 
 /**
@@ -46,6 +47,7 @@ export class StartDevelopmentHandler extends BaseToolHandler<StartDevelopmentArg
     validateRequiredArgs(args, ['workflow']);
 
     const selectedWorkflow = args.workflow;
+    const requireReviews = args.require_reviews ?? false;
 
     // Process git commit configuration
     const isGitRepository = GitManager.isGitRepository(context.projectPath);
@@ -132,7 +134,8 @@ export class StartDevelopmentHandler extends BaseToolHandler<StartDevelopmentArg
       {
         currentPhase: transitionResult.newPhase,
         workflowName: selectedWorkflow,
-        gitCommitConfig: gitCommitConfig
+        gitCommitConfig: gitCommitConfig,
+        requireReviewsBeforePhaseTransition: requireReviews
       }
     );
 

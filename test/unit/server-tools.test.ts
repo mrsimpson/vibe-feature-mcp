@@ -244,7 +244,7 @@ describe('Server Tools', () => {
       );
       
       // Call the tool handler
-      const result = await server.handleProceedToPhase({ target_phase: 'requirements' });
+      const result = await server.handleProceedToPhase({ target_phase: 'requirements' , review_state: 'not-required'});
       
       // Verify result contains helpful error message
       expect(result).toHaveProperty('error', true);

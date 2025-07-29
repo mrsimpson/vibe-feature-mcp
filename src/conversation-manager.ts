@@ -125,7 +125,7 @@ export class ConversationManager {
    */
   async updateConversationState(
     conversationId: string, 
-    updates: Partial<Pick<ConversationState, 'currentPhase' | 'planFilePath' | 'workflowName' | 'gitCommitConfig'>>
+    updates: Partial<Pick<ConversationState, 'currentPhase' | 'planFilePath' | 'workflowName' | 'gitCommitConfig' | 'requireReviewsBeforePhaseTransition'>>
   ): Promise<void> {
     logger.debug('Updating conversation state', { conversationId, updates });
     
@@ -216,6 +216,7 @@ export class ConversationManager {
       currentPhase: initialPhase,
       planFilePath,
       workflowName,
+      requireReviewsBeforePhaseTransition: false, // Default to false for new conversations
       createdAt: timestamp,
       updatedAt: timestamp
     };

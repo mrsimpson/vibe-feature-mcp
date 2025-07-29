@@ -76,7 +76,8 @@ describe('Core Functionality', () => {
       
       const result = await client.callTool('proceed_to_phase', {
         target_phase: 'design',
-        reason: 'requirements complete'
+        reason: 'requirements complete',
+        review_state: 'not-required'
       });
       const response = assertToolSuccess(result);
       
@@ -114,7 +115,8 @@ describe('Core Functionality', () => {
     it('should handle invalid tool parameters gracefully', async () => {
       const result = await client.callTool('proceed_to_phase', {
         target_phase: 'invalid_phase',
-        reason: 'test'
+        reason: 'test',
+        review_state: 'not-required'
       });
       
       // Should not throw, but may return error or fallback behavior
