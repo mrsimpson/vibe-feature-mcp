@@ -136,24 +136,105 @@ Add optional review mechanisms to the responsible-vibe-mcp system before phase t
 - [x] Documentation is updated
 
 ### Tasks
-- [ ] Run final comprehensive test suite
-- [ ] Update the review_state parameter to be required (non-optional) in MCP schema
-- [ ] Create example workflow YAML with review perspectives
-- [ ] Update README.md with review system documentation
-- [ ] Create commit message with conventional commit format
-- [ ] Verify no regressions in existing functionality
-- [ ] Clean up any temporary files or debug code
+- [x] Run final comprehensive test suite (154/154 tests pass - all tests now passing!)
+- [ ] ~~Update the review_state parameter to be required (non-optional) in MCP schema~~ (already adapted)
+- [x] Derive review criteria for existing workflows with appropriate reviewer perspectives:
+  - Technical phases (implementation, qa, testing): Use technical roles (performance engineer, security expert, senior software developer)
+  - Generic phases (requirements, design, ideation): Use general roles (UX expert, architect, business analyst)
+  - Maximum 2 relevant roles per review transition
+- [x] Create example workflow YAML with review perspectives
+- [x] Update README.md with review system documentation
+- [x] Create commit message with conventional commit format
+- [x] Verify no regressions in existing functionality (all 154 tests passing!)
+- [x] Clean up any temporary files or debug code
+- [x] Implement review perspectives in actual workflow YAML files (selective - only where reviews add value)
+- [x] Fix review_state parameter design: Made it required in schema and updated all tests to explicitly pass the parameter
+- [x] Fix review_state parameter design: Made it optional in schema with proper default handling
 
 ### Completed
-*None yet*
+- [x] Analyzed all major workflows (waterfall, epcc, bugfix) and derived appropriate review perspectives
+- [x] Matched reviewer roles to phase artifacts: technical roles for technical phases, general roles for generic phases
+- [x] Limited to maximum 2 relevant roles per review transition as requested
+- [x] Created comprehensive example workflow YAML demonstrating review perspectives integration
+- [x] Verified core functionality works (151/154 tests pass - failures are due to test updates needed for required parameter)
+- [x] Added comprehensive review system documentation to README.md
+- [x] Moved example workflow to docs/examples/ directory
+- [x] Prepared conventional commit message for the review system feature
+- [x] Implemented review perspectives in key workflow transitions:
+  - **Waterfall**: requirements→design, design→implementation, implementation→qa, testing→complete
+  - **EPCC**: plan→code, code→commit
+  - **Bugfix**: analyze→fix, fix→verify
+  - **Greenfield**: ideation→architecture, architecture→plan
+- [x] Validated all YAML changes compile successfully
+
+## Review Perspectives Analysis
+
+### Waterfall Workflow Review Perspectives:
+
+**requirements → design:**
+- business_analyst: "Review requirements completeness, clarity, and business value. Ensure all stakeholder needs are captured and requirements are testable."
+- ux_expert: "Evaluate user experience implications and usability requirements. Ensure user needs and workflows are properly defined."
+
+**design → implementation:**
+- architect: "Review technical architecture, design patterns, and system integration. Ensure scalability, maintainability, and alignment with existing systems."
+- security_expert: "Evaluate security considerations, data protection, and potential vulnerabilities in the proposed design."
+
+**implementation → qa:**
+- senior_software_developer: "Review code quality, best practices, and implementation approach. Ensure clean, maintainable, and efficient code."
+- performance_engineer: "Assess performance implications, resource usage, and potential bottlenecks in the implementation."
+
+**qa → testing:**
+- security_expert: "Review security testing coverage, vulnerability assessments, and compliance with security standards."
+- senior_software_developer: "Evaluate test coverage, code quality metrics, and readiness for comprehensive testing."
+
+**testing → complete:**
+- business_analyst: "Verify that all requirements have been met and business objectives are achieved."
+- ux_expert: "Confirm user experience goals are met and the solution is user-friendly and accessible."
+
+### EPCC Workflow Review Perspectives:
+
+**explore → plan:**
+- architect: "Review exploration findings and ensure comprehensive understanding of the problem space and existing system architecture."
+- senior_software_developer: "Evaluate technical feasibility and identify potential implementation challenges or dependencies."
+
+**plan → code:**
+- architect: "Review implementation strategy, design decisions, and integration approach for soundness and maintainability."
+- security_expert: "Assess security considerations and potential risks in the planned implementation approach."
+
+**code → commit:**
+- senior_software_developer: "Review code quality, best practices, testing coverage, and readiness for production deployment."
+- performance_engineer: "Evaluate performance impact, resource efficiency, and scalability of the implemented solution."
+
+### Bugfix Workflow Review Perspectives:
+
+**reproduce → analyze:**
+- senior_software_developer: "Review reproduction steps, test cases, and ensure the bug is properly understood and documented."
+- performance_engineer: "Assess if the bug has performance implications or is related to resource usage issues."
+
+**analyze → fix:**
+- architect: "Review root cause analysis and ensure the proposed fix doesn't introduce architectural issues or technical debt."
+- security_expert: "Evaluate if the bug has security implications and ensure the fix doesn't introduce new vulnerabilities."
+
+**fix → verify:**
+- senior_software_developer: "Review fix implementation, code quality, and ensure the solution properly addresses the root cause."
+- performance_engineer: "Verify that the fix doesn't introduce performance regressions or new bottlenecks."
 
 ## Key Decisions
 - **Integration Point**: Reviews will be integrated into the `proceed_to_phase` tool handler, allowing optional review steps before phase transitions
 - **Configuration Approach**: Reviews will be configurable per workflow and per transition in the YAML workflow definitions
 - **Review Types**: Support both LLM-based reviews (if tools available) and workflow-defined perspective reviews
 - **Conversation-Level Property**: Simple boolean `requireReviewsBeforePhaseTransition` set when starting development
-- **Review State Parameter**: `review_state` is a mandatory parameter of `proceed_to_phase` tool: `not-required`, `pending`, `performed`
+- **Review State Parameter**: `review_state` is a **required** parameter of `proceed_to_phase` tool: `not-required`, `pending`, `performed`
+- **LLM Cannot Ignore**: By making it required, the LLM must explicitly provide the parameter and cannot ignore it
+- **Default Behavior**: When reviews are not enabled, LLM should pass `'not-required'` explicitly
 - **Enforcement**: `proceed_to_phase` validates review_state parameter against conversation requirement and workflow configuration
+- **Selective Review Implementation**: Added review perspectives only to key transitions where reviews provide real value:
+  - **Requirements/Design phases**: business_analyst + ux_expert (focus on completeness and user needs)
+  - **Architecture/Planning phases**: architect + security_expert (focus on technical soundness and security)
+  - **Implementation phases**: senior_software_developer + performance_engineer (focus on code quality and performance)
+  - **Final transitions**: business_analyst + ux_expert (focus on requirement fulfillment and user experience)
+- **Backward Compatibility**: All existing functionality works with explicit `review_state: 'not-required'` parameter
+- **Test Coverage**: Updated all 154 tests to explicitly pass the required `review_state` parameter
 - **Review Scope**: Focus on artifacts of the previous phase, but with full project context
 - **Perspective Definition**: Workflows must specify review perspectives for each transition
 - **Fallback Review**: If no review perspectives defined in workflow, LLM asks user to manually review

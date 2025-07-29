@@ -104,7 +104,8 @@ describe('Plan Management', () => {
       // Move to design phase
       await client.callTool('proceed_to_phase', {
         target_phase: 'design',
-        reason: 'test design section'
+        reason: 'test design section',
+        review_state: 'not-required'
       });
 
       const planResource = await client.readResource('plan://current');
@@ -144,7 +145,8 @@ describe('Plan Management', () => {
       // Transition to design
       await client.callTool('proceed_to_phase', {
         target_phase: 'design',
-        reason: 'move to design'
+        reason: 'move to design',
+        review_state: 'not-required'
       });
 
       // Get updated plan content
@@ -169,7 +171,8 @@ describe('Plan Management', () => {
       // Make another call that would update the plan
       await client.callTool('proceed_to_phase', {
         target_phase: 'implementation',
-        reason: 'test preservation'
+        reason: 'test preservation',
+        review_state: 'not-required'
       });
 
       const planResource = await client.readResource('plan://current');
@@ -185,8 +188,8 @@ describe('Plan Management', () => {
 
       // Make multiple rapid calls that would update the plan
       const promises = [
-        client.callTool('proceed_to_phase', { target_phase: 'design', reason: 'test1' }),
-        client.callTool('proceed_to_phase', { target_phase: 'implementation', reason: 'test2' }),
+        client.callTool('proceed_to_phase', { target_phase: 'design', reason: 'test1' , review_state: 'not-required'}),
+        client.callTool('proceed_to_phase', { target_phase: 'implementation', reason: 'test2' , review_state: 'not-required'}),
         client.callTool('whats_next', { user_input: 'update plan' })
       ];
 
@@ -265,7 +268,8 @@ describe('Plan Management', () => {
       // Plan should contain relevant phase information of all but the initial phase
       result = await client.callTool('proceed_to_phase', {
         target_phase: 'requirements',
-        reason: 'Starting specification'
+        reason: 'Starting specification',
+        review_state: 'not-required'
       });
       response = assertToolSuccess(result);
 
@@ -279,7 +283,8 @@ describe('Plan Management', () => {
 
       await client.callTool('proceed_to_phase', {
         target_phase: 'qa',
-        reason: 'test qa guidance'
+        reason: 'test qa guidance',
+        review_state: 'not-required'
       });
 
       const planResource = await client.readResource('plan://current');

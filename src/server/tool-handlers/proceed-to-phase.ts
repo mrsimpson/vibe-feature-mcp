@@ -16,7 +16,7 @@ import { GitManager } from '../../git-manager.js';
 export interface ProceedToPhaseArgs {
   target_phase: string;
   reason?: string;
-  review_state?: 'not-required' | 'pending' | 'performed';
+  review_state: 'not-required' | 'pending' | 'performed';
 }
 
 /**
@@ -42,9 +42,9 @@ export class ProceedToPhaseHandler extends ConversationRequiredToolHandler<Proce
     conversationContext: any
   ): Promise<ProceedToPhaseResult> {
     // Validate required arguments
-    validateRequiredArgs(args, ['target_phase']);
+    validateRequiredArgs(args, ['target_phase', 'review_state']);
 
-    const { target_phase, reason = '', review_state = 'not-required' } = args;
+    const { target_phase, reason = '', review_state } = args;
     const conversationId = conversationContext.conversationId;
     const currentPhase = conversationContext.currentPhase;
 

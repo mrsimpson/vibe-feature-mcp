@@ -51,14 +51,16 @@ describe('State Management', () => {
       // Transition to design
       const design = await client.callTool('proceed_to_phase', {
         target_phase: 'design',
-        reason: 'requirements complete'
+        reason: 'requirements complete',
+        review_state: 'not-required'
       });
       expect(assertToolSuccess(design).phase).toBe('design');
 
       // Transition to implementation
       const impl = await client.callTool('proceed_to_phase', {
         target_phase: 'implementation',
-        reason: 'design complete'
+        reason: 'design complete',
+        review_state: 'not-required'
       });
       expect(assertToolSuccess(impl).phase).toBe('implementation');
 
@@ -75,22 +77,24 @@ describe('State Management', () => {
       // Jump to testing phase
       const testing = await client.callTool('proceed_to_phase', {
         target_phase: 'testing',
-        reason: 'skip to testing'
+        reason: 'skip to testing',
+        review_state: 'not-required'
       });
       expect(assertToolSuccess(testing).phase).toBe('testing');
 
       // Go back to design
       const design = await client.callTool('proceed_to_phase', {
         target_phase: 'design',
-        reason: 'need to revise design'
+        reason: 'need to revise design',
+        review_state: 'not-required'
       });
       expect(assertToolSuccess(design).phase).toBe('design');
     });
 
     it('should track phase transition history', async () => {
       await client.callTool('whats_next', { user_input: 'start' });
-      await client.callTool('proceed_to_phase', { target_phase: 'design', reason: 'test' });
-      await client.callTool('proceed_to_phase', { target_phase: 'implementation', reason: 'test' });
+      await client.callTool('proceed_to_phase', { target_phase: 'design', reason: 'test' , review_state: 'not-required'});
+      await client.callTool('proceed_to_phase', { target_phase: 'implementation', reason: 'test' , review_state: 'not-required'});
 
       const stateResource = await client.readResource('state://current');
       const stateData = JSON.parse(stateResource.contents[0].text);
@@ -243,7 +247,8 @@ states:
 
       await client.callTool('proceed_to_phase', {
         target_phase: 'design',
-        reason: 'move to design'
+        reason: 'move to design',
+        review_state: 'not-required'
       });
 
       const third = await client.callTool('whats_next', {
@@ -274,9 +279,9 @@ states:
 
       // Make multiple rapid state changes
       const promises = [
-        client.callTool('proceed_to_phase', { target_phase: 'design', reason: 'test1' }),
-        client.callTool('proceed_to_phase', { target_phase: 'implementation', reason: 'test2' }),
-        client.callTool('proceed_to_phase', { target_phase: 'qa', reason: 'test3' })
+        client.callTool('proceed_to_phase', { target_phase: 'design', reason: 'test1' , review_state: 'not-required'}),
+        client.callTool('proceed_to_phase', { target_phase: 'implementation', reason: 'test2' , review_state: 'not-required'}),
+        client.callTool('proceed_to_phase', { target_phase: 'qa', reason: 'test3' , review_state: 'not-required'})
       ];
 
       const results = await Promise.all(promises);
@@ -321,7 +326,8 @@ states:
       // Transition with context
       const transition = await client.callTool('proceed_to_phase', {
         target_phase: 'design',
-        reason: 'requirements gathered'
+        reason: 'requirements gathered',
+        review_state: 'not-required'
       });
 
       const response = assertToolSuccess(transition);

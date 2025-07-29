@@ -122,11 +122,22 @@ The user interacts normally with the LLM - the tool calls happen automatically i
 
 ## Key Features
 
+- **Review System**: Optional quality gates with configurable review perspectives before phase transitions
 - **Workflow Visualizer**: Interactive web interface for exploring workflow state machines
 - **Git Integration**: Optional automatic commits with intelligent defaults  
 - **State Persistence**: Conversation state survives server restarts
 - **Multi-Project Support**: Handle multiple concurrent project conversations
 - **Branch Awareness**: Separate development contexts for different git branches
+
+### Review System
+
+The review system provides optional quality gates before phase transitions, ensuring thorough evaluation of work before proceeding to the next development phase.
+
+**Key Features:**
+- **Configurable Reviews**: Enable/disable reviews per conversation using `require_reviews` parameter
+- **Role-Based Perspectives**: Reviews from relevant expert perspectives (architect, security expert, UX expert, etc.)
+- **Workflow Integration**: Review perspectives defined in workflow YAML files
+- **Environment Adaptive**: Works in both sampling and non-sampling MCP environments
 
 ## Utility Commands
 
