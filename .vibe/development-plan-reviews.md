@@ -51,17 +51,48 @@ Add optional review mechanisms to the responsible-vibe-mcp system before phase t
 ## Plan
 
 ### Phase Entrance Criteria:
-- [ ] The problem space has been thoroughly explored
-- [ ] Current system architecture is understood
-- [ ] Review mechanisms and integration points have been identified
-- [ ] Alternative approaches have been evaluated and documented
-- [ ] It's clear what's in scope and out of scope
+- [x] The problem space has been thoroughly explored
+- [x] Current system architecture is understood
+- [x] Review mechanisms and integration points have been identified
+- [x] Alternative approaches have been evaluated and documented
+- [x] It's clear what's in scope and out of scope
 
 ### Tasks
-- [ ] *To be added when this phase becomes active*
+- [x] Design detailed implementation strategy for review system
+- [x] Define TypeScript interfaces and type definitions
+- [x] Plan workflow YAML schema extensions
+- [x] Design conduct_review tool handler implementation
+- [x] Plan proceed_to_phase tool modifications
+- [x] Design conversation state extensions
+- [x] Plan instruction generation logic
+- [x] Define error handling and validation strategies
+- [x] Consider edge cases and potential challenges
+- [x] Plan testing approach for review functionality
+- [x] Document implementation dependencies and order
+- [x] Refine interfaces to be minimal - remove optional parameters and unnecessary return fields
+- [x] Detail the MCP sampling capability detection mechanism
+- [x] Design specific error messages and user guidance
+- [x] Plan backward compatibility with existing workflows
+- [x] Define review perspective validation rules
 
 ### Completed
-*None yet*
+- [x] Created comprehensive implementation strategy with 5 phases
+- [x] Defined all required TypeScript interfaces and extensions
+- [x] Planned workflow YAML schema extensions
+- [x] Designed conduct_review tool handler architecture
+- [x] Planned proceed_to_phase validation logic modifications
+- [x] Identified implementation dependencies and proper order
+- [x] Documented edge cases and potential challenges
+- [x] Created testing strategy for unit and integration tests
+- [x] Refined interfaces to minimal essential-only fields, removing optional parameters and unnecessary return information
+- [x] Detailed MCP sampling capability detection mechanism (defaults to non-sampling)
+- [x] Designed specific error messages with clear LLM guidance
+- [x] Created instruction generation templates for both guided and automated reviews
+- [x] Planned backward compatibility strategy for existing workflows
+- [x] Defined review perspective validation rules and constraints
+- [x] Planned file structure and organization for new components
+- [x] Designed configuration integration with start_development tool
+- [x] Detailed unit testing scenarios and test cases
 
 ## Code
 
@@ -73,7 +104,19 @@ Add optional review mechanisms to the responsible-vibe-mcp system before phase t
 - [ ] User has approved the implementation plan
 
 ### Tasks
-- [ ] *To be added when this phase becomes active*
+- [ ] Implement TypeScript interface extensions in state-machine-types.ts and types.ts
+- [ ] Create conduct-review.ts tool handler with environment detection and instruction generation
+- [ ] Modify proceed-to-phase.ts to add review_state validation and error handling
+- [ ] Update start-development.ts to include requireReviewsBeforePhaseTransition parameter
+- [ ] Extend conversation state management in conversation-manager.ts
+- [ ] Update workflow YAML schema validation
+- [ ] Add review perspectives to existing workflow YAML files
+- [ ] Implement MCP sampling capability detection
+- [ ] Create instruction generation templates and logic
+- [ ] Add comprehensive error handling for all review scenarios
+- [ ] Write unit tests for all new functionality
+- [ ] Write integration tests for complete review workflows
+- [ ] Update documentation and examples
 
 ### Completed
 *None yet*
@@ -108,6 +151,7 @@ Add optional review mechanisms to the responsible-vibe-mcp system before phase t
 - **Review Results**: In non-sampling environments, review "results" are determined by user interaction guided by LLM perspectives
 - **Unified Return Type**: conduct_review always returns instructions field, whether for guided review or automated findings
 - **Artifact Discovery**: No artifacts_to_review field - LLM discovers artifacts using git status, conversation history, plan file analysis
+- **Minimal Interfaces**: Keep all interfaces minimal - no optional parameters or unnecessary return information
 
 ## Notes
 ### Current System Architecture
@@ -125,6 +169,9 @@ Add optional review mechanisms to the responsible-vibe-mcp system before phase t
 - Modify `YamlTransition` interface to support optional review configuration
 - Extend `proceed-to-phase.ts` to handle review steps before transitions
 - Add review result evaluation logic to determine if transition should proceed
+
+### Error Handling Correction
+- If hasReviewPerspectives is false, no error message needed - transition proceeds normally with review_state: 'not-required'
 
 ---
 *This plan is maintained by the LLM. Tool responses provide guidance on which section to focus on and what tasks to work on.*
