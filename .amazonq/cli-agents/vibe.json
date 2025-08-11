@@ -1,0 +1,85 @@
+{
+  "name": "vibe",
+  "description": "A responsible vibe coder",
+  "mcpServers": {
+    "responsible-vibe-mcp": {
+      "command": "node",
+      "args": ["dist/index.js"]
+    },
+    "playwright": {
+      "command": "npx",
+      "args": ["@playwright/mcp@latest"]
+    },
+    "modelcontextprotocol Docs": {
+      "command": "npx",
+      "args": [
+        "mcp-remote",
+        "https://gitmcp.io/modelcontextprotocol/modelcontextprotocol"
+      ]
+    },
+    "typescript-sdk Docs": {
+      "command": "npx",
+      "args": [
+        "mcp-remote",
+        "https://gitmcp.io/modelcontextprotocol/typescript-sdk"
+      ]
+    }
+  },
+  "tools": [
+    "fsRead",
+    "fsWrite",
+    "fsReplace",
+    "listDirectory",
+    "fileSearch",
+    "executeBash",
+    "@responsible-vibe-mcp",
+    "@playwright",
+    "@modelcontextprotocol Docs",
+    "@typescript-sdk Docs"
+  ],
+  "allowedTools": [
+    "fsRead",
+    "fsWrite",
+    "fsReplace",
+    "listDirectory",
+    "fileSearch",
+    "@modelcontextprotocol Docs/fetch_generic_url_content",
+    "@modelcontextprotocol Docs/fetch_typescript_sdk_docs",
+    "@modelcontextprotocol Docs/search_typescript_sdk_code",
+    "@modelcontextprotocol Docs/search_typescript_sdk_docs",
+    "@typescript-sdk Docs/fetch_repo_docs",
+    "@typescript-sdk Docs/search_repo_code",
+    "@typescript-sdk Docs/search_repo_docs",
+    "@responsible-vibe-mcp/codeReview",
+    "@responsible-vibe-mcp/displayFindings",
+    "@responsible-vibe-mcp/conduct_review",
+    "@responsible-vibe-mcp/get_tool_info",
+    "@responsible-vibe-mcp/list_workflows",
+    "@responsible-vibe-mcp/resume_workflow",
+    "@responsible-vibe-mcp/start_development",
+    "@responsible-vibe-mcp/whats_next"
+  ],
+  "toolsSettings": {
+    "execute_bash": {
+      "alwaysAllow": [
+        {
+          "preset": "readOnly"
+        }
+      ]
+    },
+    "use_aws": {
+      "alwaysAllow": [
+        {
+          "preset": "readOnly"
+        }
+      ]
+    }
+  },
+  "resources": [
+    "file://AmazonQ.md",
+    "file://README.md",
+    "file://.amazonq/rules/**/*.md",
+    "file://~/projects/privat/mcp-server/responsible-vibe/SYSTEM_PROMPT.md"
+  ],
+  "hooks": {}
+}
