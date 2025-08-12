@@ -161,6 +161,20 @@ setup_project_docs({
   requirements: "README.md",
   design: "README.md"  # Same file can serve multiple purposes
 })
+
+# Disable specific document types with "none" template
+setup_project_docs({
+  architecture: "arc42",
+  requirements: "none",     # Creates placeholder, uses plan file instead
+  design: "comprehensive"
+})
+
+# Mixed approach: templates, files, and disabled docs
+setup_project_docs({
+  architecture: "README.md",  # Link existing file
+  requirements: "ears",       # Use template
+  design: "none"              # Disable with placeholder
+})
 ```
 
 **Supported File Patterns:**
@@ -168,12 +182,14 @@ setup_project_docs({
 - Files in `docs/` folder: `docs/architecture.md`, `docs/requirements.md`
 - Absolute and relative file paths
 - Multiple document types can reference the same source file
+- **"none" template**: Creates placeholder that instructs LLM to use plan file instead
 
 **How It Works:**
-1. **Template OR File Path**: Each parameter accepts either a template name or a file path
+1. **Template OR File Path OR "none"**: Each parameter accepts template names, file paths, or "none"
 2. **Automatic Detection**: System detects existing documentation files and suggests them
 3. **Symlink Creation**: Creates symbolic links in `.vibe/docs/` pointing to existing files
-4. **Standard Integration**: Workflows continue to work with standard document paths
+4. **Placeholder Creation**: "none" creates instructional placeholder for plan-file-only workflows
+5. **Standard Integration**: Workflows continue to work with standard document paths
 
 ### Review System
 

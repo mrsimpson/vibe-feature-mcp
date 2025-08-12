@@ -60,6 +60,8 @@ function generateTemplateDescription(templates: string[], type: string): string 
         return 'comprehensive (full implementation guide with testing strategy)';
       case 'freestyle':
         return 'freestyle (flexible format)';
+      case 'none':
+        return 'none (placeholder - use plan file instead)';
       default:
         return `${template} (${template} format)`;
     }
@@ -400,7 +402,7 @@ export async function registerMcpTools(
     'setup_project_docs',
     {
       description: 'Create project documentation artifacts (architecture.md, requirements.md, design.md) using configurable templates OR by linking existing files via symlinks. ' +
-                   'Each parameter accepts either a template name or a file path to an existing document.\n\n' +
+                   'Each parameter accepts either a template name, a file path to an existing document, or "none" to disable that document type.\n\n' +
                    '**Template Options:**\n' +
                    `- Architecture: ${availableTemplates.architecture.join(', ')}\n` +
                    `- Requirements: ${availableTemplates.requirements.join(', ')}\n` +
@@ -409,11 +411,15 @@ export async function registerMcpTools(
                    '- `README.md` (project root)\n' +
                    '- `docs/architecture.md` (relative path)\n' +
                    '- `/absolute/path/to/requirements.txt`\n\n' +
+                   '**Disable Document Types:**\n' +
+                   '- Use `"none"` to create a placeholder that instructs LLM to use plan file instead\n' +
+                   '- Useful for users who prefer plan-file-only workflows\n\n' +
                    '**Common Documentation Files:**\n' +
                    '- README.md, ARCHITECTURE.md, DESIGN.md, REQUIREMENTS.md\n' +
                    '- Files in docs/ folder\n\n' +
-                   '**Mixed Usage Example:**\n' +
-                   '`setup_project_docs({ architecture: "README.md", requirements: "ears", design: "docs/design.md" })`',
+                   '**Mixed Usage Examples:**\n' +
+                   '- `setup_project_docs({ architecture: "README.md", requirements: "none", design: "comprehensive" })`\n' +
+                   '- `setup_project_docs({ architecture: "arc42", requirements: "ears", design: "none" })`',
       inputSchema: {
         architecture: z.string()
           .describe(`Architecture documentation: template name (${availableTemplates.architecture.join(', ')}) OR file path to existing document`),
