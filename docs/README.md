@@ -12,7 +12,7 @@ A Model Context Protocol (MCP) server that acts as an intelligent conversation s
 
 - **Manages Conversation State**: Tracks development phase and conversation context across sessions
 - **Guides LLM Behavior**: Provides phase-specific instructions telling the LLM what to do next
-- **Maintains Project Memory**: Keeps a persistent markdown plan file that serves as long-term project memory
+- **Maintains Project Memory**: Comprehensive long-term memory system with persistent plan files and structured project artifacts
 - **Orchestrates Development Flow**: Intelligently determines when to transition between development phases
 - **Ensures Progress Tracking**: Continuously instructs the LLM to update completed tasks in the plan file
 

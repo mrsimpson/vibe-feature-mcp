@@ -43,6 +43,7 @@ export default withMermaid(defineConfig({
         items: [
           { text: "Overview", link: "/" },
           { text: "How it works", link: "/user/how-it-works" },
+          { text: "Long term project memory", link: "/user/long-term-memory" },
           { text: "Custom State Machine", link: "/user/custom-state-machine" },
           { text: "Commits", link: "/user/git-commit-feature" },
         ],

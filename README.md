@@ -12,9 +12,10 @@ A Model Context Protocol (MCP) server that acts as an intelligent conversation s
 
 - **Manages Conversation State**: Tracks development phase and conversation context across sessions
 - **Guides LLM Behavior**: Provides phase-specific instructions telling the LLM what to do next
-- **Maintains Project Memory**: Keeps a persistent markdown plan file that serves as long-term project memory
+- **Maintains Project Memory**: Comprehensive long-term memory system with persistent plan files and structured project artifacts
 - **Orchestrates Development Flow**: Intelligently determines when to transition between development phases
 - **Ensures Progress Tracking**: Continuously instructs the LLM to update completed tasks in the plan file
+- **Manages Project Artifacts**: Intelligent documentation system that creates, links, and maintains project documentation across conversations
 
 ## Core Interaction Pattern
 
@@ -122,6 +123,7 @@ The user interacts normally with the LLM - the tool calls happen automatically i
 
 ## Key Features
 
+- **Comprehensive Long-Term Memory System**: Persistent project artifacts and documentation that survive across conversations and sessions
 - **Project Documentation System**: Intelligent artifact management with dynamic template discovery and workflow integration
 - **Review System**: Optional quality gates with configurable review perspectives before phase transitions
 - **Workflow Visualizer**: Interactive web interface for exploring workflow state machines
@@ -129,6 +131,35 @@ The user interacts normally with the LLM - the tool calls happen automatically i
 - **State Persistence**: Conversation state survives server restarts
 - **Multi-Project Support**: Handle multiple concurrent project conversations
 - **Branch Awareness**: Separate development contexts for different git branches
+
+### Long-Term Memory System
+
+The comprehensive artifacts management system provides persistent project memory through two key components:
+
+**Project Documentation Artifacts:**
+- **Architecture, Requirements, and Design Documents**: Structured documentation using templates (Arc42, EARS, Comprehensive) or linked existing files
+- **Workflow Variable Integration**: Documents are referenced in workflows as `$ARCHITECTURE_DOC`, `$REQUIREMENTS_DOC`, `$DESIGN_DOC`
+- **Dynamic Content Injection**: LLM receives contextual documentation during each development phase
+- **Flexible Setup**: Create from templates, link existing files, or disable with "none" option
+
+**Development Plan Files as Process Memory:**
+- **Central Process Tracking**: Markdown files tracking tasks, decisions, and project evolution
+- **Cross-Session Continuity**: Maintains project context across conversations and server restarts
+- **Decision Documentation**: Records architectural choices and implementation rationale
+- **Fallback Documentation**: Used when specific document types are disabled
+
+**Memory Persistence Features:**
+- **Artifact Linking**: Connect existing project files (README.md, docs/) to the memory system
+- **Template-Based Structure**: Standardized documentation formats for consistent organization
+- **Workflow Integration**: Documents contextually referenced using variables in workflow instructions
+- **Branch-Aware Memory**: Separate memory contexts for different git branches
+- **Multi-Project Memory**: Handle multiple concurrent projects with isolated memory spaces
+
+**Benefits for Development:**
+- **Context Preservation**: Never lose project context between conversations
+- **Informed Decision Making**: LLM always has access to relevant project documentation
+- **Documentation-Driven Development**: Workflows enforce reference to project specifications
+- **Progressive Context Building**: Context grows naturally as the project evolves through phases
 
 ### Project Documentation System
 
@@ -312,6 +343,7 @@ proceed_to_phase({
 For detailed information, see:
 
 - **[Architecture](./docs/ARCHITECTURE.md)** - Detailed system architecture and components
+- **[Long-Term Memory System](./docs/user/long-term-memory.md)** - Comprehensive guide to the artifacts management and memory system
 - **[Examples](./docs/EXAMPLES.md)** - Comprehensive interaction examples and workflows
 - **[Development](./docs/DEVELOPMENT.md)** - Testing, logging, and debugging information
 - **[Git Integration](./docs/git-commit-feature.md)** - Git commit feature documentation
