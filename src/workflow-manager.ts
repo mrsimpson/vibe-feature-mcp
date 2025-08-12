@@ -19,6 +19,13 @@ export interface WorkflowInfo {
   description: string;
   initialState: string;
   phases: string[];
+  // Enhanced metadata for better discoverability
+  metadata?: {
+    complexity?: 'low' | 'medium' | 'high';
+    bestFor?: string[];
+    useCases?: string[];
+    examples?: string[];
+  };
 }
 
 /**
@@ -298,7 +305,8 @@ export class WorkflowManager {
             displayName: workflow.name,
             description: workflow.description,
             initialState: workflow.initial_state,
-            phases: Object.keys(workflow.states)
+            phases: Object.keys(workflow.states),
+            metadata: workflow.metadata // Include metadata if present
           };
 
           this.workflowInfos.set(workflowName, workflowInfo);

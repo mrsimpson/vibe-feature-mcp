@@ -4,6 +4,23 @@ name: "greenfield"
 description: "A comprehensive workflow for starting new projects from scratch: Ideation, Architecture, Plan, Code, Document - ideal for greenfield projects requiring thorough upfront planning"
 initial_state: "ideation"
 
+# Enhanced metadata for better discoverability
+metadata:
+  complexity: "high"
+  bestFor:
+    - "New projects from scratch"
+    - "Greenfield development"
+    - "Complex system design"
+    - "Comprehensive planning needed"
+  useCases:
+    - "Starting a new application"
+    - "Building a new service"
+    - "Creating a new library"
+  examples:
+    - "Build a new web application"
+    - "Create a microservice architecture"
+    - "Develop a new CLI tool"
+
 # States with default instructions and transitions
 states:
   ideation:

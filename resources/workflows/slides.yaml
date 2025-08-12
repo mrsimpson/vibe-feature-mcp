@@ -2,6 +2,23 @@ name: slides
 description: "A comprehensive workflow for creating presentations - tool-agnostic approach that works with Slidev, PowerPoint, Google Slides, or any presentation platform"
 initial_state: ideate
 
+# Enhanced metadata for better discoverability
+metadata:
+  complexity: "medium"
+  bestFor:
+    - "Presentation creation"
+    - "Slide deck development"
+    - "Conference talks"
+    - "Training materials"
+  useCases:
+    - "Creating a technical presentation"
+    - "Building training slides"
+    - "Preparing a conference talk"
+  examples:
+    - "Create a product demo presentation"
+    - "Build onboarding slides"
+    - "Develop a technical workshop"
+
 states:
   ideate:
     description: "Brainstorm presentation concept and define strategic foundation"

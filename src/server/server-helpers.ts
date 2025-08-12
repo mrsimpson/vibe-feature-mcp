@@ -121,11 +121,46 @@ export function buildWorkflowEnum(workflowNames: string[]): [string, ...string[]
 /**
  * Generate workflow description for tool schemas
  */
-export function generateWorkflowDescription(workflows: Array<{ name: string; displayName: string; description: string }>): string {
+export function generateWorkflowDescription(workflows: Array<{ 
+  name: string; 
+  displayName: string; 
+  description: string;
+  metadata?: {
+    complexity?: 'low' | 'medium' | 'high';
+    bestFor?: string[];
+    useCases?: string[];
+    examples?: string[];
+  };
+}>): string {
   let description = 'Choose your development workflow:\n\n';
   
   for (const workflow of workflows) {
-    description += `• **${workflow.name}**: ${workflow.displayName} - ${workflow.description}\n`;
+    description += `• **${workflow.name}**: ${workflow.displayName} - ${workflow.description}`;
+    
+    // Add enhanced metadata if available
+    if (workflow.metadata) {
+      const meta = workflow.metadata;
+      
+      // Add complexity
+      if (meta.complexity) {
+        description += `\n  Complexity: ${meta.complexity}`;
+      }
+      
+      // Add best for information
+      if (meta.bestFor && meta.bestFor.length > 0) {
+        description += `\n  Best for: ${meta.bestFor.join(', ')}`;
+      }
+      
+      // Add examples
+      if (meta.examples && meta.examples.length > 0) {
+        description += `\n  Examples: ${meta.examples.slice(0, 2).join(', ')}`;
+        if (meta.examples.length > 2) {
+          description += `, and ${meta.examples.length - 2} more`;
+        }
+      }
+    }
+    
+    description += '\n';
   }
   
   description += '• **custom**: Use custom workflow from .vibe/workflow.yaml in your project\n\n';

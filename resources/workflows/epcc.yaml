@@ -4,6 +4,23 @@ name: "epcc"
 description: "A comprehensive development workflow based on Anthropic's best practices: Explore, Plan, Code, Commit - ideal for smaller features and iterative development"
 initial_state: "explore"
 
+# Enhanced metadata for better discoverability
+metadata:
+  complexity: "medium"
+  bestFor:
+    - "Medium-sized features"
+    - "Iterative development"
+    - "Research-heavy tasks"
+    - "Exploratory coding"
+  useCases:
+    - "Adding a new API endpoint"
+    - "Implementing a new algorithm"
+    - "Integrating a third-party service"
+  examples:
+    - "Add user profile management"
+    - "Implement search functionality"
+    - "Create data export feature"
+
 # States with default instructions and transitions
 states:
   explore:

@@ -4,6 +4,23 @@ name: "bugfix"
 description: "A focused workflow for bug fixing: Reproduce, Analyze, Fix, Verify - optimized for debugging and fixing existing issues"
 initial_state: "reproduce"
 
+# Enhanced metadata for better discoverability
+metadata:
+  complexity: "medium"
+  bestFor:
+    - "Bug fixes"
+    - "Issue resolution"
+    - "Error debugging"
+    - "Performance problems"
+  useCases:
+    - "Fixing a crash or error"
+    - "Resolving incorrect behavior"
+    - "Performance optimization"
+  examples:
+    - "Fix login authentication error"
+    - "Resolve memory leak issue"
+    - "Fix incorrect calculation in reports"
+
 # States with default instructions and transitions
 states:
   reproduce:

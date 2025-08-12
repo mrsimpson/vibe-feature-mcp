@@ -59,4 +59,12 @@ export interface YamlStateMachine {
   
   /** Map of states in the state machine */
   states: Record<string, YamlState>;
+  
+  /** Optional metadata for enhanced discoverability */
+  metadata?: {
+    complexity?: 'low' | 'medium' | 'high';
+    bestFor?: string[];
+    useCases?: string[];
+    examples?: string[];
+  };
 }

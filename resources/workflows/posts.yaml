@@ -2,6 +2,23 @@ name: posts
 description: "A comprehensive workflow for writing posts - from blog posts to short-form content, with research, story development, and multi-platform publishing"
 initial_state: discovery
 
+# Enhanced metadata for better discoverability
+metadata:
+  complexity: "medium"
+  bestFor:
+    - "Blog post writing"
+    - "Content creation"
+    - "Article development"
+    - "Social media content"
+  useCases:
+    - "Writing technical blog posts"
+    - "Creating marketing content"
+    - "Developing thought leadership articles"
+  examples:
+    - "Write a tutorial blog post"
+    - "Create a product announcement"
+    - "Develop a technical deep-dive article"
+
 states:
   discovery:
     description: "Research topic, decide format, and analyze competitive landscape"

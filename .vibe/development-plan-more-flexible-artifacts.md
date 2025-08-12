@@ -208,10 +208,10 @@ Extend the existing `setup_project_docs` tool to accept file paths in addition t
 - [x] Create final commit with all changes
 
 ### Additional Requirements Identified
-- [ ] Support for users who don't want project documents created at all
-- [ ] Explore different approaches for disabling document creation
-- [ ] Consider configuration options and user experience
-- [ ] Maintain backward compatibility while adding opt-out functionality
+- [x] Support for users who don't want project documents created at all
+- [x] Explore different approaches for disabling document creation
+- [x] Consider configuration options and user experience
+- [x] Maintain backward compatibility while adding opt-out functionality
 
 ### Completed
 - [x] All 215 tests passing - no regressions detected
@@ -222,6 +222,11 @@ Extend the existing `setup_project_docs` tool to accept file paths in addition t
 - [x] Created conventional commit with detailed feature description
 - [x] **🎉 Feature development complete and committed!**
 - [x] **Additional requirement identified: opt-out functionality for document creation**
+- [x] **✨ BONUS: Implemented "none" template solution for plan-file-only workflows**
+- [x] **Created "none" templates for architecture, requirements, and design documents**
+- [x] **Added comprehensive test coverage (221 tests passing)**
+- [x] **Updated documentation and tool descriptions**
+- [x] **Committed "none" template enhancement**
 
 ## Key Decisions
 

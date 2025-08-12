@@ -4,6 +4,23 @@ name: "minor"
 description: "A streamlined workflow for small-impact changes: Explore (analysis + design) → Implement (code + test + commit) - optimized for minor enhancements"
 initial_state: "explore"
 
+# Enhanced metadata for better discoverability
+metadata:
+  complexity: "low"
+  bestFor: 
+    - "Small bug fixes"
+    - "Minor feature enhancements"
+    - "Code refactoring"
+    - "Documentation updates"
+  useCases:
+    - "Adding a new parameter to an existing function"
+    - "Improving error messages"
+    - "Small UI adjustments"
+  examples:
+    - "Fix a typo in user interface text"
+    - "Add validation to an input field"
+    - "Enhance logging in a specific module"
+
 # States with default instructions and transitions
 states:
   explore:

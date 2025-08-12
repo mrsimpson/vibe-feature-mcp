@@ -4,6 +4,23 @@ name: "waterfall"
 description: "From Specification down to test – the historical way. Ideal for larger, design-heavy tasks with well-defined requirements"
 initial_state: "requirements"
 
+# Enhanced metadata for better discoverability
+metadata:
+  complexity: "high"
+  bestFor:
+    - "Large feature development"
+    - "Complex system changes"
+    - "Well-defined requirements"
+    - "Design-heavy projects"
+  useCases:
+    - "Building a new module from scratch"
+    - "Implementing complex business logic"
+    - "Major architectural changes"
+  examples:
+    - "Create a new authentication system"
+    - "Build a reporting dashboard"
+    - "Implement a payment processing workflow"
+
 # States with default instructions and transitions
 states:
   requirements:
