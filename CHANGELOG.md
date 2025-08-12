@@ -8,6 +8,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **File Linking Support**: Enhanced project documentation system to support linking existing files via symlinks
+  - `setup_project_docs` tool now accepts file paths in addition to template names
+  - Support for README.md, ARCHITECTURE.md, DESIGN.md, and other existing documentation files
+  - Automatic file detection and suggestion system for common documentation patterns
+  - Symlink creation in `.vibe/docs/` folder maintains standard paths while referencing existing files
+  - Mixed usage support: combine templates and file paths in same setup call
+  - Security validation prevents directory traversal attacks
+  - Multiple document types can reference the same source file (e.g., README.md for all types)
+- **Enhanced Tool Descriptions**: Comprehensive examples and usage guidance for file linking functionality
+- **Path Validation System**: Robust file path validation with security constraints
+- **File Detection Manager**: Pattern-based discovery of existing documentation files
+
+### Changed
+- `setup_project_docs` tool parameters now accept string values instead of strict enums
+- Enhanced tool descriptions with file path examples and common patterns
+- Project documentation system supports both template creation and file linking workflows
+
+### Technical
+- New `PathValidationUtils` class for secure file path validation
+- New `FileDetectionManager` class for pattern-based file discovery
+- Enhanced `ProjectDocsManager` with symlink creation and management capabilities
+- Extended `SetupProjectDocsHandler` with dual parameter validation (templates OR file paths)
+- Comprehensive integration tests for file linking functionality
+
 - **Project Documentation System**: Complete intelligent artifact management system
   - Dynamic template discovery from file system structure
   - Support for Arc42, EARS, Comprehensive, and Freestyle documentation templates

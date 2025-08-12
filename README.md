@@ -135,10 +135,45 @@ The user interacts normally with the LLM - the tool calls happen automatically i
 The project documentation system provides intelligent artifact management with:
 
 - **Dynamic Template Discovery**: Automatically discovers available templates from the file system
+- **File Linking Support**: Link existing documentation files (like README.md) instead of creating new ones
 - **Workflow Integration**: Workflows reference project documents contextually (e.g., `$ARCHITECTURE_DOC`, `$REQUIREMENTS_DOC`)
 - **Intelligent Setup Guidance**: Analyzes workflows to detect missing documents and provides targeted setup recommendations
 - **Multiple Template Types**: Support for Arc42, EARS, Comprehensive, and Freestyle documentation approaches
+- **Symlink Management**: Uses symbolic links to maintain standard paths while referencing existing files
 - **Zero Maintenance**: Add new templates without code changes - just drop files in the templates directory
+
+#### **File Linking Capabilities**
+
+The system now supports linking existing documentation files instead of only creating new structured documents:
+
+**Mixed Usage Examples:**
+```bash
+# Link existing README.md as requirements, create new architecture doc
+setup_project_docs({
+  architecture: "arc42",
+  requirements: "README.md", 
+  design: "docs/design.md"
+})
+
+# Use existing files for all document types
+setup_project_docs({
+  architecture: "ARCHITECTURE.md",
+  requirements: "README.md",
+  design: "README.md"  # Same file can serve multiple purposes
+})
+```
+
+**Supported File Patterns:**
+- `README.md`, `ARCHITECTURE.md`, `DESIGN.md`, `REQUIREMENTS.md`
+- Files in `docs/` folder: `docs/architecture.md`, `docs/requirements.md`
+- Absolute and relative file paths
+- Multiple document types can reference the same source file
+
+**How It Works:**
+1. **Template OR File Path**: Each parameter accepts either a template name or a file path
+2. **Automatic Detection**: System detects existing documentation files and suggests them
+3. **Symlink Creation**: Creates symbolic links in `.vibe/docs/` pointing to existing files
+4. **Standard Integration**: Workflows continue to work with standard document paths
 
 ### Review System
 

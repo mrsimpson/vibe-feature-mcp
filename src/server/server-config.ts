@@ -392,21 +392,35 @@ export async function registerMcpTools(
     }
   );
 
-  // Register setup_project_docs tool with dynamic template discovery
+  // Register setup_project_docs tool with enhanced file linking support
   const templateManager = new TemplateManager();
   const availableTemplates = await templateManager.getAvailableTemplates();
   
   mcpServer.registerTool(
     'setup_project_docs',
     {
-      description: 'Create project documentation artifacts (architecture.md, requirements.md, design.md) using configurable templates. Supports different template formats for each document type.',
+      description: 'Create project documentation artifacts (architecture.md, requirements.md, design.md) using configurable templates OR by linking existing files via symlinks. ' +
+                   'Each parameter accepts either a template name or a file path to an existing document.\n\n' +
+                   '**Template Options:**\n' +
+                   `- Architecture: ${availableTemplates.architecture.join(', ')}\n` +
+                   `- Requirements: ${availableTemplates.requirements.join(', ')}\n` +
+                   `- Design: ${availableTemplates.design.join(', ')}\n\n` +
+                   '**File Path Examples:**\n' +
+                   '- `README.md` (project root)\n' +
+                   '- `docs/architecture.md` (relative path)\n' +
+                   '- `/absolute/path/to/requirements.txt`\n\n' +
+                   '**Common Documentation Files:**\n' +
+                   '- README.md, ARCHITECTURE.md, DESIGN.md, REQUIREMENTS.md\n' +
+                   '- Files in docs/ folder\n\n' +
+                   '**Mixed Usage Example:**\n' +
+                   '`setup_project_docs({ architecture: "README.md", requirements: "ears", design: "docs/design.md" })`',
       inputSchema: {
-        architecture: z.enum(buildTemplateEnum(availableTemplates.architecture))
-          .describe(generateTemplateDescription(availableTemplates.architecture, 'Architecture')),
-        requirements: z.enum(buildTemplateEnum(availableTemplates.requirements))
-          .describe(generateTemplateDescription(availableTemplates.requirements, 'Requirements')),
-        design: z.enum(buildTemplateEnum(availableTemplates.design))
-          .describe(generateTemplateDescription(availableTemplates.design, 'Design'))
+        architecture: z.string()
+          .describe(`Architecture documentation: template name (${availableTemplates.architecture.join(', ')}) OR file path to existing document`),
+        requirements: z.string()
+          .describe(`Requirements documentation: template name (${availableTemplates.requirements.join(', ')}) OR file path to existing document`),
+        design: z.string()
+          .describe(`Design documentation: template name (${availableTemplates.design.join(', ')}) OR file path to existing document`)
       },
       annotations: {
         title: 'Project Documentation Setup Tool',

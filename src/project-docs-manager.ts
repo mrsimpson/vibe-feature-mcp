@@ -3,11 +3,12 @@
  * 
  * Manages project documentation artifacts (architecture.md, requirements.md, design.md)
  * separate from the workflow-specific plan files. Handles creation, validation, and
- * path resolution for project documents.
+ * path resolution for project documents. Now supports both template creation and
+ * file linking via symlinks.
  */
 
-import { writeFile, readFile, access, mkdir } from 'fs/promises';
-import { join, dirname } from 'path';
+import { writeFile, readFile, access, mkdir, unlink, symlink, lstat } from 'fs/promises';
+import { join, dirname, relative } from 'path';
 import { createLogger } from './logger.js';
 import { TemplateManager, TemplateOptions } from './template-manager.js';
 
@@ -17,6 +18,12 @@ export interface ProjectDocsInfo {
   architecture: { path: string; exists: boolean };
   requirements: { path: string; exists: boolean };
   design: { path: string; exists: boolean };
+}
+
+export interface CreateOrLinkResult {
+  created: string[];
+  linked: string[];
+  skipped: string[];
 }
 
 export class ProjectDocsManager {
@@ -81,15 +88,29 @@ export class ProjectDocsManager {
   }
 
   /**
-   * Create project documents using templates
+   * Create project documents using templates (legacy method for backward compatibility)
    */
   async createProjectDocs(
     projectPath: string, 
     options?: TemplateOptions
   ): Promise<{ created: string[]; skipped: string[] }> {
+    const result = await this.createOrLinkProjectDocs(projectPath, options, {});
+    return {
+      created: result.created,
+      skipped: result.skipped
+    };
+  }
+
+  /**
+   * Create or link project documents using templates and/or file paths
+   */
+  async createOrLinkProjectDocs(
+    projectPath: string,
+    templateOptions?: Partial<TemplateOptions>,
+    filePaths?: Partial<{ architecture: string; requirements: string; design: string }>
+  ): Promise<CreateOrLinkResult> {
     const defaults = await this.templateManager.getDefaults();
-    const finalOptions = { ...defaults, ...options };
-    await this.templateManager.validateOptions(finalOptions);
+    const finalTemplateOptions = { ...defaults, ...templateOptions };
 
     const docsPath = this.getDocsPath(projectPath);
     const paths = this.getDocumentPaths(projectPath);
@@ -99,40 +120,109 @@ export class ProjectDocsManager {
     await mkdir(docsPath, { recursive: true });
 
     const created: string[] = [];
+    const linked: string[] = [];
     const skipped: string[] = [];
 
-    // Create architecture document
+    // Handle architecture document
     if (!info.architecture.exists) {
-      await this.createDocument('architecture', finalOptions.architecture, paths.architecture, docsPath);
-      created.push('architecture.md');
+      if (filePaths?.architecture) {
+        await this.createSymlink(filePaths.architecture, paths.architecture);
+        linked.push('architecture.md');
+      } else {
+        await this.createDocument('architecture', finalTemplateOptions.architecture, paths.architecture, docsPath);
+        created.push('architecture.md');
+      }
     } else {
       skipped.push('architecture.md');
     }
 
-    // Create requirements document
+    // Handle requirements document
     if (!info.requirements.exists) {
-      await this.createDocument('requirements', finalOptions.requirements, paths.requirements, docsPath);
-      created.push('requirements.md');
+      if (filePaths?.requirements) {
+        await this.createSymlink(filePaths.requirements, paths.requirements);
+        linked.push('requirements.md');
+      } else {
+        await this.createDocument('requirements', finalTemplateOptions.requirements, paths.requirements, docsPath);
+        created.push('requirements.md');
+      }
     } else {
       skipped.push('requirements.md');
     }
 
-    // Create design document
+    // Handle design document
     if (!info.design.exists) {
-      await this.createDocument('design', finalOptions.design, paths.design, docsPath);
-      created.push('design.md');
+      if (filePaths?.design) {
+        await this.createSymlink(filePaths.design, paths.design);
+        linked.push('design.md');
+      } else {
+        await this.createDocument('design', finalTemplateOptions.design, paths.design, docsPath);
+        created.push('design.md');
+      }
     } else {
       skipped.push('design.md');
     }
 
-    logger.info('Project docs creation completed', { 
+    logger.info('Project docs creation/linking completed', { 
       created, 
+      linked,
       skipped, 
       projectPath,
-      options: finalOptions 
+      templateOptions: finalTemplateOptions,
+      filePaths
     });
 
-    return { created, skipped };
+    return { created, linked, skipped };
+  }
+
+  /**
+   * Create a symlink to an existing file
+   */
+  async createSymlink(sourcePath: string, targetPath: string): Promise<void> {
+    try {
+      // Remove existing file/symlink if it exists
+      await this.removeExistingDocument(targetPath);
+
+      // Create relative symlink for better portability
+      const targetDir = dirname(targetPath);
+      const relativePath = relative(targetDir, sourcePath);
+      
+      await symlink(relativePath, targetPath);
+      
+      logger.debug('Symlink created successfully', { 
+        sourcePath, 
+        targetPath, 
+        relativePath 
+      });
+    } catch (error) {
+      logger.error('Failed to create symlink', error as Error, { 
+        sourcePath, 
+        targetPath 
+      });
+      throw new Error(`Failed to create symlink: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  }
+
+  /**
+   * Remove existing document or symlink
+   */
+  private async removeExistingDocument(documentPath: string): Promise<void> {
+    try {
+      const stats = await lstat(documentPath);
+      await unlink(documentPath);
+      
+      logger.debug('Existing document removed', { 
+        documentPath, 
+        wasSymlink: stats.isSymbolicLink() 
+      });
+    } catch (error) {
+      // File doesn't exist, which is fine
+      if ((error as any).code !== 'ENOENT') {
+        logger.debug('Failed to remove existing document', { 
+          documentPath, 
+          error: error instanceof Error ? error.message : 'Unknown error' 
+        });
+      }
+    }
   }
 
   /**
@@ -205,5 +295,20 @@ export class ProjectDocsManager {
   async allDocumentsExist(projectPath: string): Promise<boolean> {
     const info = await this.getProjectDocsInfo(projectPath);
     return info.architecture.exists && info.requirements.exists && info.design.exists;
+  }
+
+  /**
+   * Check if a document is a symlink
+   */
+  async isSymlink(projectPath: string, type: 'architecture' | 'requirements' | 'design'): Promise<boolean> {
+    const paths = this.getDocumentPaths(projectPath);
+    const documentPath = paths[type];
+    
+    try {
+      const stats = await lstat(documentPath);
+      return stats.isSymbolicLink();
+    } catch {
+      return false;
+    }
   }
 }
