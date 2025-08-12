@@ -15,6 +15,7 @@ import { ResumeWorkflowHandler } from './resume-workflow.js';
 import { ResetDevelopmentHandler } from './reset-development.js';
 import { ListWorkflowsHandler } from './list-workflows.js';
 import { GetToolInfoHandler } from './get-tool-info.js';
+import { SetupProjectDocsHandler } from './setup-project-docs.js';
 
 const logger = createLogger('ToolRegistry');
 
@@ -53,6 +54,7 @@ export function createToolRegistry(): ToolRegistry {
   registry.register('reset_development', new ResetDevelopmentHandler());
   registry.register('list_workflows', new ListWorkflowsHandler());
   registry.register('get_tool_info', new GetToolInfoHandler());
+  registry.register('setup_project_docs', new SetupProjectDocsHandler());
   
   logger.info('Tool registry created with handlers', { 
     handlers: registry.list() 
@@ -70,6 +72,7 @@ export { ResumeWorkflowHandler } from './resume-workflow.js';
 export { ResetDevelopmentHandler } from './reset-development.js';
 export { ListWorkflowsHandler } from './list-workflows.js';
 export { GetToolInfoHandler } from './get-tool-info.js';
+export { SetupProjectDocsHandler } from './setup-project-docs.js';
 export { BaseToolHandler, ConversationRequiredToolHandler } from './base-tool-handler.js';
 
 // Export argument and result types
@@ -80,3 +83,4 @@ export type { StartDevelopmentArgs, StartDevelopmentResult } from './start-devel
 export type { ResumeWorkflowArgs, ResumeWorkflowResult } from './resume-workflow.js';
 export type { ResetDevelopmentArgs, ResetDevelopmentResult } from './reset-development.js';
 export type { GetToolInfoArgs, GetToolInfoResponse } from './get-tool-info.js';
+export type { SetupProjectDocsArgs, SetupProjectDocsResult } from './setup-project-docs.js';

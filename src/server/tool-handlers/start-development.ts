@@ -12,6 +12,7 @@ import { readFileSync, writeFileSync, existsSync } from 'fs';
 import { resolve } from 'path';
 import { GitCommitConfig } from '../../types.js';
 import { GitManager } from '../../git-manager.js';
+import { ProjectDocsManager } from '../../project-docs-manager.js';
 
 /**
  * Arguments for the start_development tool
@@ -38,6 +39,12 @@ export interface StartDevelopmentResult {
  * StartDevelopment tool handler implementation
  */
 export class StartDevelopmentHandler extends BaseToolHandler<StartDevelopmentArgs, StartDevelopmentResult> {
+  private projectDocsManager: ProjectDocsManager;
+
+  constructor() {
+    super();
+    this.projectDocsManager = new ProjectDocsManager();
+  }
 
   protected async executeHandler(
     args: StartDevelopmentArgs,
@@ -76,6 +83,12 @@ export class StartDevelopmentHandler extends BaseToolHandler<StartDevelopmentArg
       throw new Error(
         `Invalid workflow: ${selectedWorkflow}. Available workflows: ${availableWorkflows.join(', ')}, custom`
       );
+    }
+
+    // Check for project documentation artifacts and guide setup if needed
+    const artifactGuidance = await this.checkProjectArtifacts(context.projectPath, selectedWorkflow, context);
+    if (artifactGuidance) {
+      return artifactGuidance;
     }
 
     // Check if user is on main/master branch and prompt for branch creation
@@ -187,6 +200,250 @@ export class StartDevelopmentHandler extends BaseToolHandler<StartDevelopmentArg
     );
 
     return response;
+  }
+
+  /**
+   * Check if project documentation artifacts exist and provide setup guidance if needed
+   * Dynamically analyzes the selected workflow to determine which documents are referenced
+   */
+  private async checkProjectArtifacts(
+    projectPath: string, 
+    workflowName: string,
+    context: ServerContext
+  ): Promise<StartDevelopmentResult | null> {
+    try {
+      // Load the workflow to analyze its content
+      const stateMachine = context.workflowManager.loadWorkflowForProject(projectPath, workflowName);
+      
+      // Analyze workflow content to detect referenced document variables
+      const referencedVariables = this.analyzeWorkflowDocumentReferences(stateMachine, projectPath);
+      
+      // If no document variables are referenced, skip artifact check
+      if (referencedVariables.length === 0) {
+        this.logger.debug('No document variables found in workflow, skipping artifact check', { workflowName });
+        return null;
+      }
+
+      // Check which referenced documents are missing
+      const docsInfo = await this.projectDocsManager.getProjectDocsInfo(projectPath);
+      const missingDocs = this.getMissingReferencedDocuments(referencedVariables, docsInfo, projectPath);
+
+      // If all referenced documents exist, continue with normal flow
+      if (missingDocs.length === 0) {
+        this.logger.debug('All referenced project artifacts exist, continuing with development', {
+          workflowName,
+          referencedVariables
+        });
+        return null;
+      }
+
+      // Generate guidance for setting up missing artifacts
+      const setupGuidance = await this.generateArtifactSetupGuidance(
+        missingDocs, 
+        workflowName, 
+        docsInfo,
+        referencedVariables
+      );
+      
+      this.logger.info('Missing referenced project artifacts detected, providing setup guidance', {
+        workflowName,
+        referencedVariables,
+        missingDocs,
+        projectPath
+      });
+
+      return {
+        phase: 'artifact-setup',
+        instructions: setupGuidance,
+        plan_file_path: '',
+        conversation_id: '',
+        workflow: {}
+      };
+    } catch (error) {
+      this.logger.warn('Failed to analyze workflow for document references, proceeding without artifact check', {
+        workflowName,
+        error: error instanceof Error ? error.message : String(error)
+      });
+      return null;
+    }
+  }
+
+  /**
+   * Analyze workflow content to detect document variable references
+   */
+  private analyzeWorkflowDocumentReferences(stateMachine: any, projectPath: string): string[] {
+    // Get available document variables from ProjectDocsManager
+    const variableSubstitutions = this.projectDocsManager.getVariableSubstitutions(projectPath);
+    const documentVariables = Object.keys(variableSubstitutions);
+    const referencedVariables: Set<string> = new Set();
+    
+    // Convert the entire state machine to a string for analysis
+    const workflowContent = JSON.stringify(stateMachine);
+    
+    // Check for each document variable
+    for (const variable of documentVariables) {
+      if (workflowContent.includes(variable)) {
+        referencedVariables.add(variable);
+      }
+    }
+    
+    this.logger.debug('Analyzed workflow for document references', {
+      workflowContent: workflowContent.length + ' characters',
+      availableVariables: documentVariables,
+      referencedVariables: Array.from(referencedVariables)
+    });
+    
+    return Array.from(referencedVariables);
+  }
+
+  /**
+   * Determine which referenced documents are missing
+   */
+  private getMissingReferencedDocuments(
+    referencedVariables: string[], 
+    docsInfo: any, 
+    projectPath: string
+  ): string[] {
+    const missingDocs: string[] = [];
+    
+    // Get variable substitutions to derive the mapping
+    const variableSubstitutions = this.projectDocsManager.getVariableSubstitutions(projectPath);
+    
+    // Create reverse mapping from variable to document type
+    const variableToDocMap: { [key: string]: string } = {};
+    for (const [variable, path] of Object.entries(variableSubstitutions)) {
+      // Extract document type from path (e.g., 'architecture' from 'architecture.md')
+      const filename = path.split('/').pop() || '';
+      const docType = filename.replace('.md', '');
+      variableToDocMap[variable] = docType;
+    }
+    
+    for (const variable of referencedVariables) {
+      const docType = variableToDocMap[variable];
+      if (docType && docsInfo[docType] && !docsInfo[docType].exists) {
+        missingDocs.push(`${docType}.md`);
+      }
+    }
+    
+    return missingDocs;
+  }
+
+  /**
+   * Generate guidance for setting up missing project artifacts
+   */
+  private async generateArtifactSetupGuidance(
+    missingDocs: string[], 
+    workflowName: string,
+    docsInfo: any,
+    referencedVariables: string[]
+  ): Promise<string> {
+    const missingList = missingDocs.map(doc => `- ${doc}`).join('\n');
+    const existingDocs = [];
+    
+    if (docsInfo.architecture.exists) existingDocs.push('✅ architecture.md');
+    if (docsInfo.requirements.exists) existingDocs.push('✅ requirements.md');
+    if (docsInfo.design.exists) existingDocs.push('✅ design.md');
+
+    const existingList = existingDocs.length > 0 
+      ? `\n\n**Existing Documents:**\n${existingDocs.join('\n')}`
+      : '';
+
+    const referencedVariablesList = referencedVariables.map(v => `\`${v}\``).join(', ');
+
+    // Get available templates dynamically
+    const availableTemplates = await this.projectDocsManager.templateManager.getAvailableTemplates();
+    const defaults = await this.projectDocsManager.templateManager.getDefaults();
+
+    // Generate template options dynamically
+    const templateOptionsText = this.generateTemplateOptionsText(availableTemplates);
+
+    return `## Project Documentation Setup Required
+
+The **${workflowName}** workflow references project documentation that doesn't exist yet.
+
+**Referenced Variables:** ${referencedVariablesList}
+
+**Missing Documents:**
+${missingList}${existingList}
+
+## 🚀 **Quick Setup**
+
+Use the \`setup_project_docs\` tool to create these documents with templates:
+
+\`\`\`
+setup_project_docs({
+  architecture: "${defaults.architecture}",        // or other available options
+  requirements: "${defaults.requirements}",         // or other available options
+  design: "${defaults.design}"       // or other available options
+})
+\`\`\`
+
+${templateOptionsText}
+
+## ⚡ **Next Steps**
+
+1. **Call \`setup_project_docs\`** with your preferred templates
+2. **Call \`start_development\`** again to begin the ${workflowName} workflow
+3. The workflow will reference these documents using the detected variables: ${referencedVariablesList}
+
+**Note:** You can also proceed without structured docs, but the workflow instructions will reference missing files.`;
+  }
+
+  /**
+   * Generate template options text dynamically
+   */
+  private generateTemplateOptionsText(availableTemplates: {
+    architecture: string[];
+    requirements: string[];
+    design: string[];
+  }): string {
+    const sections = [];
+
+    if (availableTemplates.architecture.length > 0) {
+      const archOptions = availableTemplates.architecture.map(template => {
+        const description = this.getTemplateDescription(template, 'architecture');
+        return `- **${template}**: ${description}`;
+      }).join('\n');
+      sections.push(`**Architecture Templates:**\n${archOptions}`);
+    }
+
+    if (availableTemplates.requirements.length > 0) {
+      const reqOptions = availableTemplates.requirements.map(template => {
+        const description = this.getTemplateDescription(template, 'requirements');
+        return `- **${template}**: ${description}`;
+      }).join('\n');
+      sections.push(`**Requirements Templates:**\n${reqOptions}`);
+    }
+
+    if (availableTemplates.design.length > 0) {
+      const designOptions = availableTemplates.design.map(template => {
+        const description = this.getTemplateDescription(template, 'design');
+        return `- **${template}**: ${description}`;
+      }).join('\n');
+      sections.push(`**Design Templates:**\n${designOptions}`);
+    }
+
+    return sections.length > 0 
+      ? `## 📋 **Template Options**\n\n${sections.join('\n\n')}`
+      : '';
+  }
+
+  /**
+   * Get description for a template based on its name and type
+   */
+  private getTemplateDescription(template: string, type: string): string {
+    switch (template) {
+      case 'arc42':
+        return 'Comprehensive software architecture template with diagrams';
+      case 'ears':
+        return 'WHEN...THEN format for clear, testable requirements';
+      case 'comprehensive':
+        return 'Full implementation guide with testing strategy';
+      case 'freestyle':
+        return `Simple, flexible ${type} documentation`;
+      default:
+        return `${template} format for ${type} documentation`;
+    }
   }
 
   /**

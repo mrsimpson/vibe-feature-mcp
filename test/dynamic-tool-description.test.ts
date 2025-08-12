@@ -8,9 +8,9 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { tmpdir } from 'os';
 import { join } from 'path';
-import { mkdirSync, rmSync, writeFileSync } from 'fs';
-import { execSync } from 'child_process';
+import { mkdirSync, rmSync } from 'fs';
 import { ResponsibleVibeMCPServer } from '../src/server/index.js';
+import { GitTestHelper, ServerTestHelper, MockDocsHelper, TestAssertions } from './utils/test-helpers.js';
 
 describe('Dynamic Tool Description', () => {
   let tempDir: string;
@@ -26,10 +26,7 @@ describe('Dynamic Tool Description', () => {
   });
 
   afterEach(async () => {
-    // Cleanup
-    if (server) {
-      await server.cleanup();
-    }
+    await ServerTestHelper.cleanupServer(server);
     
     // Remove temp directory
     try {
@@ -40,67 +37,41 @@ describe('Dynamic Tool Description', () => {
   });
 
   it('should handle git repository with "end" commit behavior', async () => {
-    // Initialize git repository
-    execSync('git init', { cwd: tempDir });
-    execSync('git config user.email "test@example.com"', { cwd: tempDir });
-    execSync('git config user.name "Test User"', { cwd: tempDir });
-    
-    // Create initial commit
-    writeFileSync(join(tempDir, 'README.md'), '# Test Project');
-    execSync('git add .', { cwd: tempDir });
-    execSync('git commit -m "Initial commit"', { cwd: tempDir });
+    // Setup git repository with feature branch
+    GitTestHelper.setupFullRepo(tempDir, 'feature/test');
+    MockDocsHelper.addToProject(tempDir);
 
-    // Create feature branch
-    execSync('git checkout -b feature/test', { cwd: tempDir });
-
-    // Initialize server
-    server = new ResponsibleVibeMCPServer();
-    await server.initialize();
-
-    // Call start_development with "end" behavior (recommended for git repos)
+    // Initialize server and test
+    server = await ServerTestHelper.createServer(tempDir);
     const result = await server.handleStartDevelopment({
       workflow: 'waterfall',
       commit_behaviour: 'end'
     });
 
-    expect(result.phase).toBeDefined();
-    expect(result.instructions).toBeDefined();
+    TestAssertions.expectValidResult(result);
   });
 
   it('should handle non-git directory with "none" commit behavior', async () => {
     // Don't initialize git - just use regular directory
+    MockDocsHelper.addToProject(tempDir);
     
-    // Initialize server
-    server = new ResponsibleVibeMCPServer();
-    await server.initialize();
-
-    // Call start_development with "none" behavior (required for non-git projects)
+    // Initialize server and test
+    server = await ServerTestHelper.createServer(tempDir);
     const result = await server.handleStartDevelopment({
       workflow: 'waterfall',
       commit_behaviour: 'none'
     });
 
-    expect(result.phase).toBeDefined();
-    expect(result.instructions).toBeDefined();
+    TestAssertions.expectValidResult(result);
   });
 
   it('should handle git repository with different commit behaviors', async () => {
-    // Initialize git repository
-    execSync('git init', { cwd: tempDir });
-    execSync('git config user.email "test@example.com"', { cwd: tempDir });
-    execSync('git config user.name "Test User"', { cwd: tempDir });
-    
-    // Create initial commit
-    writeFileSync(join(tempDir, 'README.md'), '# Test Project');
-    execSync('git add .', { cwd: tempDir });
-    execSync('git commit -m "Initial commit"', { cwd: tempDir });
-
-    // Create feature branch
-    execSync('git checkout -b feature/test', { cwd: tempDir });
+    // Setup git repository with feature branch
+    GitTestHelper.setupFullRepo(tempDir, 'feature/test');
+    MockDocsHelper.addToProject(tempDir);
 
     // Initialize server
-    server = new ResponsibleVibeMCPServer();
-    await server.initialize();
+    server = await ServerTestHelper.createServer(tempDir);
 
     // Test all commit behaviors work for git repos
     const behaviors: Array<'step' | 'phase' | 'end' | 'none'> = ['step', 'phase', 'end', 'none'];
@@ -111,8 +82,7 @@ describe('Dynamic Tool Description', () => {
         commit_behaviour: behavior
       });
 
-      expect(result.phase).toBeDefined();
-      expect(result.instructions).toBeDefined();
+      TestAssertions.expectValidResult(result);
       
       // Reset for next test
       await server.handleResetDevelopment({ confirm: true });
@@ -126,7 +96,7 @@ describe('Dynamic Tool Description', () => {
     expect(GitManager.isGitRepository(tempDir)).toBe(false);
     
     // Initialize git repository
-    execSync('git init', { cwd: tempDir });
+    GitTestHelper.initializeRepo(tempDir);
     
     expect(GitManager.isGitRepository(tempDir)).toBe(true);
   });

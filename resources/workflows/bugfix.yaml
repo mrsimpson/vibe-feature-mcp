@@ -75,7 +75,7 @@ states:
 
   fix:
     description: "Implement the bug fix"
-    default_instructions: "Starting bug fix phase. Implement the solution based on your analysis. Make targeted changes that address the root cause without introducing new issues. Be careful to maintain existing functionality while fixing the bug."
+    default_instructions: "Implement the solution based on your analysis and design from $DESIGN_DOC. Make targeted changes that address the root cause without introducing new issues. Be careful to maintain existing functionality while fixing the bug."
     transitions:
       - trigger: "continue_fixing"
         to: "fix"

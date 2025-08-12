@@ -4,10 +4,12 @@
  * Creates phase-specific guidance for the LLM based on current conversation state.
  * Customizes instructions based on project context and development phase.
  * Supports custom state machine definitions for dynamic instruction generation.
+ * Handles variable substitution for project artifact references.
  */
 
 import type { ConversationContext } from './types.js';
 import { PlanManager } from './plan-manager.js';
+import { ProjectDocsManager } from './project-docs-manager.js';
 import type { YamlStateMachine } from './state-machine-types.js';
 
 export interface InstructionContext {
@@ -31,10 +33,12 @@ export interface GeneratedInstructions {
 
 export class InstructionGenerator {
   private planManager: PlanManager;
+  private projectDocsManager: ProjectDocsManager;
   private stateMachine: YamlStateMachine | null = null;
 
   constructor(planManager: PlanManager) {
     this.planManager = planManager;
+    this.projectDocsManager = new ProjectDocsManager();
   }
 
   /**
@@ -52,12 +56,18 @@ export class InstructionGenerator {
     context: InstructionContext
   ): Promise<GeneratedInstructions> {
     
+    // Apply variable substitution to base instructions
+    const substitutedInstructions = this.applyVariableSubstitution(
+      baseInstructions,
+      context.conversationContext.projectPath
+    );
+    
     // Get plan file guidance
     const planFileGuidance = this.planManager.generatePlanFileGuidance(context.phase);
     
     // Enhance base instructions with context-specific guidance
     const enhancedInstructions = await this.enhanceInstructions(
-      baseInstructions,
+      substitutedInstructions,
       context,
       planFileGuidance
     );
@@ -72,6 +82,29 @@ export class InstructionGenerator {
         isModeled: context.isModeled
       }
     };
+  }
+
+  /**
+   * Apply variable substitution to instructions
+   * Replaces project artifact variables with actual file paths
+   */
+  private applyVariableSubstitution(instructions: string, projectPath: string): string {
+    const substitutions = this.projectDocsManager.getVariableSubstitutions(projectPath);
+    
+    let result = instructions;
+    for (const [variable, value] of Object.entries(substitutions)) {
+      // Use global replace to handle multiple occurrences
+      result = result.replace(new RegExp(this.escapeRegExp(variable), 'g'), value);
+    }
+    
+    return result;
+  }
+
+  /**
+   * Escape special regex characters in variable names
+   */
+  private escapeRegExp(string: string): string {
+    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   }
 
   /**

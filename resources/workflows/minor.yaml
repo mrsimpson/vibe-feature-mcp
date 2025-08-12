@@ -12,7 +12,8 @@ states:
                           Starting exploration phase for minor enhancement. 
                           This phase should be efficient since it's a minor enhancement.
                           Understand the problem, analyze existing patterns, and design your approach. 
-                          Consider the scope and impact of the change. Document your analysis and design decisions in the plan file. 
+                          Consider the scope and impact of the change. Document requirements in $REQUIREMENTS_DOC and respect the design approach in $DESIGN_DOC. 
+                          Document your analysis and design decisions in the plan file. 
                           Focus on analysis and design only - do not write any code yet.
     transitions:
       - trigger: "exploration_complete"
@@ -36,7 +37,7 @@ states:
 
   implement:
     description: "Combined implementation phase - code, test, and commit"
-    default_instructions: "Starting implementation phase for minor enhancement. This phase combines coding, testing, and commit preparation. Follow your design from the exploration phase. Write clean, focused code for the minor enhancement. Test your changes to ensure they work correctly and don't break existing functionality. Prepare documentation and commit when ready. Update progress in the plan file."
+    default_instructions: "Starting implementation phase for minor enhancement. This phase combines coding, testing, and commit preparation. Follow your design from $DESIGN_DOC and ensure the relevant requirements from $REQUIREMENTS_DOC are met. Write clean, focused code for the minor enhancement. Test your changes to ensure they work correctly and don't break existing functionality. Prepare documentation and commit when ready. Update progress in the plan file."
     transitions:
       - trigger: "need_more_analysis"
         to: "explore"

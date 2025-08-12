@@ -17,6 +17,7 @@ import { PlanManager } from '../plan-manager.js';
 import { InteractionLogger } from '../interaction-logger.js';
 import { WorkflowManager } from '../workflow-manager.js';
 import { GitManager } from '../git-manager.js';
+import { TemplateManager } from '../template-manager.js';
 import { createLogger } from '../logger.js';
 
 import { 
@@ -29,6 +30,43 @@ import {
 import { normalizeProjectPath, buildWorkflowEnum, generateWorkflowDescription } from './server-helpers.js';
 
 const logger = createLogger('ServerConfig');
+
+/**
+ * Build dynamic enum for template options
+ */
+function buildTemplateEnum(templates: string[]): [string, ...string[]] {
+  if (templates.length === 0) {
+    return ['freestyle']; // Fallback if no templates found
+  }
+  return [templates[0], ...templates.slice(1)];
+}
+
+/**
+ * Generate template descriptions for MCP tool schema
+ */
+function generateTemplateDescription(templates: string[], type: string): string {
+  if (templates.length === 0) {
+    return `${type} documentation template format`;
+  }
+  
+  const descriptions = templates.map(template => {
+    // Try to provide meaningful descriptions based on template names
+    switch (template) {
+      case 'arc42':
+        return 'arc42 (comprehensive software architecture template)';
+      case 'ears':
+        return 'ears (WHEN...THEN format)';
+      case 'comprehensive':
+        return 'comprehensive (full implementation guide with testing strategy)';
+      case 'freestyle':
+        return 'freestyle (flexible format)';
+      default:
+        return `${template} (${template} format)`;
+    }
+  }).join(', ');
+  
+  return `${type} documentation template format. Options: ${descriptions}`;
+}
 
 /**
  * Server component container
@@ -111,12 +149,12 @@ export async function initializeServerComponents(config: ServerConfig = {}): Pro
 /**
  * Register MCP tools with the server
  */
-export function registerMcpTools(
+export async function registerMcpTools(
   mcpServer: McpServer, 
   toolRegistry: ToolRegistry,
   responseRenderer: ResponseRenderer,
   context: ServerContext
-): void {
+): Promise<void> {
   logger.debug('Registering MCP tools');
 
   // Register whats_next tool
@@ -347,6 +385,41 @@ export function registerMcpTools(
       const handler = toolRegistry.get('get_tool_info');
       if (!handler) {
         return responseRenderer.renderError('Tool handler not found: get_tool_info');
+      }
+      
+      const result = await handler.handle(args, context);
+      return responseRenderer.renderToolResponse(result);
+    }
+  );
+
+  // Register setup_project_docs tool with dynamic template discovery
+  const templateManager = new TemplateManager();
+  const availableTemplates = await templateManager.getAvailableTemplates();
+  
+  mcpServer.registerTool(
+    'setup_project_docs',
+    {
+      description: 'Create project documentation artifacts (architecture.md, requirements.md, design.md) using configurable templates. Supports different template formats for each document type.',
+      inputSchema: {
+        architecture: z.enum(buildTemplateEnum(availableTemplates.architecture))
+          .describe(generateTemplateDescription(availableTemplates.architecture, 'Architecture')),
+        requirements: z.enum(buildTemplateEnum(availableTemplates.requirements))
+          .describe(generateTemplateDescription(availableTemplates.requirements, 'Requirements')),
+        design: z.enum(buildTemplateEnum(availableTemplates.design))
+          .describe(generateTemplateDescription(availableTemplates.design, 'Design'))
+      },
+      annotations: {
+        title: 'Project Documentation Setup Tool',
+        readOnlyHint: false,
+        destructiveHint: false,
+        idempotentHint: true,
+        openWorldHint: false
+      }
+    },
+    async (args) => {
+      const handler = toolRegistry.get('setup_project_docs');
+      if (!handler) {
+        return responseRenderer.renderError('Tool handler not found: setup_project_docs');
       }
       
       const result = await handler.handle(args, context);

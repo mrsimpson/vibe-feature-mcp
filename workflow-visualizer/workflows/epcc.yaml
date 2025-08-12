@@ -8,7 +8,7 @@ initial_state: "explore"
 states:
   explore:
     description: "Research and exploration phase - understanding the problem space"
-    default_instructions: "Starting exploration phase. Research the codebase, understand existing patterns, and gather context about the problem space. Read relevant files and documentation. Don't write code yet - focus on understanding. Document your findings in the plan file."
+    default_instructions: "Starting exploration phase. Research the codebase, understand existing patterns, and gather context about the problem space. Read relevant files and documentation. Understand the requirements and document them in $REQUIREMENTS_DOC. Don't write code yet - focus on understanding. Document your findings in the plan file."
     transitions:
       - trigger: "continue_exploration"
         to: "explore"
@@ -36,7 +36,7 @@ states:
 
   plan:
     description: "Planning phase - creating a detailed implementation strategy"
-    default_instructions: "Starting planning phase. Create a detailed implementation strategy based on your exploration. Break down the work into specific, actionable tasks. Consider edge cases, dependencies, and potential challenges. Document the plan thoroughly. Important: Tasks that you identify for the actual coding shall be in the Code section in the plan."
+    default_instructions: "Starting planning phase. Create a detailed implementation strategy based on your exploration and requirements from $REQUIREMENTS_DOC. Break down the work into specific, actionable tasks. Consider edge cases, dependencies, and potential challenges. If it impacts the general architecture, document this in $ARCHITECTURE_DOC. Make sure to adhere to the design in $DESIGN_DOC. Document the plan thoroughly. Important: Tasks that you identify for the actual coding shall be in the Code section in the plan."
     transitions:
       - trigger: "refine_plan"
         to: "plan"
@@ -59,6 +59,11 @@ states:
           Update the plan file with implementation progress and mark completed planning tasks.
           Stay focused on the current feature, do not implement features that were not planned.
         transition_reason: "Implementation plan is complete and ready for coding"
+        review_perspectives:
+          - perspective: "architect"
+            prompt: "Review implementation strategy, design decisions, and integration approach for soundness and maintainability. Ensure the plan aligns with existing system architecture and follows best practices."
+          - perspective: "security_expert"
+            prompt: "Assess security considerations and potential risks in the planned implementation approach. Review data handling, authentication, and potential vulnerabilities."
       
       - trigger: "abandon_feature"
         to: "explore"
@@ -70,7 +75,7 @@ states:
 
   code:
     description: "Implementation phase - writing and building the solution"
-    default_instructions: "Starting implementation phase. Follow your plan to build the solution. Write clean, well-structured code with proper error handling. Prevent regression by building, linting and executing existing tests. Stay flexible and adapt the plan as you learn more during implementation. Update progress in the plan file. Important: Tasks that you identify for the actual coding shall be in the Code section in the plan."
+    default_instructions: "Starting implementation phase. Follow your plan and design from $DESIGN_DOC to build the solution according to the architecture in $ARCHITECTURE_DOC. Ensure requirements from $REQUIREMENTS_DOC are met. Write clean, well-structured code with proper error handling. Prevent regression by building, linting and executing existing tests. Stay flexible and adapt the plan as you learn more during implementation. Update progress in the plan file. Important: Tasks that you identify for the actual coding shall be in the Code section in the plan."
     transitions:
       - trigger: "need_replanning"
         to: "plan"
@@ -91,6 +96,11 @@ states:
           Clean up any temporary code and ensure everything is ready.
           Update the plan file and mark completed implementation tasks.
         transition_reason: "Core implementation is complete, ready for finalization"
+        review_perspectives:
+          - perspective: "senior_software_developer"
+            prompt: "Review code quality, best practices, testing coverage, and readiness for production deployment. Ensure the implementation follows coding standards and is maintainable."
+          - perspective: "performance_engineer"
+            prompt: "Evaluate performance impact, resource efficiency, and scalability of the implemented solution. Check for potential bottlenecks or optimization opportunities."
       
       - trigger: "abandon_feature"
         to: "explore"

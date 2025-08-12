@@ -62,6 +62,11 @@ states:
           Make targeted changes that address the root cause without introducing new issues. Be careful to
           maintain existing functionality while fixing the bug. Document the fix approach in the plan file.
         transition_reason: "Root cause identified, ready to implement fix"
+        review_perspectives:
+          - perspective: "architect"
+            prompt: "Review root cause analysis and ensure the proposed fix doesn't introduce architectural issues or technical debt. Consider the broader system impact of the proposed solution."
+          - perspective: "security_expert"
+            prompt: "Evaluate if the bug has security implications and ensure the fix doesn't introduce new vulnerabilities. Review the security aspects of the proposed solution."
       
       - trigger: "abandon_bug"
         to: "reproduce"
@@ -70,7 +75,7 @@ states:
 
   fix:
     description: "Implement the bug fix"
-    default_instructions: "Starting bug fix phase. Implement the solution based on your analysis. Make targeted changes that address the root cause without introducing new issues. Be careful to maintain existing functionality while fixing the bug."
+    default_instructions: "Implement the solution based on your analysis and design from $DESIGN_DOC. Make targeted changes that address the root cause without introducing new issues. Be careful to maintain existing functionality while fixing the bug."
     transitions:
       - trigger: "continue_fixing"
         to: "fix"
@@ -92,6 +97,11 @@ states:
           the original bug is resolved and no new issues were introduced. Run existing tests, create new ones
           if needed, and verify the solution is robust. Document verification results in the plan file.
         transition_reason: "Fix implemented, ready for verification"
+        review_perspectives:
+          - perspective: "senior_software_developer"
+            prompt: "Review fix implementation, code quality, and ensure the solution properly addresses the root cause. Check for potential side effects and code maintainability."
+          - perspective: "performance_engineer"
+            prompt: "Verify that the fix doesn't introduce performance regressions or new bottlenecks. Assess the performance impact of the implemented solution."
       
       - trigger: "abandon_bug"
         to: "reproduce"

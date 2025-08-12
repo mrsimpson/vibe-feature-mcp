@@ -122,12 +122,23 @@ The user interacts normally with the LLM - the tool calls happen automatically i
 
 ## Key Features
 
+- **Project Documentation System**: Intelligent artifact management with dynamic template discovery and workflow integration
 - **Review System**: Optional quality gates with configurable review perspectives before phase transitions
 - **Workflow Visualizer**: Interactive web interface for exploring workflow state machines
 - **Git Integration**: Optional automatic commits with intelligent defaults  
 - **State Persistence**: Conversation state survives server restarts
 - **Multi-Project Support**: Handle multiple concurrent project conversations
 - **Branch Awareness**: Separate development contexts for different git branches
+
+### Project Documentation System
+
+The project documentation system provides intelligent artifact management with:
+
+- **Dynamic Template Discovery**: Automatically discovers available templates from the file system
+- **Workflow Integration**: Workflows reference project documents contextually (e.g., `$ARCHITECTURE_DOC`, `$REQUIREMENTS_DOC`)
+- **Intelligent Setup Guidance**: Analyzes workflows to detect missing documents and provides targeted setup recommendations
+- **Multiple Template Types**: Support for Arc42, EARS, Comprehensive, and Freestyle documentation approaches
+- **Zero Maintenance**: Add new templates without code changes - just drop files in the templates directory
 
 ### Review System
 
@@ -174,6 +185,9 @@ The LLM automatically calls these tools based on the system prompt instructions:
 
 #### `start_development`
 Begin a new development project with a structured workflow. Must be called before other development tools.
+
+#### `setup_project_docs`
+Set up project documentation artifacts using intelligent templates. Creates architecture, requirements, and design documents based on selected templates with dynamic template discovery.
 
 #### `whats_next`
 Primary tool that analyzes conversation state and provides LLM instructions.

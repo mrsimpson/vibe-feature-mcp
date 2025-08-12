@@ -54,7 +54,7 @@ export class ResponsibleVibeMCPServer {
       setMcpServerForLogging(this.components.mcpServer);
       
       // Register tools and resources with MCP server
-      registerMcpTools(
+      await registerMcpTools(
         this.components.mcpServer, 
         toolRegistry, 
         responseRenderer, 

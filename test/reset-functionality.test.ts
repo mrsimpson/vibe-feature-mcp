@@ -5,6 +5,7 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { ResponsibleVibeMCPServer } from '../src/server.js';
 import { TempProject } from './utils/temp-files.js';
+import { ServerTestHelper, MockDocsHelper } from './utils/test-helpers.js';
 
 describe('Reset Functionality', () => {
   let server: ResponsibleVibeMCPServer;
@@ -12,15 +13,13 @@ describe('Reset Functionality', () => {
 
   beforeEach(async () => {
     tempProject = new TempProject({ projectName: 'reset-test' });
-    server = new ResponsibleVibeMCPServer({ 
-      projectPath: tempProject.projectPath,
-      enableLogging: false 
-    });
-    await server.initialize();
+    MockDocsHelper.addToTempProject(tempProject);
+    
+    server = await ServerTestHelper.createServer(tempProject.projectPath);
   });
 
   afterEach(async () => {
-    await server.cleanup();
+    await ServerTestHelper.cleanupServer(server);
     tempProject.cleanup();
   });
 

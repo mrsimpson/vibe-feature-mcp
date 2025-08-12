@@ -196,6 +196,15 @@ export class TempProject {
   }
 
   /**
+   * Add mock project documents to satisfy artifact checking
+   */
+  addMockProjectDocs(): void {
+    this.addFile('.vibe/docs/architecture.md', '# Architecture\n\nMock architecture document for testing.');
+    this.addFile('.vibe/docs/requirements.md', '# Requirements\n\nMock requirements document for testing.');
+    this.addFile('.vibe/docs/design.md', '# Design\n\nMock design document for testing.');
+  }
+
+  /**
    * Clean up the temporary project
    */
   cleanup(): void {
@@ -211,21 +220,31 @@ export class TempProject {
  * Create a temporary project with custom state machine
  */
 export function createTempProjectWithCustomStateMachine(customStateMachine: string = CUSTOM_STATE_MACHINE_YAML, baseDirectory?: string): TempProject {
-  return new TempProject({
+  const project = new TempProject({
     customStateMachine,
     projectName: `custom-sm-${Date.now()}`,
     baseDirectory
   });
+  
+  // Add mock project documents to satisfy artifact checking
+  project.addMockProjectDocs();
+  
+  return project;
 }
 
 /**
  * Create a temporary project with default state machine (no custom one)
  */
 export function createTempProjectWithDefaultStateMachine(baseDirectory?: string): TempProject {
-  return new TempProject({
+  const project = new TempProject({
     projectName: `default-sm-${Date.now()}`,
     baseDirectory
   });
+  
+  // Add mock project documents to satisfy artifact checking
+  project.addMockProjectDocs();
+  
+  return project;
 }
 
 /**

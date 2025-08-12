@@ -3,6 +3,7 @@ import { ResponsibleVibeMCPServer } from '../src/server.js';
 import { tmpdir } from 'os';
 import { join } from 'path';
 import { mkdtemp, rm, writeFile, mkdir } from 'fs/promises';
+import { ServerTestHelper, MockDocsHelper } from './utils/test-helpers.js';
 
 describe('resume_workflow tool', () => {
   let server: ResponsibleVibeMCPServer;
@@ -11,20 +12,16 @@ describe('resume_workflow tool', () => {
   beforeEach(async () => {
     // Create temporary directory for testing
     tempDir = await mkdtemp(join(tmpdir(), 'responsible-vibe-test-'));
+    MockDocsHelper.addToProject(tempDir);
     
-    server = new ResponsibleVibeMCPServer({
-      projectPath: tempDir,
-      enableLogging: false
-    });
-    
-    await server.initialize();
+    server = await ServerTestHelper.createServer(tempDir);
     
     // Initialize development with waterfall workflow before testing
     await server.handleStartDevelopment({ workflow: 'waterfall' });
   });
 
   afterEach(async () => {
-    await server.cleanup();
+    await ServerTestHelper.cleanupServer(server);
     await rm(tempDir, { recursive: true, force: true });
   });
 

@@ -8,7 +8,7 @@ initial_state: "requirements"
 states:
   requirements:
     description: "Gathering and analyzing requirements"
-    default_instructions: "Make yourself familiar with the code base. Ask the user clarifying questions about WHAT they need. Focus on understanding their goals, scope, constraints, and success criteria. Break down their needs into specific, actionable tasks and document them in the plan file. Mark completed requirements tasks as you progress."
+    default_instructions: "Make yourself familiar with the code base. Ask the user clarifying questions about WHAT they need. Focus on understanding their goals, scope, constraints, and success criteria. Break down their needs into specific requirements in $REQUIREMENTS_DOC. Plan actionable tasks referencing those requirements in the plan file."
     transitions:
       - trigger: "refine_requirements"
         to: "requirements"
@@ -35,7 +35,7 @@ states:
 
   design:
     description: "Technical design and architecture planning"
-    default_instructions: "Starting design phase. Re-analyze important interfaces of the application. Help the user design the technical solution by asking about architecture, technologies, data models, API design, and quality goals. Focus on HOW to implement what's needed. Document design decisions in the plan file and ensure the approach is solid before implementation."
+    default_instructions: "Starting design phase. Re-analyze important interfaces of the application. Review requirements from $REQUIREMENTS_DOC and help the user design the technical solution by asking about architecture, technologies, data models, API design, and quality goals. Focus on HOW to implement what's needed. Document architectural decisions in $ARCHITECTURE_DOC and detailed design in $DESIGN_DOC. Update the plan file and ensure the approach is solid before implementation."
     transitions:
       - trigger: "refine_design"
         to: "design"
@@ -65,7 +65,7 @@ states:
 
   implementation:
     description: "Building the solution according to design"
-    default_instructions: "Starting implementation phase. Guide the user through building the solution following best practices. Focus on code structure, error handling, security, and maintainability. Write clean, well-documented code and include basic testing. Update the plan file with implementation progress."
+    default_instructions: "Starting implementation phase. Follow the architecture from $ARCHITECTURE_DOC and detailed design from $DESIGN_DOC to guide the user through building the solution. Ensure requirements from $REQUIREMENTS_DOC are met. Focus on code structure, error handling, security, and maintainability. Write clean, well-documented code and include basic testing. Update the plan file with implementation progress."
     transitions:
       - trigger: "continue_implementation"
         to: "implementation"
@@ -99,7 +99,7 @@ states:
 
   qa:
     description: "Quality assurance and code review"
-    default_instructions: "Starting quality assurance phase. Take the following specific actions: 1) Syntax Check: Run syntax checking tools or validate syntax manually, 2) Build Project: Build the project to verify it compiles without errors, 3) Run Linter: Execute linting tools to ensure code style consistency, 4) Execute Tests: Run existing tests to verify functionality. Then conduct a multi-perspective code review from security, performance, UX, maintainability, and requirement compliance perspectives. Update the plan file with QA progress and mark completed tasks."
+    default_instructions: "Starting quality assurance phase. Take the following specific actions: 1) Syntax Check: Run syntax checking tools or validate syntax manually, 2) Build Project: Build the project to verify it compiles without errors, 3) Run Linter: Execute linting tools to ensure code style consistency, 4) Execute Tests: Run existing tests to verify functionality. Then conduct a multi-perspective code review from security, performance, UX, maintainability, and requirement compliance perspectives. Verify implementation matches $DESIGN_DOC specifications and fulfills the targeted requirements from $REQUIREMENTS_DOC. Update the plan file with QA progress and mark completed tasks."
     transitions:
       - trigger: "continue_qa"
         to: "qa"
