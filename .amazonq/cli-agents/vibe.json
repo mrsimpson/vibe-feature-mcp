@@ -56,7 +56,6 @@
     "@responsible-vibe-mcp/get_tool_info",
     "@responsible-vibe-mcp/list_workflows",
     "@responsible-vibe-mcp/resume_workflow",
-    "@responsible-vibe-mcp/start_development",
     "@responsible-vibe-mcp/whats_next"
   ],
   "toolsSettings": {
