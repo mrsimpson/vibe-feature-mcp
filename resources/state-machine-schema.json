@@ -17,6 +17,38 @@
       "type": "string",
       "description": "The starting state of the machine"
     },
+    "metadata": {
+      "type": "object",
+      "description": "Enhanced metadata for better discoverability",
+      "properties": {
+        "complexity": {
+          "type": "string",
+          "enum": ["low", "medium", "high"],
+          "description": "Complexity level of the workflow"
+        },
+        "bestFor": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "List of use cases this workflow is best suited for"
+        },
+        "useCases": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Specific use cases for this workflow"
+        },
+        "examples": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Example scenarios where this workflow would be used"
+        }
+      }
+    },
     "states": {
       "type": "object",
       "description": "Map of states in the state machine",
