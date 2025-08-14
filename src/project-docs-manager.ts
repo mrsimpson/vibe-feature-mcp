@@ -135,6 +135,15 @@ export class ProjectDocsManager {
    * Check which project documents exist
    */
   async getProjectDocsInfo(projectPath: string): Promise<ProjectDocsInfo> {
+    // Use the fallback method that scans the directory for existing files
+    // This handles cases where symlinks have different names (e.g., arc42 instead of architecture)
+    return this.getProjectDocsInfoFallback(projectPath);
+  }
+
+  /**
+   * Fallback method for document detection when dynamic paths are not available
+   */
+  private async getProjectDocsInfoFallback(projectPath: string): Promise<ProjectDocsInfo> {
     const paths = this.getDocumentPaths(projectPath);
     
     const checkExists = async (path: string): Promise<boolean> => {
@@ -146,32 +155,78 @@ export class ProjectDocsManager {
       }
     };
 
-    // Also check for documents with different extensions
+    // Check for documents with different extensions and names
     const checkExistsWithExtensions = async (basePath: string, docType: string): Promise<{ exists: boolean; actualPath: string }> => {
       // First check the default .md path
       if (await checkExists(basePath)) {
         return { exists: true, actualPath: basePath };
       }
       
-      // If not found, scan the docs directory for files/directories matching the document type
+      // If not found, scan the docs directory for ANY files/directories
       const docsDir = dirname(basePath);
       
       try {
         // Get all files/directories in the docs directory
         const entries = await readdir(docsDir);
         
-        // Look for entries that match the document type (with or without extension)
-        for (const entry of entries) {
-          // Check if entry matches the document type exactly or starts with it
-          const entryWithoutExt = entry.replace(/\.[^/.]+$/, ''); // Remove extension
-          
-          if (entryWithoutExt === docType || entry.startsWith(docType)) {
-            const entryPath = join(docsDir, entry);
-            if (await checkExists(entryPath)) {
-              return { exists: true, actualPath: entryPath };
+        // For each document type, we need to find the corresponding file
+        // Priority order:
+        // 1. Exact match: architecture.* 
+        // 2. Starts with type: architecture-*
+        // 3. Any other file that might be the document (for cases like arc42)
+        
+        const exactMatches = entries.filter(entry => {
+          const entryWithoutExt = entry.replace(/\.[^/.]+$/, '');
+          return entryWithoutExt === docType;
+        });
+        
+        if (exactMatches.length > 0) {
+          const entryPath = join(docsDir, exactMatches[0]);
+          if (await checkExists(entryPath)) {
+            return { exists: true, actualPath: entryPath };
+          }
+        }
+        
+        const prefixMatches = entries.filter(entry => entry.startsWith(docType));
+        if (prefixMatches.length > 0) {
+          const entryPath = join(docsDir, prefixMatches[0]);
+          if (await checkExists(entryPath)) {
+            return { exists: true, actualPath: entryPath };
+          }
+        }
+        
+        // For architecture, also check for common architecture-related names
+        if (docType === 'architecture') {
+          const archNames = ['arc42', 'arch', 'system-design', 'design-doc'];
+          for (const name of archNames) {
+            const match = entries.find(entry => 
+              entry === name || entry.startsWith(name + '.') || entry.startsWith(name + '-')
+            );
+            if (match) {
+              const entryPath = join(docsDir, match);
+              if (await checkExists(entryPath)) {
+                return { exists: true, actualPath: entryPath };
+              }
             }
           }
         }
+        
+        // For requirements, check common requirement names
+        if (docType === 'requirements') {
+          const reqNames = ['req', 'reqs', 'specs', 'specification'];
+          for (const name of reqNames) {
+            const match = entries.find(entry => 
+              entry === name || entry.startsWith(name + '.') || entry.startsWith(name + '-')
+            );
+            if (match) {
+              const entryPath = join(docsDir, match);
+              if (await checkExists(entryPath)) {
+                return { exists: true, actualPath: entryPath };
+              }
+            }
+          }
+        }
+        
       } catch (error) {
         // Directory might not exist yet, continue with fallback
       }
