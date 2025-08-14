@@ -153,16 +153,19 @@ export class ProjectDocsManager {
         return { exists: true, actualPath: basePath };
       }
       
-      // If not found, check for common extensions and directories in the docs directory
+      // If not found, scan the docs directory for files/directories matching the document type
       const docsDir = dirname(basePath);
       
       try {
         // Get all files/directories in the docs directory
         const entries = await readdir(docsDir);
         
-        // Look for entries that start with the document type
+        // Look for entries that match the document type (with or without extension)
         for (const entry of entries) {
-          if (entry.startsWith(docType)) {
+          // Check if entry matches the document type exactly or starts with it
+          const entryWithoutExt = entry.replace(/\.[^/.]+$/, ''); // Remove extension
+          
+          if (entryWithoutExt === docType || entry.startsWith(docType)) {
             const entryPath = join(docsDir, entry);
             if (await checkExists(entryPath)) {
               return { exists: true, actualPath: entryPath };
@@ -170,23 +173,7 @@ export class ProjectDocsManager {
           }
         }
       } catch (error) {
-        // Directory might not exist yet, continue with other checks
-      }
-      
-      // Fallback: check for common extensions
-      const commonExtensions = ['.adoc', '.docx', '.txt', '.rst', '.org'];
-      
-      for (const ext of commonExtensions) {
-        const altPath = join(docsDir, `${docType}${ext}`);
-        if (await checkExists(altPath)) {
-          return { exists: true, actualPath: altPath };
-        }
-      }
-      
-      // Also check for directory (no extension)
-      const dirPath = join(docsDir, docType);
-      if (await checkExists(dirPath)) {
-        return { exists: true, actualPath: dirPath };
+        // Directory might not exist yet, continue with fallback
       }
       
       return { exists: false, actualPath: basePath };
