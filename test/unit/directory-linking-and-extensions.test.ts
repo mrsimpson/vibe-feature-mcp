@@ -84,7 +84,7 @@ describe('Directory Linking and Extension Preservation', () => {
         { architecture: docsDir }
       );
 
-      expect(result.linked).toContain('docs');
+      expect(result.linked).toContain('architecture');
       expect(result.created.length).toBe(2); // requirements and design from templates
       expect(result.skipped.length).toBe(0);
 
@@ -207,8 +207,8 @@ describe('Directory Linking and Extension Preservation', () => {
 
       const paths = await projectDocsManager.getDocumentPathsWithExtensions(testProjectPath, sourcePaths);
 
-      // Should use directory name without extension
-      expect(paths.architecture.endsWith('documentation')).toBe(true);
+      // Should use standardized document type name
+      expect(paths.architecture.endsWith('architecture')).toBe(true);
       expect(paths.architecture).not.toContain('.md');
     });
   });

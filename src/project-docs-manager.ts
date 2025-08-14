@@ -72,23 +72,9 @@ export class ProjectDocsManager {
   ): Promise<string> {
     const extension = await this.getDocumentExtension(sourcePath);
     
-    if (extension === '') {
-      // For directories, use the directory name or default to type
-      if (sourcePath) {
-        try {
-          const stats = await stat(sourcePath);
-          if (stats.isDirectory()) {
-            const dirName = basename(sourcePath);
-            return dirName;
-          }
-        } catch {
-          // Fall through to default
-        }
-      }
-      return type; // No extension for directories
-    }
-    
-    return `${type}${extension}`;
+    // Always use the standardized document type name
+    // This ensures consistent symlink names regardless of source path
+    return extension === '' ? type : `${type}${extension}`;
   }
 
   /**
@@ -135,15 +121,6 @@ export class ProjectDocsManager {
    * Check which project documents exist
    */
   async getProjectDocsInfo(projectPath: string): Promise<ProjectDocsInfo> {
-    // Use the fallback method that scans the directory for existing files
-    // This handles cases where symlinks have different names (e.g., arc42 instead of architecture)
-    return this.getProjectDocsInfoFallback(projectPath);
-  }
-
-  /**
-   * Fallback method for document detection when dynamic paths are not available
-   */
-  private async getProjectDocsInfoFallback(projectPath: string): Promise<ProjectDocsInfo> {
     const paths = this.getDocumentPaths(projectPath);
     
     const checkExists = async (path: string): Promise<boolean> => {
@@ -155,80 +132,32 @@ export class ProjectDocsManager {
       }
     };
 
-    // Check for documents with different extensions and names
+    // Check for documents with different extensions using simple logic
     const checkExistsWithExtensions = async (basePath: string, docType: string): Promise<{ exists: boolean; actualPath: string }> => {
       // First check the default .md path
       if (await checkExists(basePath)) {
         return { exists: true, actualPath: basePath };
       }
       
-      // If not found, scan the docs directory for ANY files/directories
+      // Check for the document type with any extension or as directory
       const docsDir = dirname(basePath);
       
       try {
-        // Get all files/directories in the docs directory
         const entries = await readdir(docsDir);
         
-        // For each document type, we need to find the corresponding file
-        // Priority order:
-        // 1. Exact match: architecture.* 
-        // 2. Starts with type: architecture-*
-        // 3. Any other file that might be the document (for cases like arc42)
-        
-        const exactMatches = entries.filter(entry => {
+        // Look for entries that match the document type exactly or start with it
+        for (const entry of entries) {
           const entryWithoutExt = entry.replace(/\.[^/.]+$/, '');
-          return entryWithoutExt === docType;
-        });
-        
-        if (exactMatches.length > 0) {
-          const entryPath = join(docsDir, exactMatches[0]);
-          if (await checkExists(entryPath)) {
-            return { exists: true, actualPath: entryPath };
-          }
-        }
-        
-        const prefixMatches = entries.filter(entry => entry.startsWith(docType));
-        if (prefixMatches.length > 0) {
-          const entryPath = join(docsDir, prefixMatches[0]);
-          if (await checkExists(entryPath)) {
-            return { exists: true, actualPath: entryPath };
-          }
-        }
-        
-        // For architecture, also check for common architecture-related names
-        if (docType === 'architecture') {
-          const archNames = ['arc42', 'arch', 'system-design', 'design-doc'];
-          for (const name of archNames) {
-            const match = entries.find(entry => 
-              entry === name || entry.startsWith(name + '.') || entry.startsWith(name + '-')
-            );
-            if (match) {
-              const entryPath = join(docsDir, match);
-              if (await checkExists(entryPath)) {
-                return { exists: true, actualPath: entryPath };
-              }
+          
+          if (entryWithoutExt === docType || entry === docType) {
+            const entryPath = join(docsDir, entry);
+            if (await checkExists(entryPath)) {
+              return { exists: true, actualPath: entryPath };
             }
           }
         }
-        
-        // For requirements, check common requirement names
-        if (docType === 'requirements') {
-          const reqNames = ['req', 'reqs', 'specs', 'specification'];
-          for (const name of reqNames) {
-            const match = entries.find(entry => 
-              entry === name || entry.startsWith(name + '.') || entry.startsWith(name + '-')
-            );
-            if (match) {
-              const entryPath = join(docsDir, match);
-              if (await checkExists(entryPath)) {
-                return { exists: true, actualPath: entryPath };
-              }
-            }
-          }
-        }
-        
       } catch (error) {
-        // Directory might not exist yet, continue with fallback
+        // Directory might not exist yet
       }
       
       return { exists: false, actualPath: basePath };
@@ -253,6 +182,8 @@ export class ProjectDocsManager {
       }
     };
   }
+
+
 
   /**
    * Create project documents using templates (legacy method for backward compatibility)
