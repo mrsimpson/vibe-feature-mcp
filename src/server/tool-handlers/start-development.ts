@@ -8,6 +8,7 @@
 import { BaseToolHandler } from './base-tool-handler.js';
 import { ServerContext } from '../types.js';
 import { validateRequiredArgs } from '../server-helpers.js';
+import { basename } from 'path';
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs';
 import { resolve } from 'path';
 import { GitCommitConfig } from '../../types.js';
@@ -340,9 +341,18 @@ export class StartDevelopmentHandler extends BaseToolHandler<StartDevelopmentArg
     const missingList = missingDocs.map(doc => `- ${doc}`).join('\n');
     const existingDocs = [];
     
-    if (docsInfo.architecture.exists) existingDocs.push('✅ architecture.md');
-    if (docsInfo.requirements.exists) existingDocs.push('✅ requirements.md');
-    if (docsInfo.design.exists) existingDocs.push('✅ design.md');
+    if (docsInfo.architecture.exists) {
+      const fileName = basename(docsInfo.architecture.path);
+      existingDocs.push(`✅ ${fileName}`);
+    }
+    if (docsInfo.requirements.exists) {
+      const fileName = basename(docsInfo.requirements.path);
+      existingDocs.push(`✅ ${fileName}`);
+    }
+    if (docsInfo.design.exists) {
+      const fileName = basename(docsInfo.design.path);
+      existingDocs.push(`✅ ${fileName}`);
+    }
 
     const existingList = existingDocs.length > 0 
       ? `\n\n**Existing Documents:**\n${existingDocs.join('\n')}`

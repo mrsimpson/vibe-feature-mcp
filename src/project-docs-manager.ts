@@ -146,18 +146,49 @@ export class ProjectDocsManager {
       }
     };
 
+    // Also check for documents with different extensions
+    const checkExistsWithExtensions = async (basePath: string, docType: string): Promise<{ exists: boolean; actualPath: string }> => {
+      // First check the default .md path
+      if (await checkExists(basePath)) {
+        return { exists: true, actualPath: basePath };
+      }
+      
+      // If not found, check for common extensions
+      const docsDir = dirname(basePath);
+      const commonExtensions = ['.adoc', '.docx', '.txt', '.rst', '.org'];
+      
+      for (const ext of commonExtensions) {
+        const altPath = join(docsDir, `${docType}${ext}`);
+        if (await checkExists(altPath)) {
+          return { exists: true, actualPath: altPath };
+        }
+      }
+      
+      // Also check for directory (no extension)
+      const dirPath = join(docsDir, docType);
+      if (await checkExists(dirPath)) {
+        return { exists: true, actualPath: dirPath };
+      }
+      
+      return { exists: false, actualPath: basePath };
+    };
+
+    const archResult = await checkExistsWithExtensions(paths.architecture, 'architecture');
+    const reqResult = await checkExistsWithExtensions(paths.requirements, 'requirements');
+    const designResult = await checkExistsWithExtensions(paths.design, 'design');
+
     return {
       architecture: {
-        path: paths.architecture,
-        exists: await checkExists(paths.architecture)
+        path: archResult.actualPath,
+        exists: archResult.exists
       },
       requirements: {
-        path: paths.requirements,
-        exists: await checkExists(paths.requirements)
+        path: reqResult.actualPath,
+        exists: reqResult.exists
       },
       design: {
-        path: paths.design,
-        exists: await checkExists(paths.design)
+        path: designResult.actualPath,
+        exists: designResult.exists
       }
     };
   }
