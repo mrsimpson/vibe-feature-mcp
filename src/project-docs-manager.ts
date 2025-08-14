@@ -417,14 +417,89 @@ export class ProjectDocsManager {
    * Read a project document
    */
   async readDocument(projectPath: string, type: 'architecture' | 'requirements' | 'design'): Promise<string> {
-    const paths = this.getDocumentPaths(projectPath);
-    const documentPath = paths[type];
+    // Use the dynamic path detection to get the actual document path
+    const docsInfo = await this.getProjectDocsInfo(projectPath);
+    const documentPath = docsInfo[type].path;
+    
+    if (!docsInfo[type].exists) {
+      throw new Error(`${type} document not found: ${documentPath}`);
+    }
     
     try {
-      return await readFile(documentPath, 'utf-8');
+      // Check if it's a directory
+      const stats = await stat(documentPath);
+      
+      if (stats.isDirectory()) {
+        // For directories, create a summary of the contents
+        return await this.readDirectoryAsDocument(documentPath, type);
+      } else {
+        // For files, read normally
+        return await readFile(documentPath, 'utf-8');
+      }
     } catch (error) {
       logger.error(`Failed to read ${type} document`, error as Error, { documentPath });
       throw new Error(`${type} document not found: ${documentPath}`);
+    }
+  }
+
+  /**
+   * Read a directory as a document by creating a summary of its contents
+   */
+  private async readDirectoryAsDocument(directoryPath: string, type: string): Promise<string> {
+    try {
+      const entries = await readdir(directoryPath, { withFileTypes: true });
+      const files = entries.filter(entry => entry.isFile());
+      
+      if (files.length === 0) {
+        return `# ${type.charAt(0).toUpperCase() + type.slice(1)} Directory\n\nThis directory is empty.`;
+      }
+      
+      // If there's a main file (README, index, overview), read that
+      const mainFiles = files.filter(file => 
+        /^(readme|index|overview|main)/i.test(file.name) ||
+        file.name.toLowerCase() === `${type}.md` ||
+        file.name.toLowerCase() === `${type}.txt`
+      );
+      
+      if (mainFiles.length > 0) {
+        const mainFile = mainFiles[0];
+        const mainFilePath = join(directoryPath, mainFile.name);
+        try {
+          const content = await readFile(mainFilePath, 'utf-8');
+          return `# ${type.charAt(0).toUpperCase() + type.slice(1)} (from ${mainFile.name})\n\n${content}`;
+        } catch (error) {
+          // Fall through to directory listing
+        }
+      }
+      
+      // Otherwise, create a summary of all files
+      let summary = `# ${type.charAt(0).toUpperCase() + type.slice(1)} Directory\n\n`;
+      summary += `This directory contains ${files.length} file(s):\n\n`;
+      
+      for (const file of files.slice(0, 10)) { // Limit to first 10 files
+        summary += `## ${file.name}\n\n`;
+        try {
+          const filePath = join(directoryPath, file.name);
+          const content = await readFile(filePath, 'utf-8');
+          // Include first few lines of each file
+          const lines = content.split('\n').slice(0, 5);
+          summary += lines.join('\n') + '\n\n';
+          if (content.split('\n').length > 5) {
+            summary += '...\n\n';
+          }
+        } catch (error) {
+          summary += `(Could not read file: ${error instanceof Error ? error.message : 'Unknown error'})\n\n`;
+        }
+      }
+      
+      if (files.length > 10) {
+        summary += `... and ${files.length - 10} more files.\n`;
+      }
+      
+      return summary;
+    } catch (error) {
+      logger.error(`Failed to read directory as document`, error as Error, { directoryPath });
+      return `# ${type.charAt(0).toUpperCase() + type.slice(1)} Directory\n\nError reading directory: ${error instanceof Error ? error.message : 'Unknown error'}`;
     }
   }
 
