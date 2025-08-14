@@ -82,6 +82,64 @@ export class PathValidationUtils {
   }
 
   /**
+   * Validate and resolve a file or directory path
+   */
+  static async validateFileOrDirectoryPath(
+    filePath: string, 
+    projectPath: string
+  ): Promise<PathValidationResult> {
+    try {
+      // Resolve the path to absolute
+      const resolvedPath = this.resolvePath(filePath, projectPath);
+      
+      // Security validation - prevent directory traversal
+      if (!this.isPathSafe(resolvedPath, projectPath)) {
+        return {
+          isValid: false,
+          error: 'Path is outside project boundaries for security reasons'
+        };
+      }
+
+      // Check if file or directory exists and is readable
+      await access(resolvedPath);
+      
+      // Verify it's either a file or directory
+      const stats = await stat(resolvedPath);
+      if (!stats.isFile() && !stats.isDirectory()) {
+        return {
+          isValid: false,
+          error: 'Path is neither a file nor a directory'
+        };
+      }
+
+      logger.debug('File or directory path validated successfully', { 
+        originalPath: filePath, 
+        resolvedPath,
+        isFile: stats.isFile(),
+        isDirectory: stats.isDirectory()
+      });
+
+      return {
+        isValid: true,
+        resolvedPath
+      };
+
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      
+      logger.debug('File or directory path validation failed', { 
+        filePath, 
+        error: errorMessage 
+      });
+
+      return {
+        isValid: false,
+        error: `File or directory not found or not accessible: ${errorMessage}`
+      };
+    }
+  }
+
+  /**
    * Resolve a file path to absolute, handling various formats
    */
   static resolvePath(filePath: string, projectPath: string): string {
@@ -140,8 +198,8 @@ export class PathValidationUtils {
       };
     }
 
-    // Then validate as file path
-    const pathValidation = await this.validateFilePath(value, projectPath);
+    // Then validate as file or directory path
+    const pathValidation = await this.validateFileOrDirectoryPath(value, projectPath);
     
     if (pathValidation.isValid) {
       return {
@@ -151,11 +209,11 @@ export class PathValidationUtils {
       };
     }
 
-    // Neither template nor valid file path
+    // Neither template nor valid file/directory path
     return {
       isTemplate: false,
       isFilePath: false,
-      error: `Invalid parameter: not a known template (${availableTemplates.join(', ')}) and not a valid file path (${pathValidation.error})`
+      error: `Invalid parameter: not a known template (${availableTemplates.join(', ')}) and not a valid file or directory path (${pathValidation.error})`
     };
   }
 

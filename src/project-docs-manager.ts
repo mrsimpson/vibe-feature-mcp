@@ -7,8 +7,8 @@
  * file linking via symlinks.
  */
 
-import { writeFile, readFile, access, mkdir, unlink, symlink, lstat } from 'fs/promises';
-import { join, dirname, relative } from 'path';
+import { writeFile, readFile, access, mkdir, unlink, symlink, lstat, stat } from 'fs/promises';
+import { join, dirname, relative, extname, basename } from 'path';
 import { createLogger } from './logger.js';
 import { TemplateManager, TemplateOptions } from './template-manager.js';
 
@@ -41,6 +41,57 @@ export class ProjectDocsManager {
   }
 
   /**
+   * Determine the appropriate extension for a document based on source path
+   */
+  private async getDocumentExtension(sourcePath?: string): Promise<string> {
+    if (!sourcePath) {
+      return '.md'; // Default for templates
+    }
+
+    try {
+      const stats = await stat(sourcePath);
+      
+      if (stats.isDirectory()) {
+        return ''; // No extension for directories
+      }
+      
+      // For files, preserve the original extension
+      const ext = extname(sourcePath);
+      return ext || '.md'; // Default to .md if no extension
+    } catch {
+      return '.md'; // Default if we can't stat the source
+    }
+  }
+
+  /**
+   * Get the target filename for a document type
+   */
+  private async getDocumentFilename(
+    type: 'architecture' | 'requirements' | 'design',
+    sourcePath?: string
+  ): Promise<string> {
+    const extension = await this.getDocumentExtension(sourcePath);
+    
+    if (extension === '') {
+      // For directories, use the directory name or default to type
+      if (sourcePath) {
+        try {
+          const stats = await stat(sourcePath);
+          if (stats.isDirectory()) {
+            const dirName = basename(sourcePath);
+            return dirName;
+          }
+        } catch {
+          // Fall through to default
+        }
+      }
+      return type; // No extension for directories
+    }
+    
+    return `${type}${extension}`;
+  }
+
+  /**
    * Get paths for all project documents
    */
   getDocumentPaths(projectPath: string): {
@@ -53,6 +104,30 @@ export class ProjectDocsManager {
       architecture: join(docsPath, 'architecture.md'),
       requirements: join(docsPath, 'requirements.md'),
       design: join(docsPath, 'design.md')
+    };
+  }
+
+  /**
+   * Get paths for all project documents with dynamic extensions based on source paths
+   */
+  async getDocumentPathsWithExtensions(
+    projectPath: string,
+    sourcePaths?: Partial<{ architecture: string; requirements: string; design: string }>
+  ): Promise<{
+    architecture: string;
+    requirements: string;
+    design: string;
+  }> {
+    const docsPath = this.getDocsPath(projectPath);
+    
+    const archFilename = await this.getDocumentFilename('architecture', sourcePaths?.architecture);
+    const reqFilename = await this.getDocumentFilename('requirements', sourcePaths?.requirements);
+    const designFilename = await this.getDocumentFilename('design', sourcePaths?.design);
+    
+    return {
+      architecture: join(docsPath, archFilename),
+      requirements: join(docsPath, reqFilename),
+      design: join(docsPath, designFilename)
     };
   }
 
@@ -113,7 +188,12 @@ export class ProjectDocsManager {
     const finalTemplateOptions = { ...defaults, ...templateOptions };
 
     const docsPath = this.getDocsPath(projectPath);
-    const paths = this.getDocumentPaths(projectPath);
+    
+    // Use dynamic paths that consider source file extensions
+    const paths = await this.getDocumentPathsWithExtensions(projectPath, filePaths);
+    
+    // Check existing documents using the old static paths for backward compatibility
+    const staticPaths = this.getDocumentPaths(projectPath);
     const info = await this.getProjectDocsInfo(projectPath);
 
     // Ensure docs directory exists
@@ -127,10 +207,12 @@ export class ProjectDocsManager {
     if (!info.architecture.exists) {
       if (filePaths?.architecture) {
         await this.createSymlink(filePaths.architecture, paths.architecture);
-        linked.push('architecture.md');
+        const filename = basename(paths.architecture);
+        linked.push(filename);
       } else {
         await this.createDocument('architecture', finalTemplateOptions.architecture, paths.architecture, docsPath);
-        created.push('architecture.md');
+        const filename = basename(paths.architecture);
+        created.push(filename);
       }
     } else {
       skipped.push('architecture.md');
@@ -140,10 +222,12 @@ export class ProjectDocsManager {
     if (!info.requirements.exists) {
       if (filePaths?.requirements) {
         await this.createSymlink(filePaths.requirements, paths.requirements);
-        linked.push('requirements.md');
+        const filename = basename(paths.requirements);
+        linked.push(filename);
       } else {
         await this.createDocument('requirements', finalTemplateOptions.requirements, paths.requirements, docsPath);
-        created.push('requirements.md');
+        const filename = basename(paths.requirements);
+        created.push(filename);
       }
     } else {
       skipped.push('requirements.md');
@@ -153,10 +237,12 @@ export class ProjectDocsManager {
     if (!info.design.exists) {
       if (filePaths?.design) {
         await this.createSymlink(filePaths.design, paths.design);
-        linked.push('design.md');
+        const filename = basename(paths.design);
+        linked.push(filename);
       } else {
         await this.createDocument('design', finalTemplateOptions.design, paths.design, docsPath);
-        created.push('design.md');
+        const filename = basename(paths.design);
+        created.push(filename);
       }
     } else {
       skipped.push('design.md');
@@ -266,6 +352,22 @@ export class ProjectDocsManager {
    */
   getVariableSubstitutions(projectPath: string): Record<string, string> {
     const paths = this.getDocumentPaths(projectPath);
+    
+    return {
+      '$ARCHITECTURE_DOC': paths.architecture,
+      '$REQUIREMENTS_DOC': paths.requirements,
+      '$DESIGN_DOC': paths.design
+    };
+  }
+
+  /**
+   * Get variable substitutions for workflow instructions with dynamic paths
+   */
+  async getVariableSubstitutionsWithExtensions(
+    projectPath: string,
+    sourcePaths?: Partial<{ architecture: string; requirements: string; design: string }>
+  ): Promise<Record<string, string>> {
+    const paths = await this.getDocumentPathsWithExtensions(projectPath, sourcePaths);
     
     return {
       '$ARCHITECTURE_DOC': paths.architecture,
