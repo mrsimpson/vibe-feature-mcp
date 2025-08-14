@@ -7,7 +7,7 @@
  * file linking via symlinks.
  */
 
-import { writeFile, readFile, access, mkdir, unlink, symlink, lstat, stat } from 'fs/promises';
+import { writeFile, readFile, access, mkdir, unlink, symlink, lstat, stat, readdir } from 'fs/promises';
 import { join, dirname, relative, extname, basename } from 'path';
 import { createLogger } from './logger.js';
 import { TemplateManager, TemplateOptions } from './template-manager.js';
@@ -153,8 +153,27 @@ export class ProjectDocsManager {
         return { exists: true, actualPath: basePath };
       }
       
-      // If not found, check for common extensions
+      // If not found, check for common extensions and directories in the docs directory
       const docsDir = dirname(basePath);
+      
+      try {
+        // Get all files/directories in the docs directory
+        const entries = await readdir(docsDir);
+        
+        // Look for entries that start with the document type
+        for (const entry of entries) {
+          if (entry.startsWith(docType)) {
+            const entryPath = join(docsDir, entry);
+            if (await checkExists(entryPath)) {
+              return { exists: true, actualPath: entryPath };
+            }
+          }
+        }
+      } catch (error) {
+        // Directory might not exist yet, continue with other checks
+      }
+      
+      // Fallback: check for common extensions
       const commonExtensions = ['.adoc', '.docx', '.txt', '.rst', '.org'];
       
       for (const ext of commonExtensions) {
