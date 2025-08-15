@@ -196,8 +196,9 @@ describe('File Linking Integration', () => {
       expect(linkResult.linked).toContain('requirements.md');
 
       // 4. Verify symlinks work
-      const requirementsContent = await projectDocsManager.readDocument(testProjectPath, 'requirements');
-      expect(requirementsContent).toContain('This is a test project');
+      const requirementsPath = await projectDocsManager.readDocument(testProjectPath, 'requirements');
+      expect(requirementsPath).toContain('requirements.md');
+      expect(requirementsPath).toContain('.vibe/docs');
     });
   });
 });

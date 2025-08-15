@@ -204,14 +204,15 @@ describe('ProjectDocsManager', () => {
   });
 
   describe('readDocument', () => {
-    it('should read existing document', async () => {
+    it('should return path to existing document', async () => {
       // Create docs directory and file
       const docsPath = join(testProjectPath, '.vibe', 'docs');
       await mkdir(docsPath, { recursive: true });
       await writeFile(join(docsPath, 'architecture.md'), '# Test Architecture');
       
-      const content = await projectDocsManager.readDocument(testProjectPath, 'architecture');
-      expect(content).toBe('# Test Architecture');
+      const path = await projectDocsManager.readDocument(testProjectPath, 'architecture');
+      expect(path).toContain('architecture.md');
+      expect(path).toContain('.vibe/docs');
     });
 
     it('should throw error for non-existent document', async () => {
