@@ -18,6 +18,7 @@ import { readFile } from 'fs/promises';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { startVisualizationTool } from './cli/visualization-launcher.js';
+import { generateConfig } from './config-generator.js';
 
 const logger = createLogger('Main');
 
@@ -55,8 +56,45 @@ function parseCliArgs(): { shouldStartServer: boolean } {
     return { shouldStartServer: false };
   }
   
+  // Handle generate config flag
+  const generateConfigIndex = args.findIndex(arg => arg === '--generate-config');
+  if (generateConfigIndex !== -1) {
+    const agent = args[generateConfigIndex + 1];
+    if (!agent) {
+      console.error('❌ Error: --generate-config requires an agent parameter');
+      console.error('Usage: --generate-config <agent>');
+      console.error('Supported agents: amazonq-cli, claude, gemini');
+      process.exit(1);
+    }
+    handleGenerateConfig(agent);
+    return { shouldStartServer: false };
+  }
+  
   // No special flags, start server normally
   return { shouldStartServer: true };
+}
+
+/**
+ * Handle generate config command
+ */
+async function handleGenerateConfig(agent: string): Promise<void> {
+  try {
+    // Suppress info logs during CLI operations
+    const originalLogLevel = process.env.LOG_LEVEL;
+    process.env.LOG_LEVEL = 'ERROR';
+    
+    await generateConfig(agent, process.cwd());
+    
+    // Restore original log level
+    if (originalLogLevel !== undefined) {
+      process.env.LOG_LEVEL = originalLogLevel;
+    } else {
+      delete process.env.LOG_LEVEL;
+    }
+  } catch (error) {
+    console.error(`❌ Failed to generate configuration: ${error}`);
+    process.exit(1);
+  }
 }
 
 /**
@@ -70,10 +108,12 @@ USAGE:
   responsible-vibe-mcp [OPTIONS]
 
 OPTIONS:
-  --help, -h           Show this help message
-  --version, -v        Show version information
-  --system-prompt      Show the system prompt for LLM integration
-  --visualize, --viz   Start the interactive workflow visualizer
+  --help, -h                    Show this help message
+  --version, -v                 Show version information
+  --system-prompt               Show the system prompt for LLM integration
+  --visualize, --viz            Start the interactive workflow visualizer
+  --generate-config <agent>     Generate configuration files for AI coding agents
+                                Supported agents: amazonq-cli, claude, gemini
 
 ENVIRONMENT VARIABLES:
   PROJECT_PATH    Set the project directory for custom workflow discovery
@@ -88,6 +128,16 @@ WORKFLOW VISUALIZER:
   Use --visualize to start the interactive web-based workflow visualizer.
   This opens a browser-based tool for exploring and understanding workflow
   state machines with beautiful PlantUML diagrams.
+
+CONFIGURATION GENERATOR:
+  Use --generate-config to create configuration files for AI coding agents:
+  
+  Amazon Q CLI: --generate-config amazonq-cli  (generates .amazonq/cli-agents/vibe.json)
+  Claude Code:  --generate-config claude       (generates CLAUDE.md, .mcp.json, settings.json)
+  Gemini CLI:   --generate-config gemini       (generates settings.json, GEMINI.md)
+  
+  Files are generated in the current directory with pre-configured settings
+  for the responsible-vibe-mcp server and default tool permissions.
 
 MCP CLIENT CONFIGURATION:
   Add to your MCP client configuration:

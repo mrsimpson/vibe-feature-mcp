@@ -50,6 +50,27 @@ npx responsible-vibe-mcp --system-prompt
 
 **Requirements**: Node.js 18.0.0 or higher
 
+#### 🚀 **Quick Setup (Recommended)**
+
+Use the automatic configuration generator to set up your AI coding agent:
+
+```bash
+# For Amazon Q CLI
+npx responsible-vibe-mcp --generate-config amazonq-cli
+
+# For Claude Code  
+npx responsible-vibe-mcp --generate-config claude
+
+# For Gemini CLI
+npx responsible-vibe-mcp --generate-config gemini
+```
+
+This automatically creates all necessary configuration files with the correct system prompt and MCP server settings.
+
+#### Manual Configuration
+
+Alternatively, you can configure manually:
+
 #### Claude Desktop Configuration
 
 1. **Get the system prompt** and configure it in Claude Desktop
@@ -240,6 +261,33 @@ The review system provides optional quality gates before phase transitions, ensu
 # Get the system prompt for your LLM
 npx responsible-vibe-mcp --system-prompt
 ```
+
+### Generate Agent Configuration
+
+Automatically generate configuration files for different AI coding agents with pre-configured settings for responsible-vibe-mcp:
+
+```bash
+# Generate Amazon Q CLI configuration
+npx responsible-vibe-mcp --generate-config amazonq-cli
+# Creates: .amazonq/cli-agents/vibe.json
+
+# Generate Claude Code configuration  
+npx responsible-vibe-mcp --generate-config claude
+# Creates: CLAUDE.md, .mcp.json, settings.json
+
+# Generate Gemini CLI configuration
+npx responsible-vibe-mcp --generate-config gemini  
+# Creates: settings.json, GEMINI.md
+```
+
+**Features:**
+- **Pre-configured MCP Server**: Automatically includes responsible-vibe-mcp server configuration
+- **System Prompt Integration**: Uses the same system prompt as `--system-prompt` command
+- **Default Tool Permissions**: Includes essential tools (`whats_next`, `conduct_review`, `list_workflows`, `get_tool_info`)
+- **Agent-Specific Formats**: Generates files in the correct format and location for each agent
+- **Ready to Use**: Generated configurations work immediately without manual editing
+
+This eliminates the manual setup process and ensures consistent configuration across different AI coding agents.
 
 ### Workflow Visualizer
 
