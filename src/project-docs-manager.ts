@@ -400,7 +400,7 @@ export class ProjectDocsManager {
   }
 
   /**
-   * Read a project document
+   * Read a project document - returns the path for LLM to read as needed
    */
   async readDocument(projectPath: string, type: 'architecture' | 'requirements' | 'design'): Promise<string> {
     // Use the dynamic path detection to get the actual document path
@@ -411,50 +411,12 @@ export class ProjectDocsManager {
       throw new Error(`${type} document not found: ${documentPath}`);
     }
     
-    try {
-      // Check if it's a directory
-      const stats = await stat(documentPath);
-      
-      if (stats.isDirectory()) {
-        // For directories, create a summary of the contents
-        return await this.readDirectoryAsDocument(documentPath, type);
-      } else {
-        // For files, read normally
-        return await readFile(documentPath, 'utf-8');
-      }
-    } catch (error) {
-      logger.error(`Failed to read ${type} document`, error as Error, { documentPath });
-      throw new Error(`${type} document not found: ${documentPath}`);
-    }
+    // Return the pure path for the LLM to read as needed
+    // This is more efficient for large documents and gives LLM full control
+    return documentPath;
   }
 
-  /**
-   * Read a directory as a document by providing a listing for the LLM to explore
-   */
-  private async readDirectoryAsDocument(directoryPath: string, type: string): Promise<string> {
-    try {
-      const entries = await readdir(directoryPath, { withFileTypes: true });
-      
-      let content = `# ${type.charAt(0).toUpperCase() + type.slice(1)} Directory\n\n`;
-      content += `**Folder:** ${directoryPath}\n\n`;
-      content += `This is a directory containing documentation files. The LLM can read specific files as needed.\n\n`;
-      content += `**Contents:**\n`;
-      
-      // List all files and directories
-      for (const entry of entries) {
-        const icon = entry.isDirectory() ? '📁' : '📄';
-        const path = join(directoryPath, entry.name);
-        content += `- ${icon} ${entry.name}\n`;
-      }
-      
-      content += `\n**Note:** The LLM can read any of these files directly using their full paths when needed for the workflow.`;
-      
-      return content;
-    } catch (error) {
-      logger.error(`Failed to read directory as document`, error as Error, { directoryPath });
-      return `# ${type.charAt(0).toUpperCase() + type.slice(1)} Directory\n\nError reading directory: ${error instanceof Error ? error.message : 'Unknown error'}`;
-    }
-  }
+
 
   /**
    * Check if all project documents exist
