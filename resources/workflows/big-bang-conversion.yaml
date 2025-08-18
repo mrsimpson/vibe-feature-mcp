@@ -1,0 +1,553 @@
+# yaml-language-server: $schema=../state-machine-schema.json
+---
+name: "big-bang-conversion"
+description: "A comprehensive workflow for executing test-driven big-bang conversion of legacy systems. Focuses on complete system replacement with behavioral validation and conversion readiness."
+initial_state: "conversion_planning"
+
+# Enhanced metadata for better discoverability
+metadata:
+  complexity: "high"
+  bestFor:
+    - "Complete system replacement"
+    - "Big-bang technology migration"
+    - "Test-driven conversion execution"
+    - "Legacy system modernization"
+  useCases:
+    - "Convert legacy system to modern technology stack"
+    - "Execute complete system replacement with validation"
+    - "Implement new system with behavioral equivalence"
+  examples:
+    - "Convert Smalltalk system to Java with full replacement"
+    - "Migrate monolith to microservices architecture"
+    - "Replace legacy technology with modern stack"
+
+# States with default instructions and transitions
+states:
+  conversion_planning:
+    description: "Plan the complete system replacement strategy and approach"
+    default_instructions: >
+      Starting conversion planning phase for big-bang conversion workflow.
+      
+      **Your Tasks:**
+      1. **Reference Architecture Documentation**: Check if $ARCHITECTURE_DOC exists and reference it for system understanding
+      2. **Search for Architecture**: If $ARCHITECTURE_DOC is not available, search the project for architecture documentation (README.md, docs/, ARCHITECTURE.md, etc.). Enhance the existing $ARCHITECTURE_DOC with your findings
+      3. **Reference Existing Tests**: If available, reference existing boundary tests and system baselines
+      4. **Analyze Current System**: Examine the codebase to understand system architecture and functionality
+      5. **Define Conversion Scope**: Establish what will be replaced and what will remain
+      6. **Plan Conversion Strategy**: Design the approach for complete system replacement
+      7. **Risk Assessment**: Identify risks and mitigation strategies for big-bang approach
+      8. **Timeline Planning**: Establish realistic timeline for conversion execution
+      
+      **Interview the User (Business & Operational Context):**
+      - "What business constraints or deadlines do we need to consider for this conversion?"
+      - "What is the acceptable downtime window for this conversion?"
+      - "What are the rollback criteria if the conversion encounters issues?"
+      
+      **Best Practices to Apply:**
+      - **Comprehensive Planning**: Plan every aspect of the conversion thoroughly
+      - **Risk Mitigation**: Identify and plan for potential failure scenarios
+      - **Rollback Strategy**: Always have a plan to revert if conversion fails
+      - **Stakeholder Communication**: Keep all stakeholders informed of the plan
+      - **Incremental Validation**: Plan validation checkpoints throughout conversion
+      - **Resource Planning**: Ensure adequate resources for conversion execution
+      
+      Update the plan file with conversion planning decisions and mark completed tasks.
+    transitions:
+      - trigger: "continue_planning"
+        to: "conversion_planning"
+        transition_reason: "Conversion planning needs more refinement and detail"
+      
+      - trigger: "planning_complete"
+        to: "target_architecture_design"
+        transition_reason: "Conversion strategy is planned, ready for target architecture design"
+
+  target_architecture_design:
+    description: "Design the architecture for the new system in target technology"
+    default_instructions: >
+      Starting target architecture design phase. Design the new system architecture in the target technology stack.
+      
+      **Your Tasks:**
+      1. **Reference Architecture Documentation**: Check if $ARCHITECTURE_DOC exists and reference it for current system understanding
+      2. **Create/Update Design Documentation**: Check if $DESIGN_DOC exists and reference it. If not available, create or enhance $DESIGN_DOC with your design decisions
+      3. **Analyze Current Architecture**: Examine the existing system architecture and patterns
+      4. **Technology Stack Selection**: Finalize the target technology stack and frameworks
+      5. **Architecture Pattern Design**: Choose appropriate architectural patterns for the new system
+      6. **Component Design**: Design how current components will be reimplemented
+      7. **Integration Design**: Plan how the new system will integrate with external systems
+      8. **Data Architecture**: Design data storage and management for the new system
+      9. **Deployment Architecture**: Plan how the new system will be deployed and operated
+      
+      **Interview the User (Requirements & Constraints):**
+      - "What are the performance requirements for the new system?"
+      - "Are there any scalability requirements we need to design for?"
+      - "Are there any budget constraints that affect technology choices?"
+      
+      **Best Practices to Apply:**
+      - **Modern Architecture Patterns**: Leverage modern architectural approaches
+      - **Scalability Design**: Design for future growth and scalability
+      - **Maintainability**: Choose patterns that improve long-term maintainability
+      - **Technology Alignment**: Align with organizational technology standards
+      - **Performance Optimization**: Design for optimal performance characteristics
+      - **Security by Design**: Incorporate security considerations from the start
+      
+      **Architecture Design Framework:**
+      - **Functional Preservation**: Ensure new architecture supports all current functionality
+      - **Modern Patterns**: Apply microservices, event-driven, or other modern patterns as appropriate
+      - **Technology Best Practices**: Follow best practices for the target technology stack
+      - **Integration Strategy**: Design clean integration patterns with external systems
+      - **Data Migration**: Plan how current data will be migrated to new system
+      
+      Update the plan file with architecture design decisions and validate with the user.
+    transitions:
+      - trigger: "refine_architecture"
+        to: "target_architecture_design"
+        transition_reason: "Architecture design needs refinement based on user feedback"
+      
+      - trigger: "need_more_planning"
+        to: "conversion_planning"
+        additional_instructions: "Architecture design revealed issues with conversion planning. Refine the conversion strategy based on architectural insights."
+        transition_reason: "Architecture work revealed need to refine conversion planning"
+      
+      - trigger: "architecture_complete"
+        to: "behavioral_comparison_setup"
+        transition_reason: "Target architecture is designed, ready for behavioral comparison setup"
+
+  behavioral_comparison_setup:
+    description: "Set up mechanisms to compare behavior between current and new systems"
+    default_instructions: >
+      Starting behavioral comparison setup phase. Design and implement mechanisms to validate functional equivalence.
+      
+      **Your Tasks:**
+      1. **Comparison Strategy Design**: Design approach for comparing current and new system behavior
+      2. **Mechanism Selection**: Choose appropriate comparison mechanisms for your infrastructure
+      3. **Implementation Planning**: Plan how to implement the chosen comparison approach
+      4. **Data Capture Design**: Design how to capture and compare system behavior
+      5. **Validation Criteria**: Define what constitutes successful behavioral equivalence
+      6. **Automation Planning**: Plan automated comparison and validation processes
+      
+      **Interview the User (Infrastructure & Operational Context):**
+      - "What level of traffic or load do you need to validate against?"
+      - "Are there any operational constraints for running parallel systems?"
+      
+      **Best Practice Mechanisms to Suggest:**
+      - **Sidecar Pattern**: Deploy comparison logic alongside applications
+      - **Proxy/Gateway**: Route traffic through comparison proxy
+      - **Shadow Traffic**: Send duplicate traffic to both systems
+      - **Event Streaming**: Compare system events and state changes
+      - **API Response Comparison**: Compare API responses between systems
+      - **Database State Comparison**: Compare database states after operations
+      - **Log Analysis**: Compare system logs and behavior patterns
+      - **Synthetic Testing**: Use automated tests to compare behavior
+      
+      **Implementation Approaches:**
+      - **Traffic Mirroring**: Mirror production traffic to new system
+      - **Parallel Execution**: Run both systems in parallel with comparison
+      - **Staged Rollout**: Gradually shift traffic while comparing
+      - **A/B Testing**: Compare systems with controlled traffic splits
+      - **Canary Deployment**: Test new system with small traffic percentage
+      
+      Interview the user about their infrastructure and suggest appropriate mechanisms.
+      Update the plan file with comparison setup decisions.
+    transitions:
+      - trigger: "refine_comparison"
+        to: "behavioral_comparison_setup"
+        transition_reason: "Comparison setup needs refinement based on user feedback"
+      
+      - trigger: "need_architecture_refinement"
+        to: "target_architecture_design"
+        additional_instructions: "Comparison setup revealed issues with target architecture. Refine the architecture design to better support behavioral comparison."
+        transition_reason: "Comparison work revealed need to refine target architecture"
+      
+      - trigger: "comparison_setup_complete"
+        to: "implementation_strategy"
+        transition_reason: "Comparison mechanisms are designed, ready for implementation strategy"
+
+  implementation_strategy:
+    description: "Plan detailed implementation approach for the new system"
+    default_instructions: >
+      Starting implementation strategy phase. Plan the systematic approach for building the new system.
+      
+      **Your Tasks:**
+      1. **Reference Design Documentation**: Check $DESIGN_DOC for target architecture and design decisions
+      2. **Implementation Phases**: Break down implementation into manageable phases
+      3. **Development Approach**: Plan development methodology and practices
+      4. **Quality Assurance**: Plan testing and quality assurance throughout implementation
+      5. **Integration Strategy**: Plan how to integrate new components as they're built
+      6. **Validation Checkpoints**: Plan regular validation against functional equivalence
+      7. **Team Coordination**: Plan how development team will coordinate work
+      8. **Risk Management**: Plan how to manage implementation risks
+      
+      **Interview the User (Team & Process):**
+      - "What development methodology does your team prefer (Agile, Scrum, etc.)?"
+      - "How large is the development team for this conversion?"
+      
+      **Best Practices to Apply:**
+      - **Iterative Development**: Build and validate incrementally
+      - **Continuous Integration**: Integrate and test frequently
+      - **Test-Driven Development**: Write tests before implementation
+      - **Code Quality**: Maintain high code quality standards
+      - **Documentation**: Document decisions and implementation details
+      - **Regular Validation**: Validate against legacy system frequently
+      
+      **Implementation Strategy Framework:**
+      - **Phase Planning**: Logical phases that deliver business value
+      - **Validation Gates**: Regular checkpoints to validate functional equivalence
+      - **Quality Assurance**: Comprehensive testing at each phase
+      - **Risk Mitigation**: Address highest risks first
+      - **Team Coordination**: Clear communication and coordination processes
+      - **Progress Tracking**: Measurable progress indicators
+      
+      Update the plan file with implementation strategy and validate with the user.
+    transitions:
+      - trigger: "refine_strategy"
+        to: "implementation_strategy"
+        transition_reason: "Implementation strategy needs refinement based on user feedback"
+      
+      - trigger: "need_comparison_refinement"
+        to: "behavioral_comparison_setup"
+        additional_instructions: "Implementation strategy revealed issues with comparison setup. Refine the behavioral comparison mechanisms based on implementation insights."
+        transition_reason: "Implementation work revealed need to refine comparison setup"
+      
+      - trigger: "strategy_complete"
+        to: "parallel_implementation"
+        transition_reason: "Implementation strategy is complete, ready for parallel implementation"
+
+  parallel_implementation:
+    description: "Build new system while maintaining test compatibility and validation"
+    default_instructions: >
+      Starting parallel implementation phase. Build the new system systematically with regular validation.
+      
+      **Your Tasks:**
+      1. **Follow Design Documentation**: Reference $DESIGN_DOC for implementation guidance and architectural decisions
+      2. **Systematic Implementation**: Build new system components according to implementation strategy
+      3. **Test Compatibility**: Ensure new system passes existing functional equivalence tests
+      4. **Regular Validation**: Validate new system behavior against legacy system regularly
+      5. **Quality Assurance**: Maintain high code quality and testing standards
+      6. **Integration Testing**: Test integration between new components as they're built
+      7. **Performance Validation**: Ensure new system meets performance requirements
+      8. **Documentation**: Document implementation decisions and system behavior
+      
+      **Interview the User (Implementation Priorities):**
+      - "Which components or business domains should we implement first?"
+      
+      **Best Practices to Apply:**
+      - **Incremental Development**: Build and validate one component at a time
+      - **Continuous Testing**: Run tests continuously as implementation progresses
+      - **Regular Integration**: Integrate new components frequently
+      - **Performance Monitoring**: Monitor performance throughout implementation
+      - **Code Reviews**: Maintain code quality through regular reviews
+      - **Documentation**: Keep implementation documentation current
+      
+      **Implementation Guidelines:**
+      - Start with core business functionality
+      - Validate each component against existing tests
+      - Maintain backward compatibility during development
+      - Use feature flags for gradual rollout
+      - Monitor system behavior continuously
+      - Address performance issues early
+      
+      Update the plan file with implementation progress and mark completed tasks.
+    transitions:
+      - trigger: "continue_implementation"
+        to: "parallel_implementation"
+        transition_reason: "Implementation continues with more components to build"
+      
+      - trigger: "need_strategy_refinement"
+        to: "implementation_strategy"
+        additional_instructions: "Implementation revealed issues with the strategy. Refine the implementation approach based on development learnings."
+        transition_reason: "Implementation work revealed need to refine strategy"
+      
+      - trigger: "implementation_complete"
+        to: "conversion_readiness"
+        instructions: >
+          Parallel implementation is complete! ✅ Now create the CONVERSION_PLAN.md file and transition to conversion readiness phase.
+          
+          Create the CONVERSION_PLAN.md file at .vibe/CONVERSION_PLAN.md with this exact template content:
+
+          ```markdown
+          # Big-Bang Conversion Plan
+
+          *This document provides post-completion guidance for executing the big-bang conversion in production. It serves as an actionable checklist for operations teams to execute the conversion outside of the development conversation.*
+
+          ## Conversion Overview
+
+          ### System Information
+          - **Legacy System**: [Description of current system]
+          - **Target System**: [Description of new system]
+          - **Technology Migration**: [From X to Y technology stack]
+          - **Conversion Date**: [Planned conversion date]
+          - **Rollback Deadline**: [Maximum time before rollback decision]
+
+          ### Conversion Scope
+          - **Components Being Replaced**: [List of components]
+          - **Components Remaining**: [List of unchanged components]
+          - **Data Migration Required**: [Yes/No and details]
+          - **External System Updates**: [List of external systems requiring updates]
+
+          ## Pre-Conversion Checklist
+
+          ### Test Suite Validation
+          - [ ] All boundary tests pass on legacy system (baseline established)
+          - [ ] All boundary tests pass on new system (functional equivalence proven)
+          - [ ] Performance tests meet requirements on new system
+          - [ ] Integration tests with external systems pass
+          - [ ] Error handling tests validate identical behavior
+          - [ ] Edge case and boundary condition tests pass
+
+          ### Behavioral Comparison Validation
+          - [ ] Behavioral comparison mechanism is operational
+          - [ ] Comparison validation shows functional equivalence
+          - [ ] Performance comparison meets requirements
+          - [ ] Error handling comparison validates identical behavior
+          - [ ] Data consistency validation passes
+
+          ### Infrastructure Readiness
+          - [ ] Production environment for new system is ready
+          - [ ] Database migration scripts are tested and ready
+          - [ ] Network configuration supports new system
+          - [ ] Security configurations are validated
+          - [ ] Monitoring and alerting are configured
+          - [ ] Backup and recovery procedures are tested
+
+          ### Team Readiness
+          - [ ] Operations team trained on new system
+          - [ ] Support team has new system documentation
+          - [ ] Rollback procedures are documented and understood
+          - [ ] Communication plan is ready for stakeholders
+          - [ ] Emergency contacts and escalation procedures defined
+
+          ## Conversion Execution Plan
+
+          ### Phase 1: Pre-Conversion (T-2 hours)
+          - [ ] **Freeze Legacy System**: Stop all non-critical changes to legacy system
+          - [ ] **Final Backup**: Create final backup of legacy system and data
+          - [ ] **Team Assembly**: Assemble conversion team and establish communication
+          - [ ] **Final Validation**: Run final test suite validation on both systems
+          - [ ] **Go/No-Go Decision**: Make final decision to proceed with conversion
+
+          ### Phase 2: Traffic Cutover (T-0)
+          - [ ] **Enable Behavioral Comparison**: Start behavioral comparison mechanism
+          - [ ] **Traffic Routing**: Route traffic from legacy to new system
+          - [ ] **Database Cutover**: Switch database connections to new system
+          - [ ] **External System Updates**: Update external systems to use new endpoints
+          - [ ] **Legacy System Isolation**: Isolate legacy system from production traffic
+
+          ### Phase 3: Validation (T+15 minutes)
+          - [ ] **Functional Validation**: Verify all critical functions work correctly
+          - [ ] **Performance Validation**: Confirm performance meets requirements
+          - [ ] **Integration Validation**: Verify external system integrations work
+          - [ ] **Error Handling Validation**: Test error scenarios work correctly
+          - [ ] **User Acceptance**: Confirm user-facing functionality works
+
+          ### Phase 4: Monitoring (T+1 hour)
+          - [ ] **System Monitoring**: Monitor new system performance and errors
+          - [ ] **Behavioral Comparison**: Validate ongoing behavioral equivalence
+          - [ ] **User Feedback**: Monitor user feedback and support requests
+          - [ ] **Performance Metrics**: Validate performance metrics meet requirements
+          - [ ] **Stability Assessment**: Assess overall system stability
+
+          ## Rollback Procedures
+
+          ### Rollback Triggers
+          - Critical functionality failure in new system
+          - Performance degradation beyond acceptable limits
+          - Data integrity issues discovered
+          - Security vulnerabilities identified
+          - User-impacting errors that cannot be quickly resolved
+
+          ### Rollback Execution (if needed)
+          - [ ] **Stop New System**: Immediately stop traffic to new system
+          - [ ] **Restore Legacy System**: Restore legacy system to production
+          - [ ] **Database Rollback**: Restore database to pre-conversion state
+          - [ ] **External System Revert**: Revert external systems to legacy endpoints
+          - [ ] **Communication**: Notify stakeholders of rollback execution
+          - [ ] **Post-Mortem Planning**: Plan post-mortem analysis of rollback
+
+          ### Rollback Validation
+          - [ ] **Functional Validation**: Verify legacy system functions correctly
+          - [ ] **Data Integrity**: Validate data integrity after rollback
+          - [ ] **Integration Validation**: Verify external integrations work
+          - [ ] **Performance Validation**: Confirm performance is restored
+          - [ ] **User Communication**: Communicate status to users
+
+          ## Post-Conversion Activities
+
+          ### Success Validation (T+24 hours)
+          - [ ] **24-Hour Stability**: Confirm system stability over 24 hours
+          - [ ] **Performance Validation**: Validate sustained performance
+          - [ ] **User Acceptance**: Confirm user satisfaction with new system
+          - [ ] **Support Metrics**: Review support ticket volume and types
+          - [ ] **Behavioral Comparison**: Validate continued functional equivalence
+
+          ### Legacy System Decommission (T+1 week)
+          - [ ] **Final Data Backup**: Create final backup of legacy system
+          - [ ] **System Shutdown**: Safely shutdown legacy system
+          - [ ] **Resource Cleanup**: Clean up legacy system resources
+          - [ ] **Documentation Archive**: Archive legacy system documentation
+          - [ ] **Team Notification**: Notify teams of successful decommission
+
+          ### Post-Conversion Review (T+2 weeks)
+          - [ ] **Conversion Review**: Conduct post-conversion review meeting
+          - [ ] **Lessons Learned**: Document lessons learned from conversion
+          - [ ] **Process Improvement**: Identify improvements for future conversions
+          - [ ] **Team Recognition**: Recognize team contributions to successful conversion
+          - [ ] **Documentation Update**: Update procedures based on experience
+
+          ## Emergency Contacts
+
+          ### Conversion Team
+          - **Conversion Lead**: [Name, Phone, Email]
+          - **Technical Lead**: [Name, Phone, Email]
+          - **Operations Lead**: [Name, Phone, Email]
+          - **Database Administrator**: [Name, Phone, Email]
+
+          ### Escalation Contacts
+          - **Engineering Manager**: [Name, Phone, Email]
+          - **Operations Manager**: [Name, Phone, Email]
+          - **Business Stakeholder**: [Name, Phone, Email]
+          - **Executive Sponsor**: [Name, Phone, Email]
+
+          ### External Contacts
+          - **Infrastructure Support**: [Contact Information]
+          - **Database Support**: [Contact Information]
+          - **Network Support**: [Contact Information]
+          - **Security Team**: [Contact Information]
+
+          ## Risk Mitigation
+
+          ### High-Risk Scenarios
+          - **Data Loss**: [Mitigation strategy and recovery procedures]
+          - **Extended Downtime**: [Mitigation strategy and communication plan]
+          - **Performance Degradation**: [Mitigation strategy and scaling procedures]
+          - **Security Breach**: [Mitigation strategy and incident response]
+          - **Integration Failure**: [Mitigation strategy and fallback procedures]
+
+          ### Contingency Plans
+          - **Partial Rollback**: [Procedures for rolling back specific components]
+          - **Extended Validation**: [Procedures for extended validation period]
+          - **Gradual Cutover**: [Procedures for gradual traffic migration]
+          - **Emergency Support**: [Procedures for emergency support escalation]
+
+          ## Success Criteria
+
+          ### Technical Success Criteria
+          - All functional tests pass on new system
+          - Performance meets or exceeds legacy system
+          - No data integrity issues
+          - All integrations function correctly
+          - Error rates within acceptable limits
+
+          ### Business Success Criteria
+          - No business disruption during conversion
+          - User satisfaction maintained or improved
+          - Support ticket volume within normal range
+          - All critical business functions operational
+          - Stakeholder approval of conversion success
+
+          ---
+
+          ## Instructions for Use
+
+          **Purpose**: This document provides actionable guidance for executing the big-bang conversion in production environments outside of development conversations.
+
+          **For Operations Teams**: 
+          - Use this as a checklist during conversion execution
+          - Follow phases sequentially and validate each step
+          - Have rollback procedures ready at all times
+          - Maintain communication throughout the process
+
+          **For Management**: 
+          - Use this to understand conversion scope and risks
+          - Monitor progress through defined checkpoints
+          - Be prepared for go/no-go decisions
+          - Support team with necessary resources
+
+          **Post-Conversion**: This document serves as a record of the conversion process and can be used to improve future conversion procedures.
+
+          ---
+
+          *This conversion plan was created during the big-bang-conversion workflow and provides comprehensive guidance for production execution of the system conversion.*
+          ```
+
+          Now validate the new system and prepare for production conversion readiness.
+          Update the plan file with conversion readiness tasks and mark completed implementation tasks.
+        transition_reason: "New system implementation complete, ready for conversion readiness validation"
+
+  conversion_readiness:
+    description: "Validate conversion readiness and finalize preparation for production execution"
+    default_instructions: >
+      Starting conversion readiness phase. The CONVERSION_PLAN.md file has been created at .vibe/CONVERSION_PLAN.md.
+      
+      **Your Tasks:**
+      1. **Final System Validation**: Validate that new system passes all functional equivalence tests
+      2. **Behavioral Comparison Validation**: Confirm behavioral comparison mechanisms work correctly
+      3. **Performance Validation**: Ensure new system meets performance requirements
+      4. **Integration Validation**: Validate all external system integrations work correctly
+      5. **Conversion Plan Review**: Review and customize the CONVERSION_PLAN.md for your specific environment
+      6. **Team Readiness**: Ensure operations team is ready for production conversion
+      7. **Final Go/No-Go Assessment**: Make final assessment of conversion readiness
+      
+      **Review and Present to User:**
+      - Review new system functional equivalence test results and present findings
+      - Present behavioral comparison mechanism status and validation results
+      - Review CONVERSION_PLAN.md completeness and present customization needs
+      - Present final conversion readiness assessment and any remaining concerns
+      
+      **Best Practices to Apply:**
+      - **Comprehensive Validation**: Validate every aspect of system readiness
+      - **Risk Assessment**: Assess and mitigate all identified risks
+      - **Team Preparation**: Ensure all teams are prepared for conversion
+      - **Documentation Review**: Ensure all documentation is complete and accurate
+      - **Contingency Planning**: Have backup plans for all scenarios
+      - **Stakeholder Communication**: Keep stakeholders informed of readiness status
+      
+      **Conversion Readiness Checklist:**
+      - New system passes all boundary tests (functional equivalence proven)
+      - Behavioral comparison mechanism validates system equivalence
+      - Performance requirements are met or exceeded
+      - All external integrations work correctly
+      - CONVERSION_PLAN.md is customized for your environment
+      - Operations team is trained and ready
+      - Rollback procedures are tested and ready
+      
+      **Final Deliverables:**
+      - Fully functional new system with proven equivalence
+      - Operational behavioral comparison mechanism
+      - Comprehensive CONVERSION_PLAN.md for production execution
+      - Validated rollback procedures
+      - Ready operations team
+      
+      Update the plan file with readiness validation results and mark completed tasks.
+    transitions:
+      - trigger: "refine_readiness"
+        to: "conversion_readiness"
+        transition_reason: "Conversion readiness needs additional validation and refinement"
+      
+      - trigger: "need_more_implementation"
+        to: "parallel_implementation"
+        additional_instructions: "Readiness validation revealed issues requiring additional implementation. Focus on addressing the identified gaps in system functionality."
+        transition_reason: "Readiness validation revealed need for additional implementation"
+      
+      - trigger: "conversion_ready"
+        to: "conversion_readiness"
+        instructions: >
+          Big-bang conversion workflow is complete! ✅ The system is ready for production conversion.
+          
+          **Final Status:**
+          - New system implementation complete with proven functional equivalence
+          - Behavioral comparison mechanism operational and validated
+          - CONVERSION_PLAN.md created with comprehensive production execution guidance
+          - Operations team ready for production conversion execution
+          - Rollback procedures tested and ready
+          
+          **Next Steps (Outside Development Conversation):**
+          - Use CONVERSION_PLAN.md to execute production conversion
+          - Follow the detailed checklist for conversion execution
+          - Execute rollback procedures if needed
+          - Conduct post-conversion review and lessons learned
+          
+          The development work is complete. Production conversion execution happens outside this conversation using the provided CONVERSION_PLAN.md guidance.
+          
+          Mark all conversion readiness tasks as complete in the plan file.
+        additional_instructions: "Big-bang conversion workflow complete! System ready for production conversion using CONVERSION_PLAN.md guidance."
+        transition_reason: "System conversion readiness validated, ready for production execution"
