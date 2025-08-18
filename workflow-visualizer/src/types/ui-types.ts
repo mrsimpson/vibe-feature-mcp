@@ -49,6 +49,10 @@ export interface TransitionData {
   instructions?: string;
   additional_instructions?: string;
   transition_reason: string;
+  review_perspectives?: Array<{
+    perspective: string;
+    prompt: string;
+  }>;
 }
 
 /**

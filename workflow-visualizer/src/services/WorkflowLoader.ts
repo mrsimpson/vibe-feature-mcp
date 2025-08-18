@@ -90,22 +90,17 @@ export class WorkflowLoader {
     }
 
     try {
-      console.log(`Loading bundled workflow: ${workflowName}`);
-      
       const yamlContent = getBundledWorkflow(workflowName);
       
       if (!yamlContent) {
         throw this.createNetworkError(`Bundled workflow "${workflowName}" not found`);
       }
       
-      console.log(`Loaded bundled YAML content (${yamlContent.length} chars):`, yamlContent.substring(0, 100) + '...');
-      
       if (!yamlContent.trim()) {
         throw this.createNetworkError(`Workflow file "${workflowName}" is empty`);
       }
 
       const workflow = this.yamlParser.parseWorkflow(yamlContent);
-      console.log(`Parsed workflow:`, workflow.name, `with ${Object.keys(workflow.states).length} states`);
       
       return workflow;
     } catch (error) {

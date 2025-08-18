@@ -13,7 +13,6 @@ The project includes comprehensive test coverage with different test execution o
 npm test          # Interactive test runner
 npm run test:run  # Single test run (quiet, no noisy tests)
 ```
-- **9 test files**, **79 tests**
 - Excludes the MCP contract test (which shows INFO logs due to SDK limitations)
 - Clean output with ERROR-level logging only
 - **Recommended for development** - fast and quiet
@@ -50,13 +49,6 @@ The project uses an innovative E2E testing approach without process spawning, pr
 
 - **Production**: Client → Transport → Server → Components  
 - **Testing**: Test → DirectInterface → Server → Components
-
-### Key Benefits
-
-- ✅ Consumer perspective testing
-- ✅ 10x faster (no process spawning)  
-- ✅ Real file system integration
-- ✅ Easy debugging (single process)
 
 ### Test Structure
 

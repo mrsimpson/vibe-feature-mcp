@@ -44,8 +44,6 @@ class WorkflowVisualizerApp {
     
     // Set up click handler for interactive elements
     this.plantUMLRenderer.setClickHandler((elementType, elementId, data) => {
-      console.log('PlantUML element clicked:', elementType, elementId, data);
-      
       if (elementType === 'state') {
         this.handleElementClick({
           elementType: 'node',
@@ -58,6 +56,8 @@ class WorkflowVisualizerApp {
           elementId: elementId,
           data: data
         });
+      } else if (elementType === 'clear-selection') {
+        this.clearSelection();
       }
     });
     
@@ -82,15 +82,12 @@ class WorkflowVisualizerApp {
    */
   private async initialize(): Promise<void> {
     try {
-      console.log('Initializing Workflow Visualizer...');
-      
       // Set up event listeners
       this.setupEventListeners();
       
       // Populate workflow selector
       await this.populateWorkflowSelector();
       
-      console.log('Workflow Visualizer initialized successfully');
     } catch (error) {
       console.error('Failed to initialize application:', error);
       this.errorHandler.showError(
@@ -134,7 +131,6 @@ class WorkflowVisualizerApp {
         this.workflowSelector.appendChild(option);
       });
       
-      console.log(`Loaded ${workflows.length} built-in workflows`);
     } catch (error) {
       console.error('Failed to populate workflow selector:', error);
       this.errorHandler.showError('Failed to load available workflows');
@@ -155,10 +151,9 @@ class WorkflowVisualizerApp {
     
     try {
       this.setLoadingState(true);
-      console.log(`Loading workflow: ${workflowName}`);
       
       const workflow = await this.workflowLoader.loadBuiltinWorkflow(workflowName);
-      await this.handleWorkflowLoaded(workflow, workflowName);
+      await this.handleWorkflowLoaded(workflow);
       
     } catch (error) {
       console.error(`Failed to load workflow ${workflowName}:`, error);
@@ -173,9 +168,7 @@ class WorkflowVisualizerApp {
   /**
    * Handle successful workflow loading
    */
-  private async handleWorkflowLoaded(workflow: YamlStateMachine, source: string): Promise<void> {
-    console.log(`Workflow loaded successfully: ${workflow.name} (from ${source})`);
-    
+  private async handleWorkflowLoaded(workflow: YamlStateMachine): Promise<void> {
     this.appState.currentWorkflow = workflow;
     this.appState.selectedElement = null;
     this.appState.highlightedPath = null;
@@ -183,7 +176,7 @@ class WorkflowVisualizerApp {
     // Render the workflow using PlantUML
     await this.plantUMLRenderer.renderWorkflow(workflow);
     
-    // Update side panel
+    // Show metadata by default when workflow loads
     this.updateSidePanel();
   }
 
@@ -199,17 +192,14 @@ class WorkflowVisualizerApp {
    * Handle element clicks in the diagram
    */
   private handleElementClick(event: InteractionEvent): void {
-    console.log('Element clicked:', event.elementType, event.elementId, event.data);
-    
     if (event.elementType === 'node' && event.data) {
-      console.log('Selecting state:', event.elementId);
       this.selectState(event.elementId!, event.data);
     } else if (event.elementType === 'transition' && event.data) {
-      console.log('Selecting transition:', event.elementId);
       this.selectTransition(event.elementId!, event.data);
     }
   }
 
+  /**
   /**
    * Select a state node
    */
@@ -228,7 +218,6 @@ class WorkflowVisualizerApp {
     // Update side panel to show selected state details
     this.updateSidePanel();
     
-    console.log('State selected and side panel updated:', stateId);
   }
 
   /**
@@ -246,7 +235,8 @@ class WorkflowVisualizerApp {
         to: linkData.to,
         instructions: linkData.instructions || '',
         additional_instructions: linkData.additional_instructions || '',
-        transition_reason: linkData.transition_reason || ''
+        transition_reason: linkData.transition_reason || '',
+        review_perspectives: linkData.review_perspectives || []
       };
       
       this.appState.selectedElement = {
@@ -258,7 +248,6 @@ class WorkflowVisualizerApp {
       // Update side panel to show selected transition details
       this.updateSidePanel();
       
-      console.log('Transition selected and side panel updated:', transitionId);
     }
   }
 
@@ -266,6 +255,11 @@ class WorkflowVisualizerApp {
    * Update the side panel content
    */
   private updateSidePanel(): void {
+    console.log('updateSidePanel called', {
+      hasWorkflow: !!this.appState.currentWorkflow,
+      hasSelectedElement: !!this.appState.selectedElement
+    });
+    
     if (!this.appState.currentWorkflow) {
       this.sidePanelHeader.innerHTML = '<h2>Details</h2>';
       this.sidePanelContent.innerHTML = '<div class="empty-state">Select a workflow to see details</div>';
@@ -273,12 +267,70 @@ class WorkflowVisualizerApp {
     }
     
     if (this.appState.selectedElement) {
+      console.log('Rendering selected element details');
       this.renderSelectedElementDetails();
     } else {
-      // No overview needed - just show empty state
-      this.sidePanelHeader.innerHTML = '<h2>Details</h2>';
-      this.sidePanelContent.innerHTML = '<div class="empty-state">Click on a state or transition to see details</div>';
+      console.log('Rendering metadata details (default)');
+      // Show workflow metadata by default when no element is selected
+      this.renderMetadataDetails();
     }
+  }
+
+  /**
+   * Render workflow metadata in side panel
+   */
+  private renderMetadataDetails(): void {
+    const workflow = this.appState.currentWorkflow!;
+    const metadata = workflow.metadata;
+    
+    // Update header
+    this.sidePanelHeader.innerHTML = '<h2>Workflow Info</h2>';
+    
+    // Render metadata content
+    this.sidePanelContent.innerHTML = `
+      <div class="detail-section">
+        <h3 class="detail-title">${workflow.name} Workflow</h3>
+        <p class="detail-content">${workflow.description || 'No description available'}</p>
+      </div>
+      
+      ${metadata?.complexity ? `
+        <div class="detail-section">
+          <h4 class="detail-subtitle">Complexity</h4>
+          <span class="badge badge-${metadata.complexity}">${metadata.complexity.toUpperCase()}</span>
+        </div>
+      ` : ''}
+      
+      ${metadata?.bestFor?.length ? `
+        <div class="detail-section">
+          <h4 class="detail-subtitle">Best For</h4>
+          <ul class="metadata-list">
+            ${metadata.bestFor.map(item => `<li>${item}</li>`).join('')}
+          </ul>
+        </div>
+      ` : ''}
+      
+      ${metadata?.useCases?.length ? `
+        <div class="detail-section">
+          <h4 class="detail-subtitle">Use Cases</h4>
+          <ul class="metadata-list">
+            ${metadata.useCases.map(item => `<li>${item}</li>`).join('')}
+          </ul>
+        </div>
+      ` : ''}
+      
+      ${metadata?.examples?.length ? `
+        <div class="detail-section">
+          <h4 class="detail-subtitle">Examples</h4>
+          <ul class="metadata-list">
+            ${metadata.examples.map(item => `<li>${item}</li>`).join('')}
+          </ul>
+        </div>
+      ` : ''}
+      
+      <div class="detail-section">
+        <p class="detail-hint">Click on states or transitions to see detailed information.</p>
+      </div>
+    `;
   }
 
   /**
@@ -369,8 +421,6 @@ class WorkflowVisualizerApp {
         const trigger = item.getAttribute('data-trigger');
         
         if (fromState && toState && trigger) {
-          console.log('Side panel transition clicked:', `${fromState}->${toState}`);
-          
           // Find the full transition data
           const fullTransition = stateData.transitions.find((t: any) => 
             t.to === toState && t.trigger === trigger
@@ -465,6 +515,18 @@ class WorkflowVisualizerApp {
           <div class="code-block">${transitionData.additional_instructions}</div>
         </div>
       ` : ''}
+      
+      ${transitionData.review_perspectives?.length ? `
+        <div class="detail-section">
+          <h4 class="detail-subtitle">Review Perspectives (${transitionData.review_perspectives.length})</h4>
+          ${transitionData.review_perspectives.map(review => `
+            <div class="review-perspective">
+              <h5 class="review-role">${review.perspective.replace(/_/g, ' ').toUpperCase()}</h5>
+              <p class="review-prompt">${review.prompt}</p>
+            </div>
+          `).join('')}
+        </div>
+      ` : `<!-- No review perspectives found -->`}
     `;
   }
 

@@ -61,7 +61,8 @@ export class YamlParser {
       name: parsed.name,
       description: parsed.description,
       initial_state: parsed.initial_state,
-      states: states
+      states: states,
+      metadata: parsed.metadata
     };
   }
 
@@ -125,7 +126,8 @@ export class YamlParser {
         to: transition.to,
         instructions: transition.instructions,
         additional_instructions: transition.additional_instructions,
-        transition_reason: transition.transition_reason
+        transition_reason: transition.transition_reason,
+        review_perspectives: transition.review_perspectives
       };
     });
   }

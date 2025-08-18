@@ -17,6 +17,10 @@ aside: false
 .vp-doc {
   padding: 0 24px !important;
 }
+
+.vp-doc h2 {
+  border-top: none;
+}
 </style>
 
 

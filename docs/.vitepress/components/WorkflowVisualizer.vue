@@ -67,13 +67,9 @@ let appState: any = {
 
 // Helper functions for handling interactions
 function handleElementClick(event: any): void {
-  console.log('Element clicked:', event.elementType, event.elementId, event.data)
-  
   if (event.elementType === 'node' && event.data) {
-    console.log('Selecting state:', event.elementId)
     selectState(event.elementId, event.data)
   } else if (event.elementType === 'transition' && event.data) {
-    console.log('Selecting transition:', event.elementId)
     selectTransition(event.elementId, event.data)
   }
 }
@@ -91,7 +87,6 @@ function selectState(stateId: string, nodeData: any): void {
   }
   
   updateSidePanel()
-  console.log('State selected and side panel updated:', stateId)
 }
 
 function selectTransition(transitionId: string, linkData: any): void {
@@ -105,7 +100,8 @@ function selectTransition(transitionId: string, linkData: any): void {
       to: linkData.to,
       instructions: linkData.instructions || '',
       additional_instructions: linkData.additional_instructions || '',
-      transition_reason: linkData.transition_reason || ''
+      transition_reason: linkData.transition_reason || '',
+      review_perspectives: linkData.review_perspectives || []
     }
     
     appState.selectedElement = {
@@ -115,8 +111,13 @@ function selectTransition(transitionId: string, linkData: any): void {
     }
     
     updateSidePanel()
-    console.log('Transition selected and side panel updated:', transitionId)
   }
+}
+
+function clearSelectionAndShowMetadata(): void {
+  appState.selectedElement = null
+  appState.parentState = null
+  updateSidePanel()
 }
 
 function updateSidePanel(): void {
@@ -134,8 +135,8 @@ function updateSidePanel(): void {
   if (appState.selectedElement) {
     renderSelectedElementDetails()
   } else {
-    sidePanelHeader.innerHTML = '<h2>Details</h2>'
-    sidePanelContent.innerHTML = '<div class="empty-state">Click on a state or transition to see details</div>'
+    // Show workflow metadata when no element is selected
+    renderMetadataDetails()
   }
 }
 
@@ -272,6 +273,55 @@ function renderTransitionDetailsWithHeader(transitionData: any): void {
         <div class="code-block">${transitionData.additional_instructions}</div>
       </div>
     ` : ''}
+    
+    ${transitionData.review_perspectives?.length ? `
+      <div class="detail-section">
+        <h4 class="detail-subtitle">Review Perspectives (${transitionData.review_perspectives.length})</h4>
+        ${transitionData.review_perspectives.map(review => `
+          <div class="review-perspective">
+            <h5 class="review-role">${review.perspective.replace(/_/g, ' ').toUpperCase()}</h5>
+            <p class="review-prompt">${review.prompt}</p>
+          </div>
+        `).join('')}
+      </div>
+    ` : ''}
+  `
+}
+
+function renderMetadataDetails(): void {
+  const workflow = appState.currentWorkflow!
+  const metadata = workflow.metadata
+  
+  const sidePanelHeader = document.querySelector('.side-panel-header')
+  const sidePanelContent = document.querySelector('.side-panel-content')
+  
+  if (!sidePanelHeader || !sidePanelContent) return
+  
+  // Update header
+  sidePanelHeader.innerHTML = '<h2>Workflow Info</h2>'
+  
+  // Render metadata content
+  sidePanelContent.innerHTML = `
+    <div class="detail-section">
+      <h3 class="detail-title">${workflow.name}</h3>
+      <p class="detail-content">${workflow.description}</p>
+    </div>
+    
+    ${metadata ? `
+      <div class="detail-section">
+        <h4 class="detail-subtitle">Metadata</h4>
+        ${Object.entries(metadata).map(([key, value]) => `
+          <div class="metadata-item">
+            <strong>${key.replace(/_/g, ' ').toUpperCase()}:</strong>
+            ${Array.isArray(value) ? `
+              <ul>
+                ${value.map(item => `<li>${item}</li>`).join('')}
+              </ul>
+            ` : `<span>${value}</span>`}
+          </div>
+        `).join('')}
+      </div>
+    ` : ''}
   `
 }
 
@@ -303,8 +353,6 @@ function clearSelection(): void {
 
 onMounted(async () => {
   try {
-    console.log('Initializing Workflow Visualizer...')
-    
     // Import the workflow visualizer modules
     const { WorkflowLoader } = await import('@workflow-visualizer/services/WorkflowLoader')
     const { FileUploadHandler } = await import('@workflow-visualizer/services/FileUploadHandler')
@@ -328,8 +376,6 @@ onMounted(async () => {
     
     // Set up click handler for interactive elements
     plantUMLRenderer.setClickHandler((elementType, elementId, data) => {
-      console.log('PlantUML element clicked:', elementType, elementId, data)
-      
       if (elementType === 'state') {
         handleElementClick({
           elementType: 'node',
@@ -342,6 +388,8 @@ onMounted(async () => {
           elementId: elementId,
           data: data
         })
+      } else if (elementType === 'clear-selection') {
+        clearSelectionAndShowMetadata()
       }
     })
     
@@ -370,7 +418,6 @@ onMounted(async () => {
           appState.highlightedPath = null
           await plantUMLRenderer.renderWorkflow(workflow)
           updateSidePanel()
-          console.log(`Workflow loaded: ${workflow.name}`)
         } catch (error) {
           console.error('Failed to load workflow:', error)
           diagramCanvas.innerHTML = '<div class="loading-message">Failed to load workflow</div>'
@@ -400,7 +447,6 @@ onMounted(async () => {
           workflowSelector.value = props.initialWorkflow
         }
         updateSidePanel()
-        console.log(`Initial workflow loaded: ${workflow.name}`)
       } catch (error) {
         console.error('Failed to load initial workflow:', error)
         diagramCanvas.innerHTML = '<div class="loading-message">Failed to load workflow</div>'
@@ -408,7 +454,6 @@ onMounted(async () => {
     }
     
     workflowVisualizerApp = { workflowLoader, plantUMLRenderer, fileUploadHandler, errorHandler }
-    console.log('Workflow Visualizer initialized successfully')
   } catch (error) {
     console.error('Failed to load WorkflowVisualizerApp:', error)
     
@@ -580,7 +625,7 @@ onUnmounted(() => {
 
 /* Side Panel */
 #workflow-visualizer-app .side-panel {
-  width: 320px;
+  width: 35%;
   border-left: 1px solid var(--color-gray-200);
   background: var(--color-gray-50);
   display: flex;
