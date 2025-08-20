@@ -26,7 +26,7 @@ states:
   discovery:
     description: "Initial system discovery and inventory with scope limiting"
     default_instructions: >
-      Starting legacy system discovery phase. Create discovery notes file at .vibe/docs/DISCOVERY.md with this exact template content:
+      You are in the legacy system discovery phase. Create discovery notes file at .vibe/docs/DISCOVERY.md with this exact template content:
 
       ```markdown
       # Legacy System Discovery Notes
@@ -293,7 +293,7 @@ states:
   context_analysis:
     description: "System context analysis (C4 Level 1) - boundaries and external interfaces"
     default_instructions: >
-      Starting context analysis phase (C4 Level 1). Reference DISCOVERY.md for long-term memory.
+      You are in the context analysis phase (C4 Level 1). Reference DISCOVERY.md for long-term memory.
       
       **SCOPE LIMIT**: Focus ONLY on external interfaces and system boundaries.
       
@@ -335,7 +335,7 @@ states:
   container_analysis:
     description: "Container analysis (C4 Level 2) - high-level system architecture"
     default_instructions: >
-      Starting container analysis phase (C4 Level 2). Reference DISCOVERY.md for container sketch and long-term memory.
+      You are in the container analysis phase (C4 Level 2). Reference DISCOVERY.md for container sketch and long-term memory.
       
       **SCOPE LIMIT**: Focus on major containers/services/modules only.
       
@@ -377,7 +377,7 @@ states:
   component_analysis:
     description: "Component analysis (C4 Level 3) - detailed component-by-component analysis"
     default_instructions: >
-      Starting component analysis phase (C4 Level 3). Reference DISCOVERY.md for component information and long-term memory.
+      You are in the component analysis phase (C4 Level 3). Reference DISCOVERY.md for component information and long-term memory.
       
       **SCOPE LIMIT**: Analyze ONE component at a time. User selects which components to focus on.
       
@@ -421,7 +421,7 @@ states:
   documentation_consolidation:
     description: "Consolidate findings into comprehensive documentation"
     default_instructions: >
-      Starting documentation consolidation phase. The $ARCHITECTURE_DOC and $DESIGN_DOC have been enhanced throughout the analysis phases.
+      You are in the documentation consolidation phase. The $ARCHITECTURE_DOC and $DESIGN_DOC have been enhanced throughout the analysis phases.
       
       Tasks:
       1. Review DISCOVERY.md for all findings and insights

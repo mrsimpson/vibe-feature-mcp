@@ -26,7 +26,7 @@ states:
   conversion_planning:
     description: "Plan the complete system replacement strategy and approach"
     default_instructions: >
-      Starting conversion planning phase for big-bang conversion workflow.
+      You are in the conversion planning phase for big-bang conversion workflow.
       
       **Your Tasks:**
       1. **Reference Architecture Documentation**: Check if $ARCHITECTURE_DOC exists and reference it for system understanding
@@ -59,12 +59,13 @@ states:
       
       - trigger: "planning_complete"
         to: "target_architecture_design"
+        additional_instructions: "Conversion planning complete! Now design the target architecture for the new system. Focus on the technology stack and architectural patterns that will support the conversion strategy."
         transition_reason: "Conversion strategy is planned, ready for target architecture design"
 
   target_architecture_design:
     description: "Design the architecture for the new system in target technology"
     default_instructions: >
-      Starting target architecture design phase. Design the new system architecture in the target technology stack.
+      You are in the target architecture design phase. Design the new system architecture in the target technology stack.
       
       **Your Tasks:**
       1. **Reference Architecture Documentation**: Check if $ARCHITECTURE_DOC exists and reference it for current system understanding
@@ -110,12 +111,13 @@ states:
       
       - trigger: "architecture_complete"
         to: "behavioral_comparison_setup"
+        additional_instructions: "Target architecture design complete! Now set up behavioral comparison mechanisms to validate functional equivalence between old and new systems."
         transition_reason: "Target architecture is designed, ready for behavioral comparison setup"
 
   behavioral_comparison_setup:
     description: "Set up mechanisms to compare behavior between current and new systems"
     default_instructions: >
-      Starting behavioral comparison setup phase. Design and implement mechanisms to validate functional equivalence.
+      You are in the behavioral comparison setup phase. Design and implement mechanisms to validate functional equivalence.
       
       **Your Tasks:**
       1. **Comparison Strategy Design**: Design approach for comparing current and new system behavior
@@ -160,12 +162,13 @@ states:
       
       - trigger: "comparison_setup_complete"
         to: "implementation_strategy"
+        additional_instructions: "Behavioral comparison setup complete! Now plan the detailed implementation strategy for building the new system with systematic validation."
         transition_reason: "Comparison mechanisms are designed, ready for implementation strategy"
 
   implementation_strategy:
     description: "Plan detailed implementation approach for the new system"
     default_instructions: >
-      Starting implementation strategy phase. Plan the systematic approach for building the new system.
+      You are in the implementation strategy phase. Plan the systematic approach for building the new system.
       
       **Your Tasks:**
       1. **Reference Design Documentation**: Check $DESIGN_DOC for target architecture and design decisions
@@ -210,12 +213,13 @@ states:
       
       - trigger: "strategy_complete"
         to: "parallel_implementation"
+        additional_instructions: "Implementation strategy complete! Now begin parallel implementation of the new system with systematic validation against the comparison mechanisms."
         transition_reason: "Implementation strategy is complete, ready for parallel implementation"
 
   parallel_implementation:
     description: "Build new system while maintaining test compatibility and validation"
     default_instructions: >
-      Starting parallel implementation phase. Build the new system systematically with regular validation.
+      You are in the parallel implementation phase. Build the new system systematically with regular validation.
       
       **Your Tasks:**
       1. **Follow Design Documentation**: Reference $DESIGN_DOC for implementation guidance and architectural decisions
@@ -476,7 +480,7 @@ states:
   conversion_readiness:
     description: "Validate conversion readiness and finalize preparation for production execution"
     default_instructions: >
-      Starting conversion readiness phase. The CONVERSION_PLAN.md file has been created at .vibe/CONVERSION_PLAN.md.
+      You are in the conversion readiness phase. The CONVERSION_PLAN.md file has been created at .vibe/CONVERSION_PLAN.md.
       
       **Your Tasks:**
       1. **Final System Validation**: Validate that new system passes all functional equivalence tests

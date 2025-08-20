@@ -23,7 +23,7 @@ states:
   discovery:
     description: "Research topic, decide format, and analyze competitive landscape"
     default_instructions: |
-      Starting discovery phase for post development. This is where you define the foundation of your post.
+      You are in the discovery phase for post development. This is where you define the foundation of your post.
 
       Focus on understanding the topic and format:
       - Help user decide post format: Ask about goal (quick insight vs deep exploration), topic complexity, available time

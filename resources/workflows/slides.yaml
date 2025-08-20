@@ -23,7 +23,7 @@ states:
   ideate:
     description: "Brainstorm presentation concept and define strategic foundation"
     default_instructions: |
-      Starting ideation phase for presentation development. This is where you define the foundation of your presentation.
+      You are in the ideation phase for presentation development. This is where you define the foundation of your presentation.
 
       Focus on understanding the core purpose and audience:
       - Brainstorm presentation topic and key messages

@@ -77,6 +77,11 @@ Improve existing workflows with a better final state for all code-producing work
   - [x] Remove transitions that only have `transition_reason` (no instructions)
   - [x] Fix default instruction wording: "Starting X phase" → "You are in X phase"
   - [x] Apply cleanup to all 6 workflows (EPCC, Waterfall, Greenfield, Bugfix, Minor, Boundary-Testing)
+- [x] **Phase 3 Cleanup**: Apply same cleanup to all remaining workflows
+  - [x] Big-Bang-Conversion: Fixed 6 "Starting" instructions + added instructions to 4 futile transitions
+  - [x] C4-Analysis: Fixed 5 "Starting" instructions (no futile transitions found)
+  - [x] Posts: Fixed 1 "Starting" instruction (no futile transitions found)
+  - [x] Slides: Fixed 1 "Starting" instruction (no futile transitions found)
 - [ ] Create workflow-specific template variables and customizations
 - [ ] Validate finalization instructions work correctly
 - [ ] Update workflow documentation and examples
