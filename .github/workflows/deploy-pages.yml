@@ -38,7 +38,10 @@ jobs:
         run: npm ci
 
       - name: Build workflow visualizer
-        run: npm run build:visualizer
+        run: |
+          cd workflow-visualizer
+          npm ci
+          npm run build
 
       - name: Build VitePress site
         run: |
