@@ -62,11 +62,9 @@ states:
         transition_reason: "Implementation work revealed need for more analysis or design"
       
       - trigger: "implementation_complete"
-        to: "explore"
-        instructions: >
-          Minor enhancement is complete! ✅ All implementation, testing, and commit work is finished.
-          The feature is ready for delivery. Return to exploration state, ready for the next minor enhancement or task.
-          Mark all implementation tasks as complete in the plan file.
+        to: "finalize"
+        additional_instructions: "Implementation is complete! Clean up code and finalize documentation to ensure everything is ready for delivery. Mark all implementation tasks as complete."
+        transition_reason: "Implementation complete, ready for finalization"
         additional_instructions: "Minor enhancement is complete and ready for delivery. Prepare for the next development task."
         transition_reason: "Minor enhancement delivery complete, ready for next task"
       
@@ -77,3 +75,60 @@ states:
           The plan file and any completed work will remain for future reference.
         additional_instructions: "Minor enhancement abandoned during implementation. Clean up any incomplete code and prepare for new tasks."
         transition_reason: "User decided to abandon minor enhancement during implementation"
+
+  finalize:
+    description: "Code cleanup and documentation finalization"
+    default_instructions: >
+      You are in the finalize phase. This phase ensures code quality and documentation accuracy through systematic cleanup and review.
+      
+      **STEP 1: Code Cleanup**
+      Systematically clean up development artifacts:
+      
+      1. **Remove Debug Output**: Search for and remove all temporary debug output statements used during development.
+         Look for language-specific debug output methods (console logging, print statements, debug output functions).
+         Remove any debugging statements that were added for development purposes.
+      
+      2. **Review TODO/FIXME Comments**: 
+         - Address each TODO/FIXME comment by either implementing the solution or documenting why it's deferred
+         - Remove completed TODOs
+         - Convert remaining TODOs to proper issue tracking if needed
+      
+      3. **Remove Debugging Code Blocks**:
+         - Remove temporary debugging code, test code blocks, and commented-out code
+         - Clean up any experimental code that's no longer needed
+         - Ensure proper error handling replaces temporary debug logging
+      
+      **STEP 2: Documentation Review**
+      Review and update documentation to reflect final implementation:
+      
+      1. **Compare Against Implementation**: Review documentation against actual implemented functionality
+      2. **Update Changed Sections**: Only modify documentation sections that have functional changes
+      3. **Remove Development Progress**: Remove references to development iterations, progress notes, and temporary decisions
+      4. **Focus on Final State**: Ensure documentation describes the final implemented state, not the development process
+      5. **Verify Accuracy**: Ensure all examples, API descriptions, and usage instructions are accurate
+      
+      **STEP 3: Final Validation**
+      - Run existing tests to ensure cleanup didn't break functionality
+      - Verify documentation accuracy with a final review
+      - Ensure minor enhancement is ready for delivery
+      
+      Update the plan file with finalization progress and mark completed tasks.
+    transitions:
+      - trigger: "continue_finalization"
+        to: "finalize"
+        transition_reason: "Finalization work continues"
+      
+      - trigger: "need_implementation_changes"
+        to: "implement"
+        additional_instructions: "Finalization revealed issues that require implementation changes. Focus on the specific problems identified during final review."
+        transition_reason: "Finalization revealed issues requiring implementation changes"
+      
+      - trigger: "finalization_complete"
+        to: "explore"
+        additional_instructions: "Minor enhancement is complete and finalized! All work is finished and ready for delivery. Prepare for the next development task."
+        transition_reason: "Minor enhancement delivery complete, ready for next task"
+      
+      - trigger: "abandon_feature"
+        to: "explore"
+        additional_instructions: "Minor enhancement abandoned during finalization. Clean up any finalization artifacts and prepare for new tasks."
+        transition_reason: "User decided to abandon minor enhancement during finalization"

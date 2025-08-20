@@ -166,10 +166,10 @@ states:
         transition_reason: "Testing found issues requiring additional QA review"
       
       - trigger: "testing_complete"
-        to: "complete"
+        to: "finalize"
         instructions: >
-            Testing is complete! ✅ All tests pass and the feature is validated. Transition to completion phase.
-            Summarize what was accomplished, ensure all documentation is finalized, and prepare for delivery.
+            Testing is complete! ✅ All tests pass and the feature is validated. Transition to finalization phase.
+            Clean up code and finalize documentation to ensure everything is ready for delivery.
             Mark all testing tasks as complete.
         transition_reason: "All testing is complete, feature is ready for delivery"
         review_perspectives:
@@ -178,16 +178,54 @@ states:
           - perspective: "ux_expert"
             prompt: "Confirm user experience goals are met and the solution is user-friendly and accessible. Validate that user workflows are intuitive and efficient."
 
-  complete:
-    description: "Feature completion and delivery"
-    default_instructions: "Feature development is complete! All phases have been finished successfully. The feature is implemented, tested, and ready for delivery. Summarize what was accomplished and ensure all documentation is finalized."
+  finalize:
+    description: "Code cleanup and documentation finalization"
+    default_instructions: >
+      You are in the finalize phase. This phase ensures code quality and documentation accuracy through systematic cleanup and review.
+      
+      **STEP 1: Code Cleanup**
+      Systematically clean up development artifacts:
+      
+      1. **Remove Debug Output**: Search for and remove all temporary debug output statements used during development.
+         Look for language-specific debug output methods (console logging, print statements, debug output functions).
+         Remove any debugging statements that were added for development purposes.
+      
+      2. **Review TODO/FIXME Comments**: 
+         - Address each TODO/FIXME comment by either implementing the solution or documenting why it's deferred
+         - Remove completed TODOs
+         - Convert remaining TODOs to proper issue tracking if needed
+      
+      3. **Remove Debugging Code Blocks**:
+         - Remove temporary debugging code, test code blocks, and commented-out code
+         - Clean up any experimental code that's no longer needed
+         - Ensure proper error handling replaces temporary debug logging
+      
+      **STEP 2: Documentation Review**
+      Review and update documentation to reflect final implementation:
+      
+      1. **Compare Against Implementation**: Review documentation against actual implemented functionality
+      2. **Update Changed Sections**: Only modify documentation sections that have functional changes
+      3. **Remove Development Progress**: Remove references to development iterations, progress notes, and temporary decisions
+      4. **Focus on Final State**: Ensure documentation describes the final implemented state, not the development process
+      5. **Verify Accuracy**: Ensure all examples, API descriptions, and usage instructions are accurate
+      
+      **STEP 3: Final Validation**
+      - Run existing tests to ensure cleanup didn't break functionality
+      - Verify documentation accuracy with a final review
+      - Ensure code is ready for production/delivery
+      
+      Update the plan file with finalization progress and mark completed tasks.
     transitions:
+      - trigger: "continue_finalization"
+        to: "finalize"
+        transition_reason: "Finalization work continues"
+      
       - trigger: "need_final_changes"
         to: "implementation"
-        additional_instructions: "Final review revealed minor issues that need to be addressed. Focus on the specific final changes needed."
-        transition_reason: "Final review found issues requiring minor implementation changes"
+        additional_instructions: "Finalization revealed issues that require code changes. Focus on the specific problems identified during final review."
+        transition_reason: "Final review found issues requiring implementation changes"
       
-      - trigger: "restart_development"
+      - trigger: "finalization_complete"
         to: "requirements"
-        additional_instructions: "Starting new development cycle. Prepare to gather requirements for the next feature or iteration."
-        transition_reason: "Beginning new development cycle"
+        additional_instructions: "Feature is complete and finalized! All work is finished and ready for delivery. Prepare to gather requirements for the next feature or iteration."
+        transition_reason: "Feature delivery complete, beginning new development cycle"

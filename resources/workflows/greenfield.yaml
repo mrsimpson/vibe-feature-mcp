@@ -149,12 +149,10 @@ states:
         transition_reason: "Implementation work revealed need for architectural changes"
       
       - trigger: "code_complete"
-        to: "document"
+        to: "finalize"
         instructions: >
-          Implementation is complete! ✅ Now transition to documentation phase.
-          Create comprehensive project documentation, especially a detailed README that introduces newcomers to the project.
-          Document setup instructions, usage examples, architecture overview, and contribution guidelines.
-          Ensure the documentation reflects your PRD goals and architectural decisions.
+          Implementation is complete! ✅ Now transition to finalization phase.
+          Clean up code and finalize documentation to ensure everything is ready for users and contributors.
           Update the plan file and mark completed implementation tasks.
         transition_reason: "Core implementation is complete, ready for comprehensive documentation"
       
@@ -166,36 +164,60 @@ states:
         additional_instructions: "Project development abandoned during implementation. Clean up any incomplete code and prepare for new projects."
         transition_reason: "User decided to abandon project during implementation"
 
-  document:
-    description: "Comprehensive documentation creation phase"
-    default_instructions: "Starting documentation phase. Create comprehensive project documentation that introduces newcomers to your project. Write a detailed README that covers: project overview (based on your PRD), setup instructions, usage examples, architecture overview, API documentation if applicable, contribution guidelines, and troubleshooting. Ensure documentation is beginner-friendly and reflects the goals from your ideation phase and technical decisions from your architecture phase."
+  finalize:
+    description: "Code cleanup and documentation finalization"
+    default_instructions: >
+      You are in the finalize phase. This phase ensures code quality and documentation accuracy through systematic cleanup and review.
+      
+      **STEP 1: Code Cleanup**
+      Systematically clean up development artifacts:
+      
+      1. **Remove Debug Output**: Search for and remove all temporary debug output statements used during development.
+         Look for language-specific debug output methods (console logging, print statements, debug output functions).
+         Remove any debugging statements that were added for development purposes.
+      
+      2. **Review TODO/FIXME Comments**: 
+         - Address each TODO/FIXME comment by either implementing the solution or documenting why it's deferred
+         - Remove completed TODOs
+         - Convert remaining TODOs to proper issue tracking if needed
+      
+      3. **Remove Debugging Code Blocks**:
+         - Remove temporary debugging code, test code blocks, and commented-out code
+         - Clean up any experimental code that's no longer needed
+         - Ensure proper error handling replaces temporary debug logging
+      
+      **STEP 2: Documentation Review**
+      Review and update documentation to reflect final implementation:
+      
+      1. **Compare Against Implementation**: Review documentation against actual implemented functionality
+      2. **Update Changed Sections**: Only modify documentation sections that have functional changes
+      3. **Remove Development Progress**: Remove references to development iterations, progress notes, and temporary decisions
+      4. **Focus on Final State**: Ensure documentation describes the final implemented state, not the development process
+      5. **Verify Accuracy**: Ensure all examples, API descriptions, and usage instructions are accurate
+      6. **Comprehensive Documentation**: Ensure project has complete documentation for newcomers including setup, usage, architecture overview, and contribution guidelines
+      
+      **STEP 3: Final Validation**
+      - Run existing tests to ensure cleanup didn't break functionality
+      - Verify documentation accuracy with a final review
+      - Ensure project is ready for users and contributors
+      
+      Update the plan file with finalization progress and mark completed tasks.
     transitions:
-      - trigger: "refine_documentation"
-        to: "document"
-        instructions: >
-          Continue improving project documentation. Add more examples, clarify setup instructions, expand troubleshooting sections,
-          and ensure all aspects of the project are well-documented for newcomers. Consider adding diagrams or screenshots if helpful.
-          Update the plan file with documentation progress and mark completed documentation tasks.
-        transition_reason: "Documentation needs more detail and refinement for newcomers"
+      - trigger: "continue_finalization"
+        to: "finalize"
+        transition_reason: "Finalization work continues"
       
       - trigger: "need_code_changes"
         to: "code"
-        additional_instructions: "Documentation work revealed issues that require code changes. Focus on the problems identified during documentation that affect usability or functionality."
-        transition_reason: "Documentation revealed issues requiring code changes"
+        additional_instructions: "Finalization revealed issues that require code changes. Focus on the problems identified during final review that affect usability or functionality."
+        transition_reason: "Finalization revealed issues requiring code changes"
       
-      - trigger: "project_complete"
+      - trigger: "finalization_complete"
         to: "ideation"
-        instructions: >
-          Greenfield project is complete! ✅ All phases finished: PRD created, architecture designed, implementation completed, and comprehensive documentation written.
-          The project is ready for users and contributors. Return to ideation state, ready for the next greenfield project.
-          Mark all documentation tasks as complete and celebrate the successful project delivery!
         additional_instructions: "Greenfield project is complete and ready for delivery! All phases successfully finished. Prepare for the next greenfield project."
-        transition_reason: "Project delivery complete with full documentation, ready for next greenfield project"
+        transition_reason: "Project delivery complete with finalized code and documentation, ready for next greenfield project"
       
       - trigger: "abandon_project"
         to: "ideation"
-        instructions: >
-          Project development abandoned during documentation. Clean up any documentation artifacts and return to ideation.
-          The completed implementation and other project artifacts will remain for future reference.
-        additional_instructions: "Project development abandoned during documentation. Clean up any documentation artifacts and prepare for new projects."
-        transition_reason: "User decided to abandon project during documentation phase"
+        additional_instructions: "Project development abandoned during finalization. Clean up any finalization artifacts and prepare for new projects."
+        transition_reason: "User decided to abandon project during finalization phase"

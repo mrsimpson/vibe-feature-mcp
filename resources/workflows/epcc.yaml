@@ -128,14 +128,45 @@ states:
         transition_reason: "User decided to abandon feature during implementation"
 
   commit:
-    description: "Finalization phase - committing changes and documentation"
-    default_instructions: "Starting finalization phase. Review your work, ensure code quality, run tests, and prepare for delivery. Clean up temporary code, update documentation, and ensure everything is ready for production."
+    description: "Code cleanup and documentation finalization"
+    default_instructions: >
+      You are in the commit phase. This phase ensures code quality and documentation accuracy through systematic cleanup and review.
+      
+      **STEP 1: Code Cleanup**
+      Systematically clean up development artifacts:
+      
+      1. **Remove Debug Output**: Search for and remove all temporary debug output statements used during development.
+         Look for language-specific debug output methods (console logging, print statements, debug output functions).
+         Remove any debugging statements that were added for development purposes.
+      
+      2. **Review TODO/FIXME Comments**: 
+         - Address each TODO/FIXME comment by either implementing the solution or documenting why it's deferred
+         - Remove completed TODOs
+         - Convert remaining TODOs to proper issue tracking if needed
+      
+      3. **Remove Debugging Code Blocks**:
+         - Remove temporary debugging code, test code blocks, and commented-out code
+         - Clean up any experimental code that's no longer needed
+         - Ensure proper error handling replaces temporary debug logging
+      
+      **STEP 2: Documentation Review**
+      Review and update documentation to reflect final implementation:
+      
+      1. **Compare Against Implementation**: Review documentation against actual implemented functionality
+      2. **Update Changed Sections**: Only modify documentation sections that have functional changes
+      3. **Remove Development Progress**: Remove references to development iterations, progress notes, and temporary decisions
+      4. **Focus on Final State**: Ensure documentation describes the final implemented state, not the development process
+      5. **Verify Accuracy**: Ensure all examples, API descriptions, and usage instructions are accurate
+      
+      **STEP 3: Final Validation**
+      - Run existing tests to ensure cleanup didn't break functionality
+      - Verify documentation accuracy with a final review
+      - Ensure code is ready for production/delivery
+      
+      Update the plan file with commit progress and mark completed tasks.
     transitions:
       - trigger: "refine_commit"
         to: "commit"
-        instructions: >
-          Continue finalization work. Review code quality, run final tests, update documentation, and prepare
-          for delivery. Ensure everything is clean and ready for production. Update the plan file with final tasks.
         transition_reason: "Finalization work continues, preparing for delivery"
       
       - trigger: "need_code_changes"
@@ -145,16 +176,10 @@ states:
       
       - trigger: "commit_complete"
         to: "explore"
-        instructions: >
-          Feature is complete and committed! ✅ All work is finished and ready for delivery.
-          Return to exploration state, ready for the next development task. Mark all commit tasks as complete.
         additional_instructions: "Feature is complete and committed! All work is finished and ready for delivery. Prepare for the next development task."
         transition_reason: "Feature delivery complete, ready for next task"
       
       - trigger: "abandon_feature"
         to: "explore"
-        instructions: >
-          Feature development abandoned during finalization. Clean up any finalization artifacts and return to exploration.
-          The completed work will remain for future reference.
         additional_instructions: "Feature development abandoned during finalization. Clean up any finalization artifacts and prepare for new tasks."
         transition_reason: "User decided to abandon feature during finalization"

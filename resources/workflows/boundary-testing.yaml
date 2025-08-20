@@ -287,18 +287,58 @@ states:
         transition_reason: "Validation work revealed need for additional test implementation"
       
       - trigger: "validation_complete"
-        to: "validation"
-        instructions: >
-          Boundary testing workflow is complete! ✅ The comprehensive test suite is ready.
-          
-          **Final Deliverables:**
-          - Comprehensive test suite organized by business domains
-          - System behavior baseline established
-          - Test documentation and maintenance procedures
-          - Clear test organization and execution procedures
-          
-          The test suite is now ready for ongoing use, compliance validation, system monitoring, or as a foundation for system modernization efforts.
-          
-          Mark all validation tasks as complete in the plan file.
-        additional_instructions: "Boundary testing workflow complete! Test suite is ready for ongoing use and maintenance."
-        transition_reason: "Test suite validation complete, ready for production use"
+        to: "finalize"
+        additional_instructions: "Validation is complete! Clean up test development artifacts and finalize documentation to ensure everything is ready for delivery."
+        transition_reason: "Test suite validation complete, ready for finalization"
+
+  finalize:
+    description: "Code cleanup and documentation finalization"
+    default_instructions: >
+      You are in the finalize phase. This phase ensures code quality and documentation accuracy through systematic cleanup and review.
+      
+      **STEP 1: Code Cleanup**
+      Systematically clean up development artifacts:
+      
+      1. **Remove Debug Output**: Search for and remove all temporary debug output statements used during test development.
+         Look for language-specific debug output methods (console logging, print statements, debug output functions).
+         Remove any debugging statements that were added for development purposes.
+      
+      2. **Review TODO/FIXME Comments**: 
+         - Address each TODO/FIXME comment by either implementing the solution or documenting why it's deferred
+         - Remove completed TODOs
+         - Convert remaining TODOs to proper issue tracking if needed
+      
+      3. **Remove Debugging Code Blocks**:
+         - Remove temporary debugging code, test code blocks, and commented-out code
+         - Clean up any experimental code that's no longer needed
+         - Ensure proper error handling replaces temporary debug logging
+      
+      **STEP 2: Documentation Review**
+      Review and update documentation to reflect final test implementation:
+      
+      1. **Compare Against Implementation**: Review documentation against actual implemented test suite
+      2. **Update Changed Sections**: Only modify documentation sections that have functional changes
+      3. **Remove Development Progress**: Remove references to development iterations, progress notes, and temporary decisions
+      4. **Focus on Final State**: Ensure documentation describes the final test suite state, not the development process
+      5. **Verify Test Documentation**: Ensure test documentation and maintenance procedures are complete and accurate
+      
+      **STEP 3: Final Validation**
+      - Run existing tests to ensure cleanup didn't break functionality
+      - Verify test documentation accuracy with a final review
+      - Ensure test suite is ready for ongoing use and maintenance
+      
+      Update the plan file with finalization progress and mark completed tasks.
+    transitions:
+      - trigger: "continue_finalization"
+        to: "finalize"
+        transition_reason: "Finalization work continues"
+      
+      - trigger: "need_test_changes"
+        to: "test_suite_implementation"
+        additional_instructions: "Finalization revealed issues with the test suite. Focus on addressing the specific problems identified during final review."
+        transition_reason: "Finalization revealed issues requiring test implementation changes"
+      
+      - trigger: "finalization_complete"
+        to: "architecture_analysis"
+        additional_instructions: "Boundary testing workflow complete! Test suite is ready for ongoing use and maintenance. Prepare for next boundary testing project."
+        transition_reason: "Test suite finalization complete, ready for production use"
