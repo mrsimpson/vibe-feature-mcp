@@ -44,7 +44,7 @@ states:
 
   design:
     description: "Technical design and architecture planning"
-    default_instructions: "Starting design phase. Re-analyze important interfaces of the application. Review requirements from $REQUIREMENTS_DOC and help the user design the technical solution by asking about architecture, technologies, data models, API design, and quality goals. Focus on HOW to implement what's needed. Document architectural decisions in $ARCHITECTURE_DOC and detailed design in $DESIGN_DOC. Update the plan file and ensure the approach is solid before implementation."
+    default_instructions: "You are in the design phase. Re-analyze important interfaces of the application. Review requirements from $REQUIREMENTS_DOC and help the user design the technical solution by asking about architecture, technologies, data models, API design, and quality goals. Focus on HOW to implement what's needed. Document architectural decisions in $ARCHITECTURE_DOC and detailed design in $DESIGN_DOC. Update the plan file and ensure the approach is solid before implementation."
     transitions:
       - trigger: "need_more_requirements"
         to: "requirements"
@@ -67,7 +67,7 @@ states:
 
   implementation:
     description: "Building the solution according to design"
-    default_instructions: "Starting implementation phase. Follow the architecture from $ARCHITECTURE_DOC and detailed design from $DESIGN_DOC to guide the user through building the solution. Ensure requirements from $REQUIREMENTS_DOC are met. Focus on code structure, error handling, security, and maintainability. Write clean, well-documented code and include basic testing. Update the plan file with implementation progress."
+    default_instructions: "You are in the implementation phase. Follow the architecture from $ARCHITECTURE_DOC and detailed design from $DESIGN_DOC to guide the user through building the solution. Ensure requirements from $REQUIREMENTS_DOC are met. Focus on code structure, error handling, security, and maintainability. Write clean, well-documented code and include basic testing. Update the plan file with implementation progress."
     transitions:
       - trigger: "need_design_changes"
         to: "design"
@@ -94,7 +94,7 @@ states:
 
   qa:
     description: "Quality assurance and code review"
-    default_instructions: "Starting quality assurance phase. Take the following specific actions: 1) Syntax Check: Run syntax checking tools or validate syntax manually, 2) Build Project: Build the project to verify it compiles without errors, 3) Run Linter: Execute linting tools to ensure code style consistency, 4) Execute Tests: Run existing tests to verify functionality. Then conduct a multi-perspective code review from security, performance, UX, maintainability, and requirement compliance perspectives. Verify implementation matches $DESIGN_DOC specifications and fulfills the targeted requirements from $REQUIREMENTS_DOC. Update the plan file with QA progress and mark completed tasks."
+    default_instructions: "You are in the quality assurance phase. Take the following specific actions: 1) Syntax Check: Run syntax checking tools or validate syntax manually, 2) Build Project: Build the project to verify it compiles without errors, 3) Run Linter: Execute linting tools to ensure code style consistency, 4) Execute Tests: Run existing tests to verify functionality. Then conduct a multi-perspective code review from security, performance, UX, maintainability, and requirement compliance perspectives. Verify implementation matches $DESIGN_DOC specifications and fulfills the targeted requirements from $REQUIREMENTS_DOC. Update the plan file with QA progress and mark completed tasks."
     transitions:
       - trigger: "need_implementation_fixes"
         to: "implementation"
@@ -117,7 +117,7 @@ states:
 
   testing:
     description: "Comprehensive testing and validation"
-    default_instructions: "Starting testing phase. Create comprehensive test plans, write and execute tests, validate feature completeness, and ensure everything works as expected. Focus on test coverage, edge cases, integration testing, and user acceptance validation."
+    default_instructions: "You are in the testing phase. Create comprehensive test plans, write and execute tests, validate feature completeness, and ensure everything works as expected. Focus on test coverage, edge cases, integration testing, and user acceptance validation."
     transitions:
       - trigger: "need_implementation_fixes"
         to: "implementation"

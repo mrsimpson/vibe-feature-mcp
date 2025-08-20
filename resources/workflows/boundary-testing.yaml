@@ -26,7 +26,7 @@ states:
   architecture_analysis:
     description: "Analyze existing system architecture and identify system boundaries"
     default_instructions: >
-      Starting architecture analysis phase for boundary testing workflow.
+      You are in the architecture analysis phase for boundary testing workflow.
       
       **Your Tasks:**
       1. **Reference Architecture Documentation**: Check if $ARCHITECTURE_DOC exists and reference it for system understanding
@@ -51,12 +51,13 @@ states:
     transitions:
       - trigger: "analysis_complete"
         to: "interface_discovery"
+        additional_instructions: "Architecture analysis complete! Now systematically identify all system interfaces, APIs, and external boundaries. Use your architecture understanding to guide the discovery process."
         transition_reason: "System architecture is understood, ready for interface discovery"
 
   interface_discovery:
     description: "Discover and catalog all system interfaces, APIs, and external boundaries"
     default_instructions: >
-      Starting interface discovery phase. Use your architecture analysis to systematically identify all system interfaces.
+      You are in the interface discovery phase. Use your architecture analysis to systematically identify all system interfaces.
       
       **Your Tasks:**
       1. **Catalog APIs**: Identify all REST APIs, SOAP services, GraphQL endpoints, or other web services
@@ -88,12 +89,13 @@ states:
       
       - trigger: "discovery_complete"
         to: "business_domain_analysis"
+        additional_instructions: "Interface discovery complete! Now organize the cataloged interfaces by business domains using Domain-Driven Design principles. Focus on identifying logical boundaries and domain relationships."
         transition_reason: "System interfaces are cataloged, ready for business domain organization"
 
   business_domain_analysis:
     description: "Organize system interfaces by business domains and logical boundaries using DDD principles"
     default_instructions: >
-      Starting business domain analysis phase. Apply Domain-Driven Design principles to organize interfaces by business boundaries.
+      You are in the business domain analysis phase. Apply Domain-Driven Design principles to organize interfaces by business boundaries.
       
       **Your Tasks:**
       1. **Apply DDD Principles**: Use Domain-Driven Design concepts to identify bounded contexts and business domains
@@ -133,12 +135,13 @@ states:
       
       - trigger: "domains_complete"
         to: "test_strategy_design"
+        additional_instructions: "Business domain organization complete! Now design a comprehensive testing strategy based on the identified business boundaries. Focus on creating domain-specific test approaches."
         transition_reason: "Business domains are organized, ready for test strategy design"
 
   test_strategy_design:
     description: "Design comprehensive testing strategy organized by business boundaries"
     default_instructions: >
-      Starting test strategy design phase. Create a comprehensive testing approach based on business domain organization.
+      You are in the test strategy design phase. Create a comprehensive testing approach based on business domain organization.
       
       **Your Tasks:**
       1. **Design Domain-Based Testing**: Create test strategies for each business domain identified
@@ -181,12 +184,13 @@ states:
       
       - trigger: "strategy_complete"
         to: "test_suite_implementation"
+        additional_instructions: "Test strategy design complete! Now implement the comprehensive test suite based on your strategy. Focus on building domain-organized tests that validate system boundaries."
         transition_reason: "Test strategy is complete, ready for implementation"
 
   test_suite_implementation:
     description: "Implement comprehensive test suite organized by business domains"
     default_instructions: >
-      Starting test suite implementation phase. Build the comprehensive test suite based on your strategy.
+      You are in the test suite implementation phase. Build the comprehensive test suite based on your strategy.
       
       **Your Tasks:**
       1. **Implement Domain Tests**: Create test suites for each business domain
@@ -226,12 +230,13 @@ states:
       
       - trigger: "implementation_complete"
         to: "validation"
+        additional_instructions: "Test suite implementation complete! Now validate the comprehensive test suite and establish system testing baseline. Focus on verifying test coverage and effectiveness."
         transition_reason: "Test suite implementation complete, ready for validation"
 
   validation:
     description: "Validate test coverage and establish comprehensive system testing baseline"
     default_instructions: >
-      Starting validation phase. Validate the comprehensive test suite and establish system testing baseline.
+      You are in the validation phase. Validate the comprehensive test suite and establish system testing baseline.
       
       **Your Tasks:**
       1. **Test Coverage Analysis**: Validate that all business domains and interfaces are covered

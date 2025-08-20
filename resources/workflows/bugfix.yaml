@@ -25,7 +25,7 @@ metadata:
 states:
   reproduce:
     description: "Reproduce and understand the bug"
-    default_instructions: "Starting bug reproduction phase. Work to reliably reproduce the reported bug. Gather information about the conditions, environment, and steps that lead to the issue. Create test cases that demonstrate the problem. Document your findings in the plan file."
+    default_instructions: "You are in the bug reproduction phase. Work to reliably reproduce the reported bug. Gather information about the conditions, environment, and steps that lead to the issue. Create test cases that demonstrate the problem. Document your findings in the plan file."
     transitions:
       - trigger: "bug_reproduced"
         to: "analyze"
@@ -50,7 +50,7 @@ states:
 
   analyze:
     description: "Analyze the bug and identify root cause"
-    default_instructions: "Starting bug analysis phase. Examine the code paths involved in the bug, identify the root cause, and understand why the issue occurs. Use debugging tools, add logging, and trace through the problematic code. Document your analysis in the plan file."
+    default_instructions: "You are in the bug analysis phase. Examine the code paths involved in the bug, identify the root cause, and understand why the issue occurs. Use debugging tools, add logging, and trace through the problematic code. Document your analysis in the plan file."
     transitions:
       - trigger: "need_more_reproduction"
         to: "reproduce"
@@ -104,7 +104,7 @@ states:
 
   verify:
     description: "Verify the fix and ensure no regressions"
-    default_instructions: "Starting bug verification phase. Test the fix thoroughly to ensure the original bug is resolved and no new issues were introduced. Run existing tests, create new ones if needed, and verify the solution is robust."
+    default_instructions: "You are in the bug verification phase. Test the fix thoroughly to ensure the original bug is resolved and no new issues were introduced. Run existing tests, create new ones if needed, and verify the solution is robust."
     transitions:
       - trigger: "fix_needs_adjustment"
         to: "fix"

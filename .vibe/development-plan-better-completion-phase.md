@@ -73,6 +73,10 @@ Improve existing workflows with a better final state for all code-producing work
 - [x] Fix YAML syntax errors discovered during testing
 - [x] Fix workflow initial state bug in transition engine
 - [x] Update test assertions to use "finalize" instead of "complete"
+- [x] **Phase 2 Cleanup**: Remove futile transitions and fix instruction wording
+  - [x] Remove transitions that only have `transition_reason` (no instructions)
+  - [x] Fix default instruction wording: "Starting X phase" → "You are in X phase"
+  - [x] Apply cleanup to all 6 workflows (EPCC, Waterfall, Greenfield, Bugfix, Minor, Boundary-Testing)
 - [ ] Create workflow-specific template variables and customizations
 - [ ] Validate finalization instructions work correctly
 - [ ] Update workflow documentation and examples
