@@ -27,13 +27,6 @@ states:
     description: "Research and exploration phase - understanding the problem space"
     default_instructions: "Starting exploration phase. Research the codebase, understand existing patterns, and gather context about the problem space. Read relevant files and documentation. Understand the requirements and document them in $REQUIREMENTS_DOC. Don't write code yet - focus on understanding. Document your findings in the plan file."
     transitions:
-      - trigger: "continue_exploration"
-        to: "explore"
-        instructions: >
-          Continue exploring. Ask the user for more information. Discuss alternatives.
-          Don't write any code yet - focus on understanding. Document knowledge in the plan file.
-        transition_reason: "More exploration needed to understand the problem space"
-      
       - trigger: "exploration_complete"
         to: "plan"
         instructions: >
@@ -55,13 +48,6 @@ states:
     description: "Planning phase - creating a detailed implementation strategy"
     default_instructions: "Starting planning phase. Create a detailed implementation strategy based on your exploration and requirements from $REQUIREMENTS_DOC. Break down the work into specific, actionable tasks. Consider edge cases, dependencies, and potential challenges. If it impacts the general architecture, document this in $ARCHITECTURE_DOC. Make sure to adhere to the design in $DESIGN_DOC. Document the plan thoroughly. Important: Tasks that you identify for the actual coding shall be in the Code section in the plan."
     transitions:
-      - trigger: "refine_plan"
-        to: "plan"
-        instructions: >
-          Continue refining the implementation plan. Add more detail to tasks, consider additional edge cases,
-          and ensure the approach is solid. Update the plan file with refined details and mark completed planning tasks.
-        transition_reason: "Plan needs more detail and refinement"
-      
       - trigger: "need_more_exploration"
         to: "explore"
         additional_instructions: "Planning revealed gaps in understanding. Focus on the specific areas that need clarification and ask the user about needs and preferences."

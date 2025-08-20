@@ -186,22 +186,9 @@ Once you've defined these criteria, we can begin development. Throughout the pro
     const stateMachine = this.workflowManager.loadWorkflowForProject(projectPath, workflowName);
     const initialState = stateMachine.initial_state;
     
-    // Find the first transition from initial state
-    const initialStateDefinition = stateMachine.states[initialState];
-    if (initialStateDefinition.transitions && initialStateDefinition.transitions.length > 0) {
-      return initialStateDefinition.transitions[0].to;
-    }
-    
-    // Fallback: return first non-initial state
-    const phases = Object.keys(stateMachine.states);
-    const firstNonInitialPhase = phases.find(phase => phase !== initialState);
-    
-    if (!firstNonInitialPhase) {
-      logger.warn('No development phases found, staying in initial state', { initialState, phases });
-      return initialState;
-    }
-    
-    return firstNonInitialPhase;
+    // The first development phase IS the initial state - we should stay there
+    // Don't automatically transition to the first transition target
+    return initialState;
   }
   
   /**

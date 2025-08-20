@@ -31,7 +31,7 @@ describe('Workflow Integration', () => {
     cleanup = scenario.cleanup;
 
     // Start development for all workflow integration tests
-    await initializeDevelopment(client, 'waterfall');
+      await initializeDevelopment(client, 'waterfall');
   });
 
   afterEach(async () => {
@@ -89,19 +89,19 @@ describe('Workflow Integration', () => {
       const testResponse = assertToolSuccess(testing);
       expect(testResponse.phase).toBe('testing');
 
-      // 6. Complete
-      const complete = await client.callTool('proceed_to_phase', {
-        target_phase: 'complete',
+      // 6. Finalize
+      const finalize = await client.callTool('proceed_to_phase', {
+        target_phase: 'finalize',
         reason: 'all tests passed',
         review_state: 'not-required'
       });
-      const completeResponse = assertToolSuccess(complete);
-      expect(completeResponse.phase).toBe('complete');
+      const finalizeResponse = assertToolSuccess(finalize);
+      expect(finalizeResponse.phase).toBe('finalize');
 
       // Verify final state
       const stateResource = await client.readResource('state://current');
       const stateData = JSON.parse(stateResource.contents[0].text);
-      expect(stateData.currentPhase).toBe('complete');
+      expect(stateData.currentPhase).toBe('finalize');
       expect(stateData.conversationId).toBe(reqResponse.conversation_id);
     });
 

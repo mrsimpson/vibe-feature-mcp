@@ -49,10 +49,6 @@ states:
       
       Update the plan file with your findings and mark completed tasks.
     transitions:
-      - trigger: "continue_analysis"
-        to: "architecture_analysis"
-        transition_reason: "Architecture analysis needs more investigation and refinement"
-      
       - trigger: "analysis_complete"
         to: "interface_discovery"
         transition_reason: "System architecture is understood, ready for interface discovery"
@@ -85,10 +81,6 @@ states:
       
       Update the plan file with discovered interfaces and mark completed tasks.
     transitions:
-      - trigger: "continue_discovery"
-        to: "interface_discovery"
-        transition_reason: "Interface discovery needs more investigation"
-      
       - trigger: "need_more_analysis"
         to: "architecture_analysis"
         additional_instructions: "Interface discovery revealed gaps in architecture understanding. Focus on the specific areas that need clarification."
@@ -227,10 +219,6 @@ states:
       
       Update the plan file with implementation progress and mark completed tasks.
     transitions:
-      - trigger: "continue_implementation"
-        to: "test_suite_implementation"
-        transition_reason: "Test implementation continues with more scenarios to implement"
-      
       - trigger: "need_strategy_refinement"
         to: "test_strategy_design"
         additional_instructions: "Test implementation revealed issues with the strategy. Refine the test strategy based on implementation learnings."
@@ -329,10 +317,6 @@ states:
       
       Update the plan file with finalization progress and mark completed tasks.
     transitions:
-      - trigger: "continue_finalization"
-        to: "finalize"
-        transition_reason: "Finalization work continues"
-      
       - trigger: "need_test_changes"
         to: "test_suite_implementation"
         additional_instructions: "Finalization revealed issues with the test suite. Focus on addressing the specific problems identified during final review."

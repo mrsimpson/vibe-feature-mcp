@@ -27,14 +27,6 @@ states:
     description: "Gathering and analyzing requirements"
     default_instructions: "Make yourself familiar with the code base. Ask the user clarifying questions about WHAT they need. Focus on understanding their goals, scope, constraints, and success criteria. Break down their needs into specific requirements in $REQUIREMENTS_DOC. Plan actionable tasks referencing those requirements in the plan file."
     transitions:
-      - trigger: "refine_requirements"
-        to: "requirements"
-        instructions: >
-            Continue refining requirements. Ask more detailed questions to clarify scope, constraints, and user needs.
-            Add any new requirements to the plan file and mark completed tasks. Ensure you have a complete understanding
-            of WHAT needs to be built before moving to design.
-        transition_reason: "Requirements need further refinement and clarification"
-      
       - trigger: "requirements_complete"
         to: "design"
         instructions: >
@@ -54,13 +46,6 @@ states:
     description: "Technical design and architecture planning"
     default_instructions: "Starting design phase. Re-analyze important interfaces of the application. Review requirements from $REQUIREMENTS_DOC and help the user design the technical solution by asking about architecture, technologies, data models, API design, and quality goals. Focus on HOW to implement what's needed. Document architectural decisions in $ARCHITECTURE_DOC and detailed design in $DESIGN_DOC. Update the plan file and ensure the approach is solid before implementation."
     transitions:
-      - trigger: "refine_design"
-        to: "design"
-        instructions: >
-            Continue refining the technical design. Add more architectural details, consider additional patterns,
-            evaluate technology choices, and ensure the design is comprehensive. Update design decisions in the plan file.
-        transition_reason: "Design needs further refinement and detail"
-      
       - trigger: "need_more_requirements"
         to: "requirements"
         additional_instructions: "Design work revealed gaps in requirements understanding. Focus on clarifying the specific requirements that are blocking design decisions."
@@ -84,13 +69,6 @@ states:
     description: "Building the solution according to design"
     default_instructions: "Starting implementation phase. Follow the architecture from $ARCHITECTURE_DOC and detailed design from $DESIGN_DOC to guide the user through building the solution. Ensure requirements from $REQUIREMENTS_DOC are met. Focus on code structure, error handling, security, and maintainability. Write clean, well-documented code and include basic testing. Update the plan file with implementation progress."
     transitions:
-      - trigger: "continue_implementation"
-        to: "implementation"
-        instructions: >
-            Continue implementation work. Follow the design, write clean code, handle edge cases, and maintain good
-            code structure. Update the plan file with progress and mark completed implementation tasks.
-        transition_reason: "Implementation work continues, building the solution"
-      
       - trigger: "need_design_changes"
         to: "design"
         additional_instructions: "Implementation revealed issues with the current design. Consider what you've learned during coding and adjust the design accordingly. Document the changes and reasons."
@@ -118,13 +96,6 @@ states:
     description: "Quality assurance and code review"
     default_instructions: "Starting quality assurance phase. Take the following specific actions: 1) Syntax Check: Run syntax checking tools or validate syntax manually, 2) Build Project: Build the project to verify it compiles without errors, 3) Run Linter: Execute linting tools to ensure code style consistency, 4) Execute Tests: Run existing tests to verify functionality. Then conduct a multi-perspective code review from security, performance, UX, maintainability, and requirement compliance perspectives. Verify implementation matches $DESIGN_DOC specifications and fulfills the targeted requirements from $REQUIREMENTS_DOC. Update the plan file with QA progress and mark completed tasks."
     transitions:
-      - trigger: "continue_qa"
-        to: "qa"
-        instructions: >
-            Continue quality assurance work. Perform additional code reviews, run more tests, check for security issues,
-            and validate compliance with requirements. Update the plan file with QA progress.
-        transition_reason: "Quality assurance work continues, ensuring code quality"
-      
       - trigger: "need_implementation_fixes"
         to: "implementation"
         additional_instructions: "Quality assurance revealed issues that require code changes. Focus on the specific problems identified during QA review."
@@ -148,13 +119,6 @@ states:
     description: "Comprehensive testing and validation"
     default_instructions: "Starting testing phase. Create comprehensive test plans, write and execute tests, validate feature completeness, and ensure everything works as expected. Focus on test coverage, edge cases, integration testing, and user acceptance validation."
     transitions:
-      - trigger: "continue_testing"
-        to: "testing"
-        instructions: >
-            Continue testing work. Execute more test cases, check edge cases, perform integration testing,
-            and validate user acceptance criteria. Update the plan file with testing progress.
-        transition_reason: "Testing work continues, validating the solution"
-      
       - trigger: "need_implementation_fixes"
         to: "implementation"
         additional_instructions: "Testing revealed bugs or issues that require code changes. Focus on the specific problems identified during testing."
@@ -216,10 +180,6 @@ states:
       
       Update the plan file with finalization progress and mark completed tasks.
     transitions:
-      - trigger: "continue_finalization"
-        to: "finalize"
-        transition_reason: "Finalization work continues"
-      
       - trigger: "need_final_changes"
         to: "implementation"
         additional_instructions: "Finalization revealed issues that require code changes. Focus on the specific problems identified during final review."

@@ -27,15 +27,6 @@ states:
     description: "Deep requirements discovery and PRD creation phase"
     default_instructions: "Starting ideation phase for greenfield project. Your goal is to create a comprehensive Requirements Document in $REQUIREMENTS_DOC. Ask extensive questions to understand: WHAT the system should do, WHO will use it, WHY it's needed, and WHAT'S in/out of scope. Explore existing solutions and alternatives. Don't discuss technical implementation yet - focus purely on understanding the problem space and requirements. Document all findings in $REQUIREMENTS_DOC and the plan file."
     transitions:
-      - trigger: "continue_ideation"
-        to: "ideation"
-        instructions: >
-          Continue ideation work. Ask more probing questions about requirements, scope, target audience, and existing solutions.
-          Challenge assumptions and explore edge cases. Focus on creating a thorough PRD.
-          Don't move to technical discussions yet - stay focused on the problem space.
-          Update the plan file with new insights and mark completed ideation tasks.
-        transition_reason: "More ideation needed to fully understand requirements and create comprehensive PRD"
-      
       - trigger: "ideation_complete"
         to: "architecture"
         instructions: >
@@ -63,14 +54,6 @@ states:
     description: "Tech stack selection and architecture design phase"
     default_instructions: "Starting architecture phase. Based on the requirements from $REQUIREMENTS_DOC, now design the technical solution. Ask about the user's technical preferences and experience. Challenge their choices by presenting alternatives. Evaluate pros and cons of different tech stacks, frameworks, and architectural patterns. Consider non-functional requirements like scalability, performance, maintainability, and deployment. Create a comprehensive architecture document in $ARCHITECTURE_DOC. Don't start coding yet - focus on technical design decisions."
     transitions:
-      - trigger: "refine_architecture"
-        to: "architecture"
-        instructions: >
-          Continue refining the technical architecture. Explore more tech stack options, dive deeper into architectural patterns,
-          and consider additional non-functional requirements. Challenge technical decisions with alternatives.
-          Update the architecture document with more detailed technical specifications and mark completed architecture tasks.
-        transition_reason: "Architecture needs more refinement and technical detail"
-      
       - trigger: "need_more_ideation"
         to: "ideation"
         additional_instructions: "Architecture work revealed gaps in requirements understanding. Focus on the specific requirements areas that need clarification before continuing with technical design."
@@ -103,14 +86,6 @@ states:
     description: "Implementation planning phase based on established architecture"
     default_instructions: "Starting planning phase. Based on your completed architecture in $ARCHITECTURE_DOC and requirements from $REQUIREMENTS_DOC, create a detailed implementation strategy. Break down the work into specific, actionable tasks considering the chosen tech stack and architectural decisions. Plan the implementation order, identify dependencies, and consider potential risks. Document the detailed design in $DESIGN_DOC and the plan thoroughly with clear milestones. Important: Tasks for the actual coding should be organized in the Code section of the plan."
     transitions:
-      - trigger: "refine_plan"
-        to: "plan"
-        instructions: >
-          Continue refining the implementation plan. Add more detail to tasks, consider additional dependencies and risks,
-          and ensure the implementation approach aligns with the architecture. Break down complex tasks into smaller steps.
-          Update the plan file with refined implementation details and mark completed planning tasks.
-        transition_reason: "Implementation plan needs more detail and refinement"
-      
       - trigger: "need_architecture_changes"
         to: "architecture"
         additional_instructions: "Planning revealed issues with the current architecture. Consider what you've learned during planning and adjust the technical design accordingly. Document the changes and reasons."
@@ -203,10 +178,6 @@ states:
       
       Update the plan file with finalization progress and mark completed tasks.
     transitions:
-      - trigger: "continue_finalization"
-        to: "finalize"
-        transition_reason: "Finalization work continues"
-      
       - trigger: "need_code_changes"
         to: "code"
         additional_instructions: "Finalization revealed issues that require code changes. Focus on the problems identified during final review that affect usability or functionality."

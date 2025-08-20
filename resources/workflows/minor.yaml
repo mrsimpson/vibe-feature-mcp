@@ -65,8 +65,6 @@ states:
         to: "finalize"
         additional_instructions: "Implementation is complete! Clean up code and finalize documentation to ensure everything is ready for delivery. Mark all implementation tasks as complete."
         transition_reason: "Implementation complete, ready for finalization"
-        additional_instructions: "Minor enhancement is complete and ready for delivery. Prepare for the next development task."
-        transition_reason: "Minor enhancement delivery complete, ready for next task"
       
       - trigger: "abandon_feature"
         to: "explore"
@@ -114,10 +112,6 @@ states:
       
       Update the plan file with finalization progress and mark completed tasks.
     transitions:
-      - trigger: "continue_finalization"
-        to: "finalize"
-        transition_reason: "Finalization work continues"
-      
       - trigger: "need_implementation_changes"
         to: "implement"
         additional_instructions: "Finalization revealed issues that require implementation changes. Focus on the specific problems identified during final review."
