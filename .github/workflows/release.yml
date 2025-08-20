@@ -61,6 +61,12 @@ jobs:
     - name: Build project
       run: npm run build
       
+    - name: Build workflow visualizer
+      run: |
+        cd workflow-visualizer
+        npm ci
+        npm run build
+      
     - name: Bump version and create tag
       id: version
       uses: mathieudutour/github-tag-action@v6.1

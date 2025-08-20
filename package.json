@@ -36,7 +36,7 @@
     "url": "git+https://github.com/mrsimpson/vibe-feature-mcp.git"
   },
   "scripts": {
-    "build": "tsc && npm run build:visualizer",
+    "build": "tsc",
     "build:ci": "tsc",
     "build:visualizer": "cd workflow-visualizer && npm install && npm run build",
     "inspector": "npx @modelcontextprotocol/inspector",

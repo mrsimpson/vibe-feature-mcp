@@ -83,6 +83,8 @@ Fix CI deployment failure in docs build process caused by esbuild version mismat
 - [x] Document the verification results
 - [x] Evaluate alternative fix: Remove tsx dependency entirely
 - [x] Implement improved fix using npm ci instead of npm install
+- [x] Commit the fix to version control
+- [x] Review and fix npm ci consistency across all CI workflows
 
 ### Completed
 - [x] **Fix Verification**: Confirmed workflow-visualizer builds successfully with esbuild 0.21.5 when run in isolation
@@ -92,6 +94,12 @@ Fix CI deployment failure in docs build process caused by esbuild version mismat
 - [x] **Version Conflict Resolved**: Confirmed that isolated build uses correct esbuild version (0.21.5) without conflicts
 - [x] **tsx Usage Analysis**: Found tsx is only used in integration tests (test/utils/test-setup.ts) to run TypeScript files directly
 - [x] **Improved Fix**: Updated to use `npm ci` instead of `npm install` for more deterministic, CI-appropriate dependency resolution
+- [x] **Fix Committed**: Changes committed to git with conventional commit message (commit 8f0c035)
+- [x] **CI Consistency Issue Identified**: Found release.yml uses `npm install` while other workflows use `npm ci`
+- [x] **CI Consistency Fixed**: Updated all workflows to use `npm ci` consistently (commit ab26601)
+  - Fixed release.yml test and release jobs
+  - Fixed docs build in deploy-pages.yml
+  - All workflows now use deterministic dependency resolution
 
 ## Key Decisions
 - **Root Cause Identified**: The issue is a version conflict between:
@@ -102,6 +110,7 @@ Fix CI deployment failure in docs build process caused by esbuild version mismat
 - **Fix Strategy**: Modified CI workflow to build workflow-visualizer in isolation with clean dependency resolution
 - **Implementation**: Changed deploy-pages.yml to run `cd workflow-visualizer && npm ci && npm run build` instead of `npm run build:visualizer`
 - **npm ci vs npm install**: Using `npm ci` is better for CI environments as it uses exact versions from package-lock.json and is more deterministic
+- **CI Consistency**: Standardized all workflows to use `npm ci` instead of mixing `npm install` and `npm ci` for better reproducibility
 
 ## Notes
 - **TypeScript Compilation Issues**: There are unrelated TypeScript compilation errors in the main project due to missing dependencies, but these don't affect the workflow-visualizer build fix
