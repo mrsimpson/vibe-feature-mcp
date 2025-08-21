@@ -86,12 +86,64 @@ Configure Renovate to provide a frictionless dependency update experience with m
    - Respect package.json constraints
    - Use semantic commit messages for changelog generation
 
-### Configuration Design Approach
-- **Base**: Extend `config:recommended` (current setup)
-- **Add**: Auto-merge presets for low-risk updates
-- **Configure**: Grouping rules for related dependencies
-- **Schedule**: Off-hours updates with PR limits
-- **Customize**: Semantic commits and branch naming
+### GitHub PR Configuration Options Available
+
+Based on the comprehensive Renovate documentation, here are the key configuration options specifically for GitHub PRs:
+
+**PR Creation & Timing:**
+- `prCreation`: When to create PRs (`immediate`, `not-pending`, `status-success`, `approval`)
+- `prConcurrentLimit`: Limit concurrent PRs (default: 10)
+- `prHourlyLimit`: Rate limit PR creation per hour (default: 2)
+- `prNotPendingHours`: Timeout for `prCreation=not-pending` (default: 25 hours)
+
+**PR Content & Appearance:**
+- `prTitle`: PR title template (inherits from `commitMessage`)
+- `prTitleStrict`: Bypass appending extra context to PR title
+- `prHeader`: Text at the beginning of PR body
+- `prFooter`: Text at the end of PR body (default: Renovate Bot attribution)
+- `prBodyTemplate`: Controls which sections appear in PR body
+- `prBodyColumns`: Columns to include in PR tables
+- `prBodyDefinitions`: Custom column definitions for PR tables
+- `prBodyNotes`: Extra notes/templates in PR body
+
+**PR Behavior:**
+- `draftPR`: Create draft PRs instead of normal PRs
+- `platformAutomerge`: Use GitHub's native auto-merge (default: true)
+- `automerge`: Enable Renovate's automerge functionality
+- `automergeType`: How to automerge (`pr`, `branch`, `pr-comment`)
+- `automergeStrategy`: Merge strategy (`auto`, `squash`, `merge-commit`, `rebase`, etc.)
+- `automergeSchedule`: Limit automerge to specific times
+
+**PR Labels & Assignment:**
+- `labels`: Labels to set on PRs
+- `addLabels`: Additional labels (mergeable with existing)
+- `assignees`: PR assignees
+- `reviewers`: PR reviewers (supports `team:` prefix for GitHub teams)
+- `assigneesFromCodeOwners`: Auto-assign based on CODEOWNERS
+- `reviewersFromCodeOwners`: Auto-assign reviewers from CODEOWNERS
+- `assignAutomerge`: Assign reviewers/assignees even for automerge PRs
+
+**PR Lifecycle Management:**
+- `rebaseLabel`: Label to trigger manual rebase (default: "rebase")
+- `stopUpdatingLabel`: Label to stop Renovate updates (default: "stop-updating")
+- `keepUpdatedLabel`: Label to keep PR updated with base branch
+- `rebaseWhen`: When to rebase PRs (`auto`, `never`, `conflicted`, `behind-base-branch`)
+- `recreateWhen`: When to recreate closed PRs (`auto`, `always`, `never`)
+
+**GitHub-Specific Features:**
+- `milestone`: GitHub milestone number to assign to PRs
+- `platformCommit`: Use GitHub API for commits (GitHub App only)
+- `forkModeDisallowMaintainerEdits`: Disallow maintainer edits in fork mode
+
+**Security & Vulnerability PRs:**
+- `vulnerabilityAlerts`: Special config for security PRs
+- `osvVulnerabilityAlerts`: Use OSV.dev vulnerability database
+
+**Branch Management:**
+- `branchPrefix`: Prefix for branch names (default: "renovate/")
+- `branchConcurrentLimit`: Limit concurrent branches
+- `pruneStaleBranches`: Auto-delete stale branches (default: true)
+- `pruneBranchAfterAutomerge`: Delete branch after automerge (default: true)
 
 ## Notes
 *Additional context and observations*
