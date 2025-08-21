@@ -1,17 +1,17 @@
 /**
  * Refactored Vibe Feature MCP Server
- * 
+ *
  * Main server orchestrator that brings together all the modular components.
  * This replaces the monolithic server.ts with a clean, modular architecture.
  */
 
 import { setMcpServerForLogging, createLogger } from '../logger.js';
 import { ServerConfig } from './types.js';
-import { 
-  initializeServerComponents, 
-  registerMcpTools, 
+import {
+  initializeServerComponents,
+  registerMcpTools,
   registerMcpResources,
-  ServerComponents 
+  ServerComponents,
 } from './server-config.js';
 import { createToolRegistry } from './tool-handlers/index.js';
 import { createResourceRegistry } from './resource-handlers/index.js';
@@ -35,43 +35,45 @@ export class ResponsibleVibeMCPServer {
    */
   async initialize(): Promise<void> {
     logger.debug('Initializing ResponsibleVibeMCPServer');
-    
+
     try {
       // Initialize core components
       this.components = await initializeServerComponents(this.config);
-      
+
       // Create registries and renderer
       const toolRegistry = createToolRegistry();
       const resourceRegistry = createResourceRegistry();
       const responseRenderer = createResponseRenderer();
-      
+
       // Update components with registries and renderer
       this.components.toolRegistry = toolRegistry;
       this.components.resourceRegistry = resourceRegistry;
       this.components.responseRenderer = responseRenderer;
-      
+
       // Register MCP server for logging notifications
       setMcpServerForLogging(this.components.mcpServer);
-      
+
       // Register tools and resources with MCP server
       await registerMcpTools(
-        this.components.mcpServer, 
-        toolRegistry, 
-        responseRenderer, 
+        this.components.mcpServer,
+        toolRegistry,
+        responseRenderer,
         this.components.context
       );
-      
+
       registerMcpResources(
         this.components.mcpServer,
         resourceRegistry,
         responseRenderer,
         this.components.context
       );
-      
+
       logger.info('ResponsibleVibeMCPServer initialized successfully');
-      
     } catch (error) {
-      logger.error('Failed to initialize ResponsibleVibeMCPServer', error as Error);
+      logger.error(
+        'Failed to initialize ResponsibleVibeMCPServer',
+        error as Error
+      );
       throw error;
     }
   }
@@ -124,17 +126,17 @@ export class ResponsibleVibeMCPServer {
     if (!this.components) {
       throw new Error('Server not initialized. Call initialize() first.');
     }
-    
+
     const handler = this.components.toolRegistry.get('whats_next');
     if (!handler) {
       throw new Error('whats_next handler not found');
     }
-    
+
     const result = await handler.handle(args, this.components.context);
     if (!result.success) {
       throw new Error(result.error || 'Handler execution failed');
     }
-    
+
     return result.data;
   }
 
@@ -145,17 +147,17 @@ export class ResponsibleVibeMCPServer {
     if (!this.components) {
       throw new Error('Server not initialized. Call initialize() first.');
     }
-    
+
     const handler = this.components.toolRegistry.get('proceed_to_phase');
     if (!handler) {
       throw new Error('proceed_to_phase handler not found');
     }
-    
+
     const result = await handler.handle(args, this.components.context);
     if (!result.success) {
       throw new Error(result.error || 'Handler execution failed');
     }
-    
+
     return result.data;
   }
 
@@ -166,17 +168,17 @@ export class ResponsibleVibeMCPServer {
     if (!this.components) {
       throw new Error('Server not initialized. Call initialize() first.');
     }
-    
+
     const handler = this.components.toolRegistry.get('start_development');
     if (!handler) {
       throw new Error('start_development handler not found');
     }
-    
+
     const result = await handler.handle(args, this.components.context);
     if (!result.success) {
       throw new Error(result.error || 'Handler execution failed');
     }
-    
+
     return result.data;
   }
 
@@ -187,17 +189,17 @@ export class ResponsibleVibeMCPServer {
     if (!this.components) {
       throw new Error('Server not initialized. Call initialize() first.');
     }
-    
+
     const handler = this.components.toolRegistry.get('resume_workflow');
     if (!handler) {
       throw new Error('resume_workflow handler not found');
     }
-    
+
     const result = await handler.handle(args, this.components.context);
     if (!result.success) {
       throw new Error(result.error || 'Handler execution failed');
     }
-    
+
     return result.data;
   }
 
@@ -208,17 +210,17 @@ export class ResponsibleVibeMCPServer {
     if (!this.components) {
       throw new Error('Server not initialized. Call initialize() first.');
     }
-    
+
     const handler = this.components.toolRegistry.get('reset_development');
     if (!handler) {
       throw new Error('reset_development handler not found');
     }
-    
+
     const result = await handler.handle(args, this.components.context);
     if (!result.success) {
       throw new Error(result.error || 'Handler execution failed');
     }
-    
+
     return result.data;
   }
 
@@ -227,11 +229,11 @@ export class ResponsibleVibeMCPServer {
    */
   public async cleanup(): Promise<void> {
     logger.debug('Cleaning up server resources');
-    
+
     if (this.components?.database) {
       await this.components.database.close();
     }
-    
+
     logger.info('Server cleanup completed');
   }
 }

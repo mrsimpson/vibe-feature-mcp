@@ -5,15 +5,21 @@
  * Dynamically discovers all YAML files for development mode
  */
 
-import { writeFile, readdir } from 'fs/promises';
-import { join, dirname } from 'path';
-import { fileURLToPath } from 'url';
+import { writeFile, readdir } from 'node:fs/promises';
+import { join, dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 const sourceDir = join(__dirname, '..', '..', 'resources', 'workflows');
-const devBundledWorkflowsFile = join(__dirname, '..', 'src', 'services', 'BundledWorkflows.dev.ts');
+const devBundledWorkflowsFile = join(
+  __dirname,
+  '..',
+  'src',
+  'services',
+  'BundledWorkflows.dev.ts'
+);
 
 async function buildDevWorkflows() {
   try {
@@ -22,9 +28,10 @@ async function buildDevWorkflows() {
 
     // Read source directory and find all YAML files
     const files = await readdir(sourceDir);
-    const yamlFiles = files.filter(file => 
-      (file.endsWith('.yaml') || file.endsWith('.yml')) && 
-      !file.startsWith('.')  // Ignore hidden files
+    const yamlFiles = files.filter(
+      file =>
+        (file.endsWith('.yaml') || file.endsWith('.yml')) &&
+        !file.startsWith('.') // Ignore hidden files
     );
 
     if (yamlFiles.length === 0) {
@@ -43,10 +50,12 @@ async function buildDevWorkflows() {
       const workflowName = file.replace(/\.(yaml|yml)$/, '');
       const safeVarName = workflowName.replace(/[^a-zA-Z0-9]/g, '_');
       const importName = `${safeVarName}Yaml`;
-      
-      workflowImports.push(`import ${importName} from '../../../resources/workflows/${file}?raw';`);
+
+      workflowImports.push(
+        `import ${importName} from '../../../resources/workflows/${file}?raw';`
+      );
       workflowEntries.push(`  '${workflowName}': ${importName}`);
-      
+
       console.log(`  ✅ ${file} -> ${workflowName}`);
     }
 
@@ -77,7 +86,9 @@ export function getBundledWorkflowNames(): string[] {
 
     await writeFile(devBundledWorkflowsFile, devBundledWorkflowsContent);
     console.log(`📝 Generated ${devBundledWorkflowsFile}`);
-    console.log(`🎉 Development workflow bundle complete! (${yamlFiles.length} workflows)`);
+    console.log(
+      `🎉 Development workflow bundle complete! (${yamlFiles.length} workflows)`
+    );
   } catch (error) {
     console.error('❌ Error building development workflows:', error.message);
     process.exit(1);

@@ -1,17 +1,25 @@
 /**
  * Unit tests for SetupProjectDocsHandler
- * 
+ *
  * Tests the setup_project_docs tool handler functionality
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi, Mocked } from 'vitest';
+import {
+  describe,
+  it,
+  expect,
+  beforeEach,
+  afterEach,
+  vi,
+  Mocked,
+} from 'vitest';
 import { SetupProjectDocsHandler } from '../../src/server/tool-handlers/setup-project-docs.js';
 import { ProjectDocsManager } from '../../src/project-docs-manager.js';
 import { TemplateManager } from '../../src/template-manager.js';
 import { ServerContext } from '../../src/server/types.js';
-import { join } from 'path';
-import { tmpdir } from 'os';
-import { mkdir, rmdir } from 'fs/promises';
+import { join } from 'node:path';
+import { tmpdir } from 'node:os';
+import { mkdir, rmdir } from 'node:fs/promises';
 
 // Mock ProjectDocsManager and TemplateManager
 vi.mock('../../src/project-docs-manager.js');
@@ -34,8 +42,8 @@ describe('SetupProjectDocsHandler', () => {
       getAvailableTemplates: vi.fn().mockResolvedValue({
         architecture: ['arc42', 'freestyle'],
         requirements: ['ears', 'freestyle'],
-        design: ['comprehensive', 'freestyle']
-      })
+        design: ['comprehensive', 'freestyle'],
+      }),
     } as any;
 
     // Mock ProjectDocsManager
@@ -43,7 +51,7 @@ describe('SetupProjectDocsHandler', () => {
       createOrLinkProjectDocs: vi.fn(),
       createProjectDocs: vi.fn(),
       getDocumentPaths: vi.fn(),
-      templateManager: mockTemplateManager
+      templateManager: mockTemplateManager,
     } as any;
 
     // Create handler and inject mock
@@ -53,7 +61,7 @@ describe('SetupProjectDocsHandler', () => {
 
     // Mock context
     mockContext = {
-      projectPath: testProjectPath
+      projectPath: testProjectPath,
     } as ServerContext;
   });
 
@@ -72,7 +80,7 @@ describe('SetupProjectDocsHandler', () => {
       mockProjectDocsManager.getDocumentPaths.mockReturnValue({
         architecture: join(testProjectPath, '.vibe', 'docs', 'architecture.md'),
         requirements: join(testProjectPath, '.vibe', 'docs', 'requirements.md'),
-        design: join(testProjectPath, '.vibe', 'docs', 'design.md')
+        design: join(testProjectPath, '.vibe', 'docs', 'design.md'),
       });
     });
 
@@ -80,46 +88,54 @@ describe('SetupProjectDocsHandler', () => {
       const args = {
         architecture: 'arc42',
         requirements: 'ears',
-        design: 'comprehensive'
+        design: 'comprehensive',
       };
 
       mockProjectDocsManager.createOrLinkProjectDocs.mockResolvedValue({
         created: ['architecture.md', 'requirements.md', 'design.md'],
         linked: [],
-        skipped: []
+        skipped: [],
       });
 
       const result = await handler.executeHandler(args, mockContext);
 
       expect(result.success).toBe(true);
-      expect(result.created).toEqual(['architecture.md', 'requirements.md', 'design.md']);
+      expect(result.created).toEqual([
+        'architecture.md',
+        'requirements.md',
+        'design.md',
+      ]);
       expect(result.linked).toEqual([]);
       expect(result.skipped).toEqual([]);
-      expect(result.message).toContain('Created: architecture.md, requirements.md, design.md');
+      expect(result.message).toContain(
+        'Created: architecture.md, requirements.md, design.md'
+      );
     });
 
     it('should create documents with freestyle templates', async () => {
       const args = {
         architecture: 'freestyle',
         requirements: 'freestyle',
-        design: 'freestyle'
+        design: 'freestyle',
       };
 
       mockProjectDocsManager.createOrLinkProjectDocs.mockResolvedValue({
         created: ['architecture.md', 'requirements.md', 'design.md'],
         linked: [],
-        skipped: []
+        skipped: [],
       });
 
       const result = await handler.executeHandler(args, mockContext);
 
       expect(result.success).toBe(true);
-      expect(mockProjectDocsManager.createOrLinkProjectDocs).toHaveBeenCalledWith(
+      expect(
+        mockProjectDocsManager.createOrLinkProjectDocs
+      ).toHaveBeenCalledWith(
         testProjectPath,
         expect.objectContaining({
           architecture: 'freestyle',
           requirements: 'freestyle',
-          design: 'freestyle'
+          design: 'freestyle',
         }),
         {}
       );
@@ -129,13 +145,13 @@ describe('SetupProjectDocsHandler', () => {
       const args = {
         architecture: 'arc42',
         requirements: 'ears',
-        design: 'comprehensive'
+        design: 'comprehensive',
       };
 
       mockProjectDocsManager.createOrLinkProjectDocs.mockResolvedValue({
         created: ['requirements.md', 'design.md'],
         linked: [],
-        skipped: ['architecture.md']
+        skipped: ['architecture.md'],
       });
 
       const result = await handler.executeHandler(args, mockContext);
@@ -151,38 +167,48 @@ describe('SetupProjectDocsHandler', () => {
       const args = {
         architecture: 'arc42',
         requirements: 'ears',
-        design: 'comprehensive'
+        design: 'comprehensive',
       };
 
       mockProjectDocsManager.createOrLinkProjectDocs.mockResolvedValue({
         created: [],
         linked: [],
-        skipped: ['architecture.md', 'requirements.md', 'design.md']
+        skipped: ['architecture.md', 'requirements.md', 'design.md'],
       });
 
       const result = await handler.executeHandler(args, mockContext);
 
       expect(result.success).toBe(true);
       expect(result.created).toEqual([]);
-      expect(result.skipped).toEqual(['architecture.md', 'requirements.md', 'design.md']);
-      expect(result.message).toContain('Skipped existing: architecture.md, requirements.md, design.md');
+      expect(result.skipped).toEqual([
+        'architecture.md',
+        'requirements.md',
+        'design.md',
+      ]);
+      expect(result.message).toContain(
+        'Skipped existing: architecture.md, requirements.md, design.md'
+      );
     });
 
     it('should handle errors gracefully', async () => {
       const args = {
         architecture: 'arc42',
         requirements: 'ears',
-        design: 'comprehensive'
+        design: 'comprehensive',
       };
 
-      mockProjectDocsManager.createOrLinkProjectDocs.mockRejectedValue(new Error('Template not found: architecture/arc42'));
+      mockProjectDocsManager.createOrLinkProjectDocs.mockRejectedValue(
+        new Error('Template not found: architecture/arc42')
+      );
 
       const result = await handler.executeHandler(args, mockContext);
 
       expect(result.success).toBe(false);
       expect(result.created).toEqual([]);
       expect(result.skipped).toEqual([]);
-      expect(result.message).toContain('Failed to setup project docs: Template not found: architecture/arc42');
+      expect(result.message).toContain(
+        'Failed to setup project docs: Template not found: architecture/arc42'
+      );
     });
 
     it('should use current working directory when no project path in context', async () => {
@@ -190,18 +216,20 @@ describe('SetupProjectDocsHandler', () => {
       const args = {
         architecture: 'freestyle',
         requirements: 'freestyle',
-        design: 'freestyle'
+        design: 'freestyle',
       };
 
       mockProjectDocsManager.createOrLinkProjectDocs.mockResolvedValue({
         created: ['architecture.md', 'requirements.md', 'design.md'],
         linked: [],
-        skipped: []
+        skipped: [],
       });
 
       await handler.executeHandler(args, contextWithoutPath);
 
-      expect(mockProjectDocsManager.createOrLinkProjectDocs).toHaveBeenCalledWith(
+      expect(
+        mockProjectDocsManager.createOrLinkProjectDocs
+      ).toHaveBeenCalledWith(
         process.cwd(),
         expect.any(Object),
         expect.any(Object)
@@ -212,19 +240,19 @@ describe('SetupProjectDocsHandler', () => {
       const args = {
         architecture: 'freestyle',
         requirements: 'freestyle',
-        design: 'freestyle'
+        design: 'freestyle',
       };
 
       const expectedPaths = {
         architecture: join(testProjectPath, '.vibe', 'docs', 'architecture.md'),
         requirements: join(testProjectPath, '.vibe', 'docs', 'requirements.md'),
-        design: join(testProjectPath, '.vibe', 'docs', 'design.md')
+        design: join(testProjectPath, '.vibe', 'docs', 'design.md'),
       };
 
       mockProjectDocsManager.createOrLinkProjectDocs.mockResolvedValue({
         created: ['architecture.md', 'requirements.md', 'design.md'],
         linked: [],
-        skipped: []
+        skipped: [],
       });
 
       const result = await handler.executeHandler(args, mockContext);

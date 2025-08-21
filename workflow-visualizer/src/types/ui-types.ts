@@ -3,7 +3,11 @@
  */
 
 // Import existing types from the main project
-import type { YamlStateMachine, YamlState, YamlTransition } from '../../../src/state-machine-types';
+import type {
+  YamlStateMachine,
+  YamlState,
+  YamlTransition,
+} from '../../../src/state-machine-types';
 
 // Re-export for convenience
 export type { YamlStateMachine, YamlState, YamlTransition };

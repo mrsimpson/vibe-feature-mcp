@@ -13,11 +13,13 @@ This document provides comprehensive interaction examples and workflows for the 
 After development has been started, the responsible-vibe-mcp server guides users through a structured development process using a two-tool approach that gives users full control over phase transitions:
 
 #### 1. **Continuous Guidance with `whats_next`**
+
 - LLM calls `whats_next()` after each user interaction
 - Server analyzes current phase progress and plan file status
 - Returns phase-specific instructions for what to do right now
 
 #### 2. **Explicit Phase Transitions with `proceed_to_phase`**
+
 - When all tasks in a phase are complete, `whats_next()` suggests moving forward
 - LLM uses `proceed_to_phase()` to explicitly transition to the next phase
 - User maintains full control over pacing and can choose to refine current phase
@@ -28,13 +30,13 @@ After development has been started, the responsible-vibe-mcp server guides users
 flowchart TD
     A[User Request] --> B[LLM calls whats_next]
     B --> C{Phase Complete?}
-    
+
     C -->|No| D[Continue Current Phase]
     D --> E[Follow Phase Instructions]
     E --> F[Update Plan File]
     F --> G[User Interaction]
     G --> B
-    
+
     C -->|Yes| H[Suggest Phase Transition]
     H --> I{User Ready?}
     I -->|No| D
@@ -46,6 +48,7 @@ flowchart TD
 ### Example Phase Progression
 
 #### Starting a New Feature
+
 ```
 User: "I want to implement user authentication"
 LLM: *calls whats_next()*
@@ -53,6 +56,7 @@ responsible-vibe-mcp: "New feature detected. Starting requirements analysis. Ask
 ```
 
 #### Working Within a Phase
+
 ```
 LLM: *asks clarifying questions, updates plan file*
 LLM: *calls whats_next()*
@@ -60,6 +64,7 @@ responsible-vibe-mcp: "Continue requirements gathering. You still need to clarif
 ```
 
 #### Completing a Phase
+
 ```
 LLM: *completes all requirements tasks*
 LLM: *calls whats_next()*
@@ -67,6 +72,7 @@ responsible-vibe-mcp: "All requirements tasks are complete! ✅ You can proceed 
 ```
 
 #### Transitioning to Next Phase
+
 ```
 LLM: "Great! We've covered all authentication requirements. Let's move to design."
 LLM: *calls proceed_to_phase(target_phase: "design", reason: "requirements complete")*
@@ -86,6 +92,7 @@ Each phase is considered complete when:
 ### Refinement and Flexibility
 
 Users can always choose to:
+
 - **Stay in current phase**: Even when "complete," users can add more tasks or refine existing work
 - **Go back**: Use `proceed_to_phase` to return to earlier phases if issues are discovered
 - **Skip ahead**: In rare cases, jump to later phases if earlier work is already done
@@ -102,23 +109,23 @@ sequenceDiagram
     participant LLM as LLM
     participant Server as Vibe Feature MCP
     participant FS as File System
-    
+
     User->>LLM: "implement auth"
     LLM->>Server: whats_next(context: "user wants auth")
     Server->>FS: Check conversation state
     FS-->>Server: No existing state
     Server->>Server: Transition to "requirements"
     Server-->>LLM: "Analyze user's auth request. Ask clarifying questions about WHAT they need. Break down into tasks in plan file. Mark completed tasks."
-    
+
     LLM->>User: Ask clarifying questions about auth
     User->>LLM: Provides requirements details
     LLM->>FS: Update plan file with tasks
     LLM->>Server: whats_next(context: "gathered requirements")
-    
+
     Server->>FS: Check progress & conversation
     Server->>Server: Requirements complete? → Transition to "design"
     Server-->>LLM: "Help user design technical solution. Ask about quality goals & technologies. Update plan file. Mark completed requirements tasks."
-    
+
     loop Development Flow
         LLM->>User: Follow phase instructions
         User->>LLM: Respond with information
@@ -131,7 +138,7 @@ sequenceDiagram
 
 ### Detailed Dialogue Example
 
-```
+````
 User: "I need to implement user authentication for my web app"
 
 LLM: *calls whats_next(context: "user wants auth", user_input: "implement user authentication")*
@@ -160,7 +167,7 @@ LLM: *calls whats_next(context: "user clarified basic auth requirements", user_i
 
 Responsible-Vibe-MCP Response:
 {
-  "phase": "requirements", 
+  "phase": "requirements",
   "instructions": "Continue gathering requirements. Ask about password policies, session management, user roles, forgot password flow, data validation. Update the plan file with detailed requirements. Mark basic requirements gathering as complete.",
   "plan_file_path": "./auth-feature-plan.md",
   "transition_reason": "Still in requirements phase, need more details",
@@ -185,7 +192,7 @@ Responsible-Vibe-MCP Response:
 {
   "phase": "requirements",
   "instructions": "All requirements tasks are complete! ✅ You have documented: authentication type, user data, security requirements, tech stack, password policies, session management, user roles, and forgot password flow. You can proceed to design phase using 'proceed_to_phase' tool, or continue refining requirements if needed.",
-  "plan_file_path": "./auth-feature-plan.md", 
+  "plan_file_path": "./auth-feature-plan.md",
   "transition_reason": "All requirements tasks completed",
   "completed_tasks": ["requirements_documented", "user_confirmed_scope", "security_requirements_defined", "technical_constraints_identified"]
 }
@@ -211,7 +218,7 @@ LLM: "Perfect! Now let's design the technical solution:
 
 **API Endpoints:**
 - POST /auth/register
-- POST /auth/login  
+- POST /auth/login
 - POST /auth/google
 - POST /auth/forgot-password
 - POST /auth/reset-password
@@ -268,14 +275,15 @@ const userSchema = new mongoose.Schema({
   google_id: String,
   role: { type: String, default: 'user' }
 });
-```
+````
 
 **Step 2: JWT Middleware**
 Here's the authentication middleware...
 
-*[Continues with implementation guidance, updates plan file]*"
+_[Continues with implementation guidance, updates plan file]_"
 
 [Process continues through implementation, QA, and testing phases...]
+
 ```
 
 ## LLM System Prompt Integration
@@ -294,7 +302,7 @@ To properly integrate with responsible-vibe-mcp, the LLM should be configured wi
 
 When calling `whats_next()`, the LLM should provide:
 - **context**: Brief description of current situation
-- **user_input**: The user's latest message or request  
+- **user_input**: The user's latest message or request
 - **conversation_summary**: Summary of the conversation so far (optional but recommended)
 - **recent_messages**: Array of recent relevant messages (optional)
 
@@ -309,8 +317,10 @@ For a complete system prompt template, see [SYSTEM_PROMPT.md](./SYSTEM_PROMPT.md
 Development must be explicitly initiated using the `start_development` tool, which allows users to select their preferred workflow:
 
 ```
+
 start_development({ workflow: "your-preferred-workflow" })
-```
+
+````
 
 Available workflows include various built-in options and custom workflows defined in `.vibe/workflow.yaml`.
 
@@ -335,29 +345,31 @@ proceed_to_phase({
   target_phase: "next-phase",
   reason: "current phase tasks completed"
 })
-```
+````
 
 #### Bug Fix Development
+
 ```javascript
 // Start with bug-focused workflow
-start_development({ workflow: "bugfix-workflow" })
+start_development({ workflow: 'bugfix-workflow' });
 
 // Continuous guidance through bug resolution
 whats_next({
-  context: "investigating reported bug",
-  user_input: "users report login fails",
-  conversation_summary: "Debugging login failure issue"
-})
+  context: 'investigating reported bug',
+  user_input: 'users report login fails',
+  conversation_summary: 'Debugging login failure issue',
+});
 ```
 
 #### Custom Workflow Development
+
 ```javascript
 // Use custom workflow definition
-start_development({ workflow: "custom" })
+start_development({ workflow: 'custom' });
 
 // Follow custom phase progression
 proceed_to_phase({
-  target_phase: "custom-phase-name",
-  reason: "ready for custom workflow step"
-})
+  target_phase: 'custom-phase-name',
+  reason: 'ready for custom workflow step',
+});
 ```

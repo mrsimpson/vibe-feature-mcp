@@ -16,15 +16,15 @@ Git commit behavior is configured when starting development using the `start_dev
 
 ```javascript
 start_development({
-  workflow: "minor",
+  workflow: 'minor',
   git_commit_config: {
     enabled: true,
     commit_on_step: true,
     commit_on_phase: true,
     commit_on_complete: true,
-    initial_message: "Implement user authentication feature"
-  }
-})
+    initial_message: 'Implement user authentication feature',
+  },
+});
 ```
 
 ### Configuration Options
@@ -38,73 +38,84 @@ start_development({
 ## Commit Message Format
 
 ### WIP Commits
+
 WIP commits use the following format:
+
 ```
 WIP: {initial_message} - {context} ({phase})
 ```
 
 Examples:
+
 - `WIP: Implement user authentication - Step completion (requirements)`
 - `WIP: Implement user authentication - Phase transition: requirements → design (requirements)`
 
 ### Final Commits
+
 Final commits use a clean message based on the development context and will squash any intermediate WIP commits created during the session.
 
 ## Usage Examples
 
 ### Basic Usage
+
 ```javascript
 // Enable commits at all levels
 start_development({
-  workflow: "waterfall",
+  workflow: 'waterfall',
   git_commit_config: {
     enabled: true,
     commit_on_step: true,
     commit_on_phase: true,
     commit_on_complete: true,
-    initial_message: "Add user dashboard feature"
-  }
-})
+    initial_message: 'Add user dashboard feature',
+  },
+});
 ```
 
 ### Phase-only Commits
+
 ```javascript
 // Only commit at phase transitions
 start_development({
-  workflow: "epcc",
+  workflow: 'epcc',
   git_commit_config: {
     enabled: true,
     commit_on_step: false,
     commit_on_phase: true,
     commit_on_complete: true,
-    initial_message: "Fix authentication bug"
-  }
-})
+    initial_message: 'Fix authentication bug',
+  },
+});
 ```
 
 ### Manual Control
+
 ```javascript
 // Disable automatic commits (manual git control)
 start_development({
-  workflow: "minor",
+  workflow: 'minor',
   git_commit_config: {
-    enabled: false
-  }
-})
+    enabled: false,
+  },
+});
 ```
 
 ## Technical Details
 
 ### Git Repository Detection
+
 The system automatically detects if the current project is a git repository. If not, commit operations are silently skipped.
 
 ### Commit Creation Logic
+
 - **Change Detection**: Only creates commits when there are actual changes to commit
 - **Staging**: Automatically stages all changes before committing (`git add .`)
 - **Error Handling**: Gracefully handles git errors without interrupting development flow
 
 ### Rebase and Squashing
+
 When `commit_on_complete` is enabled:
+
 - Tracks the starting commit hash when development begins
 - Counts intermediate commits created during the session
 - Uses `git reset --soft` and recommit to squash multiple commits into one clean final commit
@@ -113,6 +124,7 @@ When `commit_on_complete` is enabled:
 ## Integration with Workflows
 
 The git commit feature works with all available workflows:
+
 - **waterfall**: Commits at requirements, design, implementation, qa, testing phases
 - **epcc**: Commits at explore, plan, code, commit phases
 - **bugfix**: Commits at reproduce, analyze, fix, verify phases
@@ -124,7 +136,7 @@ The git commit feature works with all available workflows:
 
 1. **Use descriptive initial messages**: The initial message appears in all WIP commits, so make it descriptive of the feature being developed.
 
-2. **Choose appropriate commit levels**: 
+2. **Choose appropriate commit levels**:
    - Use step-level commits for detailed development tracking
    - Use phase-level commits for milestone tracking
    - Use development-end commits for clean final history
@@ -136,17 +148,20 @@ The git commit feature works with all available workflows:
 ## Troubleshooting
 
 ### No Commits Created
+
 - Verify `enabled: true` in configuration
 - Check that there are actual file changes to commit
 - Ensure the directory is a git repository
 - Check git configuration (user.name and user.email)
 
 ### Git Errors
+
 - Git errors are logged but don't interrupt development flow
 - Check git repository status and permissions
 - Verify git configuration is correct
 
 ### Commit History Issues
+
 - Use `git log --oneline` to review commit history
 - WIP commits can be manually squashed or rebased if needed
 - The automatic squashing only affects commits created during the current development session

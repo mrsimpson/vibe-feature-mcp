@@ -1,4 +1,4 @@
-<!-- 
+<!--
 INSTRUCTIONS FOR REQUIREMENTS (EARS FORMAT):
 - Use EARS format
 - Number requirements as REQ-1, REQ-2, etc.
@@ -70,16 +70,20 @@ Complex requirements for unwanted behavior also include the If-Then keywords.
 # Requirements Document
 
 ## REQ-1: [First Requirement Title]
+
 **User Story:** As a [user type], I want [goal] so that [benefit].
 
 **Acceptance Criteria:**
+
 - WHEN [condition] THEN the system SHALL [expected behavior]
 - WHEN [condition] THEN the system SHALL [expected behavior]
 
 ## REQ-2: [Second Requirement Title]
+
 **User Story:** As a [user type], I want [goal] so that [benefit].
 
 **Acceptance Criteria:**
+
 - WHEN [condition] THEN the system SHALL [expected behavior]
 - WHEN [condition] THEN the system SHALL [expected behavior]
 

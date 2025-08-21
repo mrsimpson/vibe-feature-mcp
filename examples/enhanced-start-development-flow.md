@@ -5,11 +5,13 @@ This example demonstrates how the enhanced `start_development` tool detects miss
 ## Scenario 1: Missing Project Documentation
 
 ### User Action:
+
 ```javascript
-start_development({ workflow: "waterfall" })
+start_development({ workflow: 'waterfall' });
 ```
 
 ### System Response (when docs are missing):
+
 ```
 ## Project Documentation Setup Required
 
@@ -25,11 +27,13 @@ The **waterfall** workflow works best with structured project documentation. You
 Use the `setup_project_docs` tool to create these documents with templates:
 
 ```
+
 setup_project_docs({
-  architecture: "arc42",        // or "freestyle"
-  requirements: "ears",         // or "freestyle" 
-  design: "comprehensive"       // or "freestyle"
+architecture: "arc42", // or "freestyle"
+requirements: "ears", // or "freestyle"
+design: "comprehensive" // or "freestyle"
 })
+
 ```
 
 ## 📋 **Template Options**
@@ -58,6 +62,7 @@ setup_project_docs({
 ## Scenario 2: Partial Documentation Exists
 
 ### System Response (when some docs exist):
+
 ```
 **Missing Documents:**
 - architecture.md
@@ -70,16 +75,19 @@ setup_project_docs({
 ## Scenario 3: All Documentation Exists
 
 ### System Response:
+
 Proceeds directly to workflow initialization without artifact setup guidance.
 
 ## Workflow Coverage
 
 ### **Workflows Requiring Artifacts:**
+
 - `waterfall` - Comprehensive documentation-driven approach
 - `greenfield` - New project requiring thorough planning
 - `epcc` - Structured development with documentation
 
 ### **Workflows NOT Requiring Artifacts:**
+
 - `bugfix` - Focused on specific issue resolution
 - `minor` - Small changes not requiring full documentation
 - `posts` - Content creation workflow

@@ -1,13 +1,13 @@
 /**
  * Unit tests for StartDevelopment .gitignore management
- * 
+ *
  * Tests the automatic .vibe/.gitignore creation functionality
  */
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { existsSync, readFileSync, writeFileSync, mkdirSync, rmSync } from 'fs';
-import { resolve } from 'path';
-import { tmpdir } from 'os';
+import { existsSync, readFileSync, writeFileSync, mkdirSync, rmSync } from 'node:fs';
+import { resolve } from 'node:path';
+import { tmpdir } from 'node:os';
 import { StartDevelopmentHandler } from '../../src/server/tool-handlers/start-development.js';
 
 describe('StartDevelopment .gitignore management', () => {
@@ -25,7 +25,7 @@ describe('StartDevelopment .gitignore management', () => {
       debug: vi.fn(),
       info: vi.fn(),
       warn: vi.fn(),
-      error: vi.fn()
+      error: vi.fn(),
     };
 
     // Create handler instance with mocked logger
@@ -61,7 +61,7 @@ describe('StartDevelopment .gitignore management', () => {
       // Check that .vibe/.gitignore was created with correct content
       const vibeGitignorePath = resolve(tempDir, '.vibe', '.gitignore');
       expect(existsSync(vibeGitignorePath)).toBe(true);
-      
+
       const content = readFileSync(vibeGitignorePath, 'utf-8');
       expect(content).toContain('*.sqlite');
       expect(content).toContain('conversation-state.sqlite');
@@ -85,7 +85,7 @@ describe('StartDevelopment .gitignore management', () => {
 
       // Check that .vibe directory was created
       expect(existsSync(vibeDir)).toBe(true);
-      
+
       // Check that .vibe/.gitignore was created
       const vibeGitignorePath = resolve(vibeDir, '.gitignore');
       expect(existsSync(vibeGitignorePath)).toBe(true);
@@ -94,7 +94,7 @@ describe('StartDevelopment .gitignore management', () => {
     it('should skip when .vibe/.gitignore already exists with SQLite exclusions', () => {
       // Create .git directory
       mkdirSync(resolve(tempDir, '.git'));
-      
+
       // Create .vibe directory and .gitignore with existing SQLite exclusions
       const vibeDir = resolve(tempDir, '.vibe');
       mkdirSync(vibeDir, { recursive: true });
@@ -118,7 +118,7 @@ describe('StartDevelopment .gitignore management', () => {
     it('should recreate .vibe/.gitignore if existing one is incomplete', () => {
       // Create .git directory
       mkdirSync(resolve(tempDir, '.git'));
-      
+
       // Create .vibe directory and incomplete .gitignore
       const vibeDir = resolve(tempDir, '.vibe');
       mkdirSync(vibeDir, { recursive: true });
@@ -143,7 +143,7 @@ describe('StartDevelopment .gitignore management', () => {
     it('should not affect parent directory .gitignore', () => {
       // Create .git directory
       mkdirSync(resolve(tempDir, '.git'));
-      
+
       // Create parent .gitignore with existing content
       const parentGitignorePath = resolve(tempDir, '.gitignore');
       const parentContent = 'node_modules/\n*.log\n';

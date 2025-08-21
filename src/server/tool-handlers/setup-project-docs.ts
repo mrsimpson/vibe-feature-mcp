@@ -1,6 +1,6 @@
 /**
  * Setup Project Docs Handler
- * 
+ *
  * Creates project documentation artifacts (architecture.md, requirements.md, design.md)
  * using configurable templates OR by linking existing files via symlinks.
  * Supports different template formats for each document type and file path linking.
@@ -15,7 +15,7 @@ import { PathValidationUtils } from '../../path-validation-utils.js';
 export interface SetupProjectDocsArgs {
   architecture: string; // Template name OR file path
   requirements: string; // Template name OR file path
-  design: string;       // Template name OR file path
+  design: string; // Template name OR file path
 }
 
 export interface SetupProjectDocsResult {
@@ -31,7 +31,10 @@ export interface SetupProjectDocsResult {
   message: string;
 }
 
-export class SetupProjectDocsHandler extends BaseToolHandler<SetupProjectDocsArgs, SetupProjectDocsResult> {
+export class SetupProjectDocsHandler extends BaseToolHandler<
+  SetupProjectDocsArgs,
+  SetupProjectDocsResult
+> {
   private projectDocsManager: ProjectDocsManager;
 
   constructor() {
@@ -40,20 +43,28 @@ export class SetupProjectDocsHandler extends BaseToolHandler<SetupProjectDocsArg
   }
 
   protected async executeHandler(
-    args: SetupProjectDocsArgs, 
+    args: SetupProjectDocsArgs,
     context: ServerContext
   ): Promise<SetupProjectDocsResult> {
     const projectPath = context.projectPath || process.cwd();
-    
-    this.logger.info('Setting up project docs with enhanced file linking support', { args, projectPath });
+
+    this.logger.info(
+      'Setting up project docs with enhanced file linking support',
+      { args, projectPath }
+    );
 
     try {
       // Get available templates for validation
-      const availableTemplates = await this.projectDocsManager.templateManager.getAvailableTemplates();
-      
+      const availableTemplates =
+        await this.projectDocsManager.templateManager.getAvailableTemplates();
+
       // Validate and process each parameter
-      const processedArgs = await this.validateAndProcessArgs(args, availableTemplates, projectPath);
-      
+      const processedArgs = await this.validateAndProcessArgs(
+        args,
+        availableTemplates,
+        projectPath
+      );
+
       if (!processedArgs.success) {
         return {
           success: false,
@@ -61,17 +72,17 @@ export class SetupProjectDocsHandler extends BaseToolHandler<SetupProjectDocsArg
           linked: [],
           skipped: [],
           paths: this.projectDocsManager.getDocumentPaths(projectPath),
-          message: processedArgs.error!
+          message: processedArgs.error!,
         };
       }
 
       // Create/link project documents
       const result = await this.projectDocsManager.createOrLinkProjectDocs(
-        projectPath, 
+        projectPath,
         processedArgs.templateOptions!,
         processedArgs.filePaths!
       );
-      
+
       // Get document paths for response
       const paths = this.projectDocsManager.getDocumentPaths(projectPath);
 
@@ -87,11 +98,11 @@ export class SetupProjectDocsHandler extends BaseToolHandler<SetupProjectDocsArg
         message += ` Skipped existing: ${result.skipped.join(', ')}.`;
       }
 
-      this.logger.info('Project docs setup completed', { 
+      this.logger.info('Project docs setup completed', {
         created: result.created,
         linked: result.linked,
         skipped: result.skipped,
-        paths 
+        paths,
       });
 
       return {
@@ -100,19 +111,21 @@ export class SetupProjectDocsHandler extends BaseToolHandler<SetupProjectDocsArg
         linked: result.linked,
         skipped: result.skipped,
         paths,
-        message
+        message,
       };
-
     } catch (error) {
-      this.logger.error('Failed to setup project docs', error as Error, { args, projectPath });
-      
+      this.logger.error('Failed to setup project docs', error as Error, {
+        args,
+        projectPath,
+      });
+
       return {
         success: false,
         created: [],
         linked: [],
         skipped: [],
         paths: this.projectDocsManager.getDocumentPaths(projectPath),
-        message: `Failed to setup project docs: ${error instanceof Error ? error.message : 'Unknown error'}`
+        message: `Failed to setup project docs: ${error instanceof Error ? error.message : 'Unknown error'}`,
       };
     }
   }
@@ -122,16 +135,28 @@ export class SetupProjectDocsHandler extends BaseToolHandler<SetupProjectDocsArg
    */
   private async validateAndProcessArgs(
     args: SetupProjectDocsArgs,
-    availableTemplates: { architecture: string[]; requirements: string[]; design: string[] },
+    availableTemplates: {
+      architecture: string[];
+      requirements: string[];
+      design: string[];
+    },
     projectPath: string
   ): Promise<{
     success: boolean;
     error?: string;
     templateOptions?: Partial<TemplateOptions>;
-    filePaths?: Partial<{ architecture: string; requirements: string; design: string }>;
+    filePaths?: Partial<{
+      architecture: string;
+      requirements: string;
+      design: string;
+    }>;
   }> {
     const templateOptions: Partial<TemplateOptions> = {};
-    const filePaths: Partial<{ architecture: string; requirements: string; design: string }> = {};
+    const filePaths: Partial<{
+      architecture: string;
+      requirements: string;
+      design: string;
+    }> = {};
     const errors: string[] = [];
 
     // Validate architecture parameter
@@ -140,7 +165,7 @@ export class SetupProjectDocsHandler extends BaseToolHandler<SetupProjectDocsArg
       availableTemplates.architecture,
       projectPath
     );
-    
+
     if (archValidation.isTemplate) {
       templateOptions.architecture = args.architecture;
     } else if (archValidation.isFilePath) {
@@ -155,7 +180,7 @@ export class SetupProjectDocsHandler extends BaseToolHandler<SetupProjectDocsArg
       availableTemplates.requirements,
       projectPath
     );
-    
+
     if (reqValidation.isTemplate) {
       templateOptions.requirements = args.requirements;
     } else if (reqValidation.isFilePath) {
@@ -170,7 +195,7 @@ export class SetupProjectDocsHandler extends BaseToolHandler<SetupProjectDocsArg
       availableTemplates.design,
       projectPath
     );
-    
+
     if (designValidation.isTemplate) {
       templateOptions.design = args.design;
     } else if (designValidation.isFilePath) {
@@ -182,14 +207,14 @@ export class SetupProjectDocsHandler extends BaseToolHandler<SetupProjectDocsArg
     if (errors.length > 0) {
       return {
         success: false,
-        error: `Parameter validation failed:\n${errors.join('\n')}`
+        error: `Parameter validation failed:\n${errors.join('\n')}`,
       };
     }
 
     return {
       success: true,
       templateOptions,
-      filePaths
+      filePaths,
     };
   }
 }

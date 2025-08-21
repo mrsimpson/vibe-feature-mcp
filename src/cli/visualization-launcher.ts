@@ -1,6 +1,6 @@
-import { spawn } from 'child_process';
-import { join, dirname } from 'path';
-import { fileURLToPath } from 'url';
+import { spawn } from 'node:child_process';
+import { join, dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 // Get the current directory for this module
 const __filename = fileURLToPath(import.meta.url);
@@ -22,28 +22,28 @@ Starting development server...
   try {
     // Get the path to the workflow-visualizer directory (up two levels from src/cli)
     const visualizerPath = join(__dirname, '..', '..', 'workflow-visualizer');
-    
+
     // Check if we're in development or production
     const isDev = process.env.NODE_ENV !== 'production';
-    
+
     if (isDev) {
       // Development mode - use npm run dev
       console.log('📦 Installing dependencies...');
-      const install = spawn('npm', ['install'], { 
-        cwd: visualizerPath, 
+      const install = spawn('npm', ['install'], {
+        cwd: visualizerPath,
         stdio: 'inherit',
-        shell: true 
+        shell: true,
       });
-      
+
       install.on('close', (code: number | null) => {
         if (code === 0) {
           console.log('🚀 Starting development server...');
-          const dev = spawn('npm', ['run', 'dev'], { 
-            cwd: visualizerPath, 
+          const dev = spawn('npm', ['run', 'dev'], {
+            cwd: visualizerPath,
             stdio: 'inherit',
-            shell: true 
+            shell: true,
           });
-          
+
           dev.on('close', (code: number | null) => {
             if (code !== 0) {
               console.error('❌ Failed to start development server');
@@ -58,21 +58,21 @@ Starting development server...
     } else {
       // Production mode - build and serve
       console.log('🏗️  Building visualizer...');
-      const build = spawn('npm', ['run', 'build'], { 
-        cwd: visualizerPath, 
+      const build = spawn('npm', ['run', 'build'], {
+        cwd: visualizerPath,
         stdio: 'inherit',
-        shell: true 
+        shell: true,
       });
-      
+
       build.on('close', (code: number | null) => {
         if (code === 0) {
           console.log('🌐 Starting production server...');
-          const serve = spawn('npm', ['run', 'preview'], { 
-            cwd: visualizerPath, 
+          const serve = spawn('npm', ['run', 'preview'], {
+            cwd: visualizerPath,
             stdio: 'inherit',
-            shell: true 
+            shell: true,
           });
-          
+
           serve.on('close', (code: number | null) => {
             if (code !== 0) {
               console.error('❌ Failed to start production server');
@@ -85,7 +85,6 @@ Starting development server...
         }
       });
     }
-    
   } catch (error) {
     console.error('❌ Error starting workflow visualizer:', error);
     console.log(`

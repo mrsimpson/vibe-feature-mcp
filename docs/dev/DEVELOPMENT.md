@@ -9,24 +9,29 @@ The project includes comprehensive test coverage with different test execution o
 ### Test Commands
 
 #### Default Test Run (Quiet)
+
 ```bash
 npm test          # Interactive test runner
 npm run test:run  # Single test run (quiet, no noisy tests)
 ```
+
 - Excludes the MCP contract test (which shows INFO logs due to SDK limitations)
 - Clean output with ERROR-level logging only
 - **Recommended for development** - fast and quiet
 
 #### All Tests (Including Noisy)
+
 ```bash
 npm run test:all  # Run all tests including noisy ones
 ```
+
 - **10 test files**, **96+ tests**
 - Includes the MCP contract test with spawned processes
 - Shows INFO-level logs from MCP SDK (unavoidable)
 - **Use for comprehensive testing** before commits/releases
 
 #### Specific Test Categories
+
 ```bash
 npm run test:noisy        # Run only the noisy MCP contract test
 npm run test:mcp-contract # Run MCP contract test (with custom state machine check)
@@ -36,6 +41,7 @@ npm run test:ui           # Interactive test UI
 ### Test Configuration
 
 The test setup automatically:
+
 - Sets `LOG_LEVEL=ERROR` for clean output during testing
 - Configures test environment variables (`NODE_ENV=test`, `VITEST=true`)
 - Excludes noisy tests by default unless `INCLUDE_NOISY_TESTS=true`
@@ -47,7 +53,7 @@ The project uses an innovative E2E testing approach without process spawning, pr
 
 ### Testing Pattern
 
-- **Production**: Client → Transport → Server → Components  
+- **Production**: Client → Transport → Server → Components
 - **Testing**: Test → DirectInterface → Server → Components
 
 ### Test Structure
@@ -56,11 +62,11 @@ The project uses an innovative E2E testing approach without process spawning, pr
 it('should work end-to-end', async () => {
   const tempProject = createTempProjectWithDefaultStateMachine();
   const { client, cleanup } = await createE2EScenario({ tempProject });
-  
+
   const result = await client.callTool('whats_next', {
-    user_input: 'implement auth'
+    user_input: 'implement auth',
   });
-  
+
   expect(result.phase).toBeDefined();
 });
 ```
@@ -70,12 +76,14 @@ it('should work end-to-end', async () => {
 The server includes comprehensive logging with configurable levels for debugging, monitoring, and troubleshooting:
 
 ### Log Levels
+
 - **DEBUG**: Detailed tracing and execution flow
 - **INFO**: Success operations and important milestones (default)
-- **WARN**: Expected errors and recoverable issues  
+- **WARN**: Expected errors and recoverable issues
 - **ERROR**: Caught but unexpected errors
 
 ### Configuration
+
 Set the log level using the `LOG_LEVEL` environment variable:
 
 ```bash
@@ -87,6 +95,7 @@ LOG_LEVEL=INFO node dist/index.js
 ```
 
 ### Log Components
+
 - **Server**: Main server operations and tool handlers
 - **Database**: SQLite operations and state persistence
 - **ConversationManager**: Conversation context management
@@ -157,10 +166,12 @@ your-project/
 ### Plan File Management
 
 The server automatically creates and manages development plan files:
+
 - **Main branch**: `.vibe/development-plan.md`
 - **Feature branches**: `.vibe/development-plan-{branch-name}.md`
 
 The LLM is instructed to continuously update these files with:
+
 - Task progress and completion status
 - Technical decisions and design choices
 - Implementation notes and progress
@@ -172,6 +183,7 @@ Conversation state is persisted in a project-local SQLite database:
 `.vibe/conversation-state.sqlite`
 
 This ensures:
+
 - **Project isolation**: Each project has its own conversation state
 - **Branch awareness**: Different branches can have separate development contexts
 - **Persistence**: State survives server restarts and provides conversation continuity
@@ -180,6 +192,7 @@ This ensures:
 ## Project Identification
 
 Each conversation is uniquely identified by:
+
 - **Project path**: Absolute path to current working directory
 - **Git branch**: Current git branch (or 'no-git' if not in a git repo)
 

@@ -7,6 +7,7 @@ I want to complete entire development workflows from initial request to project 
 So that I can build features with structured guidance and persistent progress tracking
 
 ### Background:
+
 - End-to-end workflows span from initial feature request to completion
 - Multiple tool calls and resource accesses occur throughout the workflow
 - State persistence enables workflow continuation across sessions
@@ -21,48 +22,56 @@ So that I can build features with structured guidance and persistent progress tr
 **Then** the complete workflow should progress through all phases:
 
 ### Phase 1: Requirements Analysis
+
 - **Initial Request**: "I want to implement user authentication"
 - **Expected**: `whats_next` creates new conversation, transitions to requirements
 - **Plan File**: Created with authentication requirements template
 - **Instructions**: Guide requirements gathering (auth type, user data, security)
 
 ### Phase 2: Requirements Completion
+
 - **Context**: Requirements gathered through multiple interactions
 - **Expected**: `whats_next` detects completion, suggests design transition
 - **Plan File**: Updated with completed requirements tasks
 - **Transition**: `proceed_to_phase` called with target "design"
 
 ### Phase 3: Design Phase
+
 - **Context**: Technical solution design discussions
 - **Expected**: Design-specific instructions for architecture and API planning
 - **Plan File**: Updated with design decisions and technical specifications
 - **Progress**: Database schema, API endpoints, security measures defined
 
 ### Phase 4: Implementation
+
 - **Context**: Code implementation with LLM guidance
 - **Expected**: Implementation instructions and coding best practices
 - **Plan File**: Implementation tasks tracked and marked complete
 - **Progress**: Authentication system built and tested
 
 ### Phase 5: Quality Assurance
+
 - **Context**: Code review and quality validation
 - **Expected**: QA instructions for testing and validation
 - **Plan File**: QA checklist completed
 - **Progress**: Code reviewed, requirements validated
 
 ### Phase 6: Testing
+
 - **Context**: Comprehensive testing and validation
 - **Expected**: Testing instructions and test plan execution
 - **Plan File**: Testing tasks completed
 - **Progress**: Feature fully tested and validated
 
 ### Phase 7: Completion
+
 - **Context**: Feature complete and ready for deployment
 - **Expected**: Completion instructions and project wrap-up
 - **Plan File**: All tasks marked complete
 - **Final State**: Conversation marked as complete
 
 ### Expected Behavior:
+
 - Each phase should provide appropriate guidance and instructions
 - Plan file should be continuously updated throughout the workflow
 - State transitions should be logical and context-driven
@@ -81,6 +90,7 @@ So that I can build features with structured guidance and persistent progress tr
 **And** the plan file should reflect previous progress
 
 ### Expected Behavior:
+
 - Server restart should not lose workflow progress
 - Conversation state should be restored accurately
 - Plan file should be accessible and up-to-date
@@ -98,6 +108,7 @@ So that I can build features with structured guidance and persistent progress tr
 **And** plan files should be branch-specific when appropriate
 
 ### Expected Behavior:
+
 - Git branch detection should create separate conversations
 - Workflow states should be completely isolated
 - Plan files should be managed independently
@@ -115,6 +126,7 @@ So that I can build features with structured guidance and persistent progress tr
 **And** the workflow should be resumable after error resolution
 
 ### Expected Behavior:
+
 - Transient errors should not lose workflow progress
 - Error recovery should restore workflow state accurately
 - Plan files should remain consistent after errors
@@ -132,6 +144,7 @@ So that I can build features with structured guidance and persistent progress tr
 **And** workflow adaptation should be possible
 
 ### Expected Behavior:
+
 - Non-linear workflow progression should be supported
 - Users should be able to skip or repeat phases as needed
 - Workflow customization should not break state management
@@ -149,6 +162,7 @@ So that I can build features with structured guidance and persistent progress tr
 **And** project-wide context should be maintained appropriately
 
 ### Expected Behavior:
+
 - Complex projects should not confuse workflow management
 - Feature isolation should be maintained within larger projects
 - Cross-feature dependencies should be manageable
@@ -166,6 +180,7 @@ So that I can build features with structured guidance and persistent progress tr
 **And** workflow artifacts should be preserved for reference
 
 ### Expected Behavior:
+
 - Workflow completion should be clearly marked
 - Final plan files should serve as project documentation
 - Completed workflows should be archivable
@@ -183,6 +198,7 @@ So that I can build features with structured guidance and persistent progress tr
 **And** workflow optimization opportunities should be identifiable
 
 ### Expected Behavior:
+
 - Workflow data should be structured for analysis
 - Phase duration and transition patterns should be trackable
 - Common workflow patterns should be identifiable

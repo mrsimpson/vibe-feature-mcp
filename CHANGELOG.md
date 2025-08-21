@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+
 - **File Linking Support**: Enhanced project documentation system to support linking existing files via symlinks
   - `setup_project_docs` tool now accepts file paths in addition to template names
   - Support for README.md, ARCHITECTURE.md, DESIGN.md, and other existing documentation files
@@ -26,11 +27,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **File Detection Manager**: Pattern-based discovery of existing documentation files
 
 ### Changed
+
 - `setup_project_docs` tool parameters now accept string values instead of strict enums
 - Enhanced tool descriptions with file path examples and common patterns
 - Project documentation system supports both template creation and file linking workflows
 
 ### Technical
+
 - New `PathValidationUtils` class for secure file path validation
 - New `FileDetectionManager` class for pattern-based file discovery
 - Enhanced `ProjectDocsManager` with symlink creation and management capabilities
@@ -48,11 +51,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Full test coverage for template system and artifact management
 
 ### Changed
+
 - All workflows now include contextual document references in their instructions
 - `start_development` tool now provides targeted guidance for missing project documents
 - Enhanced workflow analysis to detect document requirements dynamically
 
 ### Technical
+
 - New `TemplateManager` class for dynamic template loading and rendering
 - New `ProjectDocsManager` class for centralized artifact management
 - Template system uses resource path resolution strategy for proper build inclusion

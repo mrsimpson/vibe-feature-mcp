@@ -5179,10 +5179,7 @@
       }
     ]
   ],
-  "valid_history_range": [
-    0,
-    101
-  ],
+  "valid_history_range": [0, 101],
   "transcript": [
     "> I have reached a state where this MCP server works really well and want to publish it for others to use. It's crucial that we do this through github actions and maintain semver and consistency in tags and package version. start_development(epcc)",
     "I'll help you set up a professional publishing workflow for your MCP server using GitHub Actions with proper semantic versioning. Let me start the development process using the EPCC workflow.\n[Tool uses: responsible_vibe_mcp___start_development]",
@@ -5339,9 +5336,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "target_phase"
-              ],
+              "required": ["target_phase"],
               "additionalProperties": false
             }
           }
@@ -5358,12 +5353,7 @@
                 "workflow": {
                   "default": "waterfall",
                   "description": "Choose your development workflow:\n\n• **bugfix**: bugfix - A focused workflow for bug fixing: Reproduce, Analyze, Fix, Verify - optimized for debugging and fixing existing issues\n• **epcc**: epcc - A comprehensive development workflow based on Anthropic's best practices: Explore, Plan, Code, Commit - ideal for smaller features and iterative development\n• **waterfall**: waterfall - From Specification down to test – the historical way. Ideal for larger, design-heavy tasks with well-defined requirements\n• **custom**: Use custom workflow from .vibe/state-machine.yaml in your project\n\nDefault: waterfall (recommended for larger, design-heavy tasks)",
-                  "enum": [
-                    "bugfix",
-                    "epcc",
-                    "waterfall",
-                    "custom"
-                  ],
+                  "enum": ["bugfix", "epcc", "waterfall", "custom"],
                   "type": "string"
                 }
               },
@@ -5412,10 +5402,7 @@
                   "items": {
                     "properties": {
                       "role": {
-                        "enum": [
-                          "user",
-                          "assistant"
-                        ],
+                        "enum": ["user", "assistant"],
                         "description": "Who sent the message (user or assistant)",
                         "type": "string"
                       },
@@ -5425,10 +5412,7 @@
                       }
                     },
                     "additionalProperties": false,
-                    "required": [
-                      "role",
-                      "content"
-                    ],
+                    "required": ["role", "content"],
                     "type": "object"
                   },
                   "type": "array",
@@ -5451,9 +5435,7 @@
           "description": "Start over with a clean slate by deleting all development progress and conversation history. This permanently removes the project plan and resets the development state. Use when you want to completely restart the development approach for a project.",
           "input_schema": {
             "json": {
-              "required": [
-                "confirm"
-              ],
+              "required": ["confirm"],
               "properties": {
                 "confirm": {
                   "type": "boolean",
@@ -5492,9 +5474,7 @@
               "type": "object",
               "$schema": "http://json-schema.org/draft-07/schema#",
               "additionalProperties": false,
-              "required": [
-                "query"
-              ]
+              "required": ["query"]
             }
           }
         }
@@ -5514,9 +5494,7 @@
               },
               "type": "object",
               "additionalProperties": false,
-              "required": [
-                "query"
-              ]
+              "required": ["query"]
             }
           }
         }
@@ -5538,9 +5516,7 @@
           "description": "Generic tool to fetch content from any absolute URL, respecting robots.txt rules. Use this to retrieve referenced urls (absolute urls) that were mentioned in previously fetched documentation.",
           "input_schema": {
             "json": {
-              "required": [
-                "url"
-              ],
+              "required": ["url"],
               "additionalProperties": false,
               "properties": {
                 "url": {
@@ -5575,9 +5551,7 @@
           "description": "Execute the specified bash command.",
           "input_schema": {
             "json": {
-              "required": [
-                "command"
-              ],
+              "required": ["command"],
               "type": "object",
               "properties": {
                 "command": {
@@ -5599,9 +5573,7 @@
           "description": "Opens the browser to a pre-filled gh (GitHub) issue template to report chat issues, bugs, or feature requests. Pre-filled information includes the conversation transcript, chat context, and chat request IDs from the service.",
           "input_schema": {
             "json": {
-              "required": [
-                "title"
-              ],
+              "required": ["title"],
               "properties": {
                 "expected_behavior": {
                   "type": "string",
@@ -5639,12 +5611,7 @@
                 "command": {
                   "type": "string",
                   "description": "The commands to run. Allowed options are: `create`, `str_replace`, `insert`, `append`.",
-                  "enum": [
-                    "create",
-                    "str_replace",
-                    "insert",
-                    "append"
-                  ]
+                  "enum": ["create", "str_replace", "insert", "append"]
                 },
                 "path": {
                   "description": "Absolute path to file or directory, e.g. `/repo/file.py` or `/repo`.",
@@ -5663,10 +5630,7 @@
                   "description": "Required parameter of `create` command, with the content of the file to be created."
                 }
               },
-              "required": [
-                "command",
-                "path"
-              ],
+              "required": ["command", "path"],
               "type": "object"
             }
           }
@@ -5679,12 +5643,7 @@
           "input_schema": {
             "json": {
               "type": "object",
-              "required": [
-                "region",
-                "service_name",
-                "operation_name",
-                "label"
-              ],
+              "required": ["region", "service_name", "operation_name", "label"],
               "properties": {
                 "operation_name": {
                   "description": "The name of the operation to perform.",
@@ -5722,10 +5681,7 @@
           "input_schema": {
             "json": {
               "type": "object",
-              "required": [
-                "path",
-                "mode"
-              ],
+              "required": ["path", "mode"],
               "properties": {
                 "path": {
                   "description": "Path to the file or directory. The path should be absolute, or otherwise start with ~ for the user's home.",
@@ -5739,12 +5695,7 @@
                 "mode": {
                   "type": "string",
                   "description": "The mode to run in: `Line`, `Directory`, `Search`. `Line` and `Search` are only for text files, and `Directory` is only for directories. `Image` is for image files, in this mode `image_paths` is required.",
-                  "enum": [
-                    "Line",
-                    "Directory",
-                    "Search",
-                    "Image"
-                  ]
+                  "enum": ["Line", "Directory", "Search", "Image"]
                 },
                 "image_paths": {
                   "items": {
@@ -5796,9 +5747,7 @@
                   "type": "number"
                 }
               },
-              "required": [
-                "query"
-              ],
+              "required": ["query"],
               "additionalProperties": false,
               "$schema": "http://json-schema.org/draft-07/schema#"
             }
@@ -5819,9 +5768,7 @@
               },
               "type": "object",
               "additionalProperties": false,
-              "required": [
-                "url"
-              ],
+              "required": ["url"],
               "$schema": "http://json-schema.org/draft-07/schema#"
             }
           }
@@ -5842,9 +5789,7 @@
               },
               "$schema": "http://json-schema.org/draft-07/schema#",
               "additionalProperties": false,
-              "required": [
-                "query"
-              ]
+              "required": ["query"]
             }
           }
         }
@@ -5868,9 +5813,7 @@
           "description": "Search for code within the GitHub repository: \"modelcontextprotocol/typescript-sdk\" using the GitHub Search API (exact match). Returns matching files for you to query further if relevant.",
           "input_schema": {
             "json": {
-              "required": [
-                "query"
-              ],
+              "required": ["query"],
               "type": "object",
               "$schema": "http://json-schema.org/draft-07/schema#",
               "additionalProperties": false,
@@ -5901,9 +5844,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "query"
-              ],
+              "required": ["query"],
               "type": "object",
               "additionalProperties": false
             }
@@ -5919,9 +5860,7 @@
               "type": "object",
               "additionalProperties": false,
               "$schema": "http://json-schema.org/draft-07/schema#",
-              "required": [
-                "url"
-              ],
+              "required": ["url"],
               "properties": {
                 "url": {
                   "type": "string",
@@ -5948,11 +5887,7 @@
   "context_manager": {
     "max_context_files_size": 150000,
     "global_config": {
-      "paths": [
-        ".amazonq/rules/**/*.md",
-        "README.md",
-        "AmazonQ.md"
-      ],
+      "paths": [".amazonq/rules/**/*.md", "README.md", "AmazonQ.md"],
       "hooks": {}
     },
     "current_profile": "vibe",

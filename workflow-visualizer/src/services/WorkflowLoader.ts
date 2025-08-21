@@ -3,48 +3,59 @@
  * Handles loading workflows from built-in resources and uploaded files
  */
 
-import { YamlStateMachine, WorkflowMetadata, AppError } from '../types/ui-types';
+import {
+  YamlStateMachine,
+  WorkflowMetadata,
+  AppError,
+} from '../types/ui-types';
 import { YamlParser } from './YamlParser';
-import { getBundledWorkflow, getBundledWorkflowNames } from './BundledWorkflows';
+import {
+  getBundledWorkflow,
+  getBundledWorkflowNames,
+} from './BundledWorkflows';
 
 export class WorkflowLoader {
   private readonly yamlParser: YamlParser;
-  
+
   // Workflow display names and descriptions (can be extended as needed)
-  private readonly WORKFLOW_METADATA: Record<string, { displayName: string; description: string }> = {
+  private readonly WORKFLOW_METADATA: Record<
+    string,
+    { displayName: string; description: string }
+  > = {
     waterfall: {
       displayName: 'Waterfall',
-      description: 'Classical waterfall development process'
+      description: 'Classical waterfall development process',
     },
     epcc: {
       displayName: 'EPCC',
-      description: 'Explore, Plan, Code, Commit workflow'
+      description: 'Explore, Plan, Code, Commit workflow',
     },
     bugfix: {
       displayName: 'Bug Fix',
-      description: 'Focused workflow for bug fixing'
+      description: 'Focused workflow for bug fixing',
     },
     minor: {
       displayName: 'Minor Enhancement',
-      description: 'Streamlined workflow for small changes'
+      description: 'Streamlined workflow for small changes',
     },
     greenfield: {
       displayName: 'Greenfield',
-      description: 'Comprehensive workflow for new projects'
+      description: 'Comprehensive workflow for new projects',
     },
     slides: {
       displayName: 'Slides',
-      description: 'Workflow for creating presentations'
+      description: 'Workflow for creating presentations',
     },
     posts: {
       displayName: 'Posts',
-      description: 'Workflow for writing blog posts and content'
+      description: 'Workflow for writing blog posts and content',
     },
     // Add fallback for any other workflows
     bugfix3: {
       displayName: 'Bug Fix 3',
-      description: 'Test workflow - copy of bugfix for testing dynamic discovery'
-    }
+      description:
+        'Test workflow - copy of bugfix for testing dynamic discovery',
+    },
   };
 
   constructor() {
@@ -56,14 +67,15 @@ export class WorkflowLoader {
    */
   public getAvailableWorkflows(): WorkflowMetadata[] {
     const workflowNames = getBundledWorkflowNames();
-    
+
     return workflowNames.map(name => {
       const metadata = this.WORKFLOW_METADATA[name];
       return {
         name,
         displayName: metadata?.displayName || this.formatDisplayName(name),
-        description: metadata?.description || `${this.formatDisplayName(name)} workflow`,
-        source: 'builtin'
+        description:
+          metadata?.description || `${this.formatDisplayName(name)} workflow`,
+        source: 'builtin',
       };
     });
   }
@@ -81,33 +93,41 @@ export class WorkflowLoader {
   /**
    * Load a built-in workflow by name
    */
-  public async loadBuiltinWorkflow(workflowName: string): Promise<YamlStateMachine> {
+  public async loadBuiltinWorkflow(
+    workflowName: string
+  ): Promise<YamlStateMachine> {
     const availableWorkflows = this.getAvailableWorkflows();
-    const workflowMetadata = availableWorkflows.find(w => w.name === workflowName);
-    
+    const workflowMetadata = availableWorkflows.find(
+      w => w.name === workflowName
+    );
+
     if (!workflowMetadata) {
       throw this.createNetworkError(`Unknown workflow: ${workflowName}`);
     }
 
     try {
       const yamlContent = getBundledWorkflow(workflowName);
-      
+
       if (!yamlContent) {
-        throw this.createNetworkError(`Bundled workflow "${workflowName}" not found`);
+        throw this.createNetworkError(
+          `Bundled workflow "${workflowName}" not found`
+        );
       }
-      
+
       if (!yamlContent.trim()) {
-        throw this.createNetworkError(`Workflow file "${workflowName}" is empty`);
+        throw this.createNetworkError(
+          `Workflow file "${workflowName}" is empty`
+        );
       }
 
       const workflow = this.yamlParser.parseWorkflow(yamlContent);
-      
+
       return workflow;
     } catch (error) {
       if (error instanceof Error && error.message.includes('validation')) {
         throw error;
       }
-      
+
       if (error instanceof Error && error.message.includes('parsing')) {
         throw error;
       }
@@ -140,7 +160,7 @@ export class WorkflowLoader {
 
       // Read file content
       const yamlContent = await this.readFileAsText(file);
-      
+
       if (!yamlContent.trim()) {
         throw this.createValidationError('Uploaded file is empty');
       }
@@ -151,12 +171,14 @@ export class WorkflowLoader {
       if (error instanceof Error && error.message.includes('validation')) {
         throw error;
       }
-      
+
       if (error instanceof Error && error.message.includes('parsing')) {
         throw error;
       }
 
-      throw this.createNetworkError(`Failed to process uploaded file: ${String(error)}`);
+      throw this.createNetworkError(
+        `Failed to process uploaded file: ${String(error)}`
+      );
     }
   }
 
@@ -166,7 +188,7 @@ export class WorkflowLoader {
   private isValidYamlFile(file: File): boolean {
     const validExtensions = ['.yaml', '.yml'];
     const fileName = file.name.toLowerCase();
-    
+
     return validExtensions.some(ext => fileName.endsWith(ext));
   }
 
@@ -176,7 +198,7 @@ export class WorkflowLoader {
   private readFileAsText(file: File): Promise<string> {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
-      
+
       reader.onload = (event: ProgressEvent<FileReader>) => {
         if (event.target?.result) {
           resolve(event.target.result as string);
@@ -184,11 +206,11 @@ export class WorkflowLoader {
           reject(new Error('Failed to read file content'));
         }
       };
-      
+
       reader.onerror = () => {
         reject(new Error('Error reading file'));
       };
-      
+
       reader.readAsText(file);
     });
   }
@@ -199,7 +221,7 @@ export class WorkflowLoader {
   private createValidationError(message: string): AppError {
     return {
       type: 'validation',
-      message: message
+      message: message,
     } as AppError;
   }
 
@@ -209,7 +231,7 @@ export class WorkflowLoader {
   private createNetworkError(message: string): AppError {
     return {
       type: 'network',
-      message: message
+      message: message,
     } as AppError;
   }
 }

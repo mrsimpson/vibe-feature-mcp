@@ -10,7 +10,10 @@ export class FileUploadHandler {
   private readonly workflowLoader: WorkflowLoader;
   private readonly fileInput: HTMLInputElement;
 
-  constructor(fileInputElement: HTMLInputElement, workflowLoader: WorkflowLoader) {
+  constructor(
+    fileInputElement: HTMLInputElement,
+    workflowLoader: WorkflowLoader
+  ) {
     this.workflowLoader = workflowLoader;
     this.fileInput = fileInputElement;
     this.setupEventListeners();
@@ -20,7 +23,10 @@ export class FileUploadHandler {
    * Set up event listeners for file upload
    */
   private setupEventListeners(): void {
-    this.fileInput.addEventListener('change', this.handleFileSelection.bind(this));
+    this.fileInput.addEventListener(
+      'change',
+      this.handleFileSelection.bind(this)
+    );
   }
 
   /**
@@ -35,7 +41,7 @@ export class FileUploadHandler {
     }
 
     const file = files[0];
-    
+
     try {
       const workflow = await this.processUploadedFile(file);
       this.onWorkflowLoaded(workflow, file.name);
@@ -52,7 +58,7 @@ export class FileUploadHandler {
    */
   public async processUploadedFile(file: File): Promise<YamlStateMachine> {
     console.log(`Processing uploaded file: ${file.name} (${file.size} bytes)`);
-    
+
     try {
       const workflow = await this.workflowLoader.loadUploadedWorkflow(file);
       console.log(`Successfully processed uploaded workflow: ${workflow.name}`);
@@ -98,7 +104,7 @@ export class FileUploadHandler {
   private isValidFileType(file: File): boolean {
     const validExtensions = ['.yaml', '.yml'];
     const fileName = file.name.toLowerCase();
-    
+
     return validExtensions.some(ext => fileName.endsWith(ext));
   }
 
@@ -106,7 +112,10 @@ export class FileUploadHandler {
    * Handle successful workflow loading
    * This method should be overridden by the consumer
    */
-  public onWorkflowLoaded: (workflow: YamlStateMachine, fileName: string) => void = () => {
+  public onWorkflowLoaded: (
+    workflow: YamlStateMachine,
+    fileName: string
+  ) => void = () => {
     console.log('FileUploadHandler: onWorkflowLoaded not implemented');
   };
 
@@ -145,7 +154,7 @@ export class FileUploadHandler {
   private createUploadError(message: string): AppError {
     return {
       type: 'validation',
-      message: message
+      message: message,
     } as AppError;
   }
 
@@ -153,6 +162,9 @@ export class FileUploadHandler {
    * Destroy the handler and clean up event listeners
    */
   public destroy(): void {
-    this.fileInput.removeEventListener('change', this.handleFileSelection.bind(this));
+    this.fileInput.removeEventListener(
+      'change',
+      this.handleFileSelection.bind(this)
+    );
   }
 }

@@ -1,13 +1,13 @@
 /**
  * Temporary File Management for Integration Tests
- * 
+ *
  * Provides utilities for creating and managing real temporary files
  * for integration tests that spawn server processes.
  */
 
-import { mkdirSync, writeFileSync, rmSync, existsSync } from 'fs';
-import { join } from 'path';
-import { tmpdir } from 'os';
+import { mkdirSync, writeFileSync, rmSync, existsSync } from 'node:fs';
+import { join } from 'node:path';
+import { tmpdir } from 'node:os';
 
 /**
  * Temporary test project configuration
@@ -143,11 +143,15 @@ export class TempProject {
       gitBranch = 'main',
       customStateMachine,
       additionalFiles = {},
-      baseDirectory = tmpdir()
+      baseDirectory = tmpdir(),
     } = options;
 
     // Create temporary project directory
-    this.projectPath = join(baseDirectory, 'responsible-vibe-tests', projectName);
+    this.projectPath = join(
+      baseDirectory,
+      'responsible-vibe-tests',
+      projectName
+    );
     this.cleanupPaths.push(this.projectPath);
 
     // Create directory structure
@@ -156,17 +160,30 @@ export class TempProject {
     mkdirSync(join(this.projectPath, '.git'), { recursive: true });
 
     // Create basic project files
-    writeFileSync(join(this.projectPath, 'package.json'), JSON.stringify({
-      name: projectName,
-      version: '1.0.0'
-    }, null, 2));
+    writeFileSync(
+      join(this.projectPath, 'package.json'),
+      JSON.stringify(
+        {
+          name: projectName,
+          version: '1.0.0',
+        },
+        null,
+        2
+      )
+    );
 
     // Create git branch file
-    writeFileSync(join(this.projectPath, '.git', 'HEAD'), `ref: refs/heads/${gitBranch}`);
+    writeFileSync(
+      join(this.projectPath, '.git', 'HEAD'),
+      `ref: refs/heads/${gitBranch}`
+    );
 
     // Create custom state machine if provided
     if (customStateMachine) {
-      writeFileSync(join(this.projectPath, '.vibe', 'workflow.yaml'), customStateMachine);
+      writeFileSync(
+        join(this.projectPath, '.vibe', 'workflow.yaml'),
+        customStateMachine
+      );
     }
 
     // Create additional files
@@ -199,9 +216,18 @@ export class TempProject {
    * Add mock project documents to satisfy artifact checking
    */
   addMockProjectDocs(): void {
-    this.addFile('.vibe/docs/architecture.md', '# Architecture\n\nMock architecture document for testing.');
-    this.addFile('.vibe/docs/requirements.md', '# Requirements\n\nMock requirements document for testing.');
-    this.addFile('.vibe/docs/design.md', '# Design\n\nMock design document for testing.');
+    this.addFile(
+      '.vibe/docs/architecture.md',
+      '# Architecture\n\nMock architecture document for testing.'
+    );
+    this.addFile(
+      '.vibe/docs/requirements.md',
+      '# Requirements\n\nMock requirements document for testing.'
+    );
+    this.addFile(
+      '.vibe/docs/design.md',
+      '# Design\n\nMock design document for testing.'
+    );
   }
 
   /**
@@ -219,31 +245,36 @@ export class TempProject {
 /**
  * Create a temporary project with custom state machine
  */
-export function createTempProjectWithCustomStateMachine(customStateMachine: string = CUSTOM_STATE_MACHINE_YAML, baseDirectory?: string): TempProject {
+export function createTempProjectWithCustomStateMachine(
+  customStateMachine: string = CUSTOM_STATE_MACHINE_YAML,
+  baseDirectory?: string
+): TempProject {
   const project = new TempProject({
     customStateMachine,
     projectName: `custom-sm-${Date.now()}`,
-    baseDirectory
+    baseDirectory,
   });
-  
+
   // Add mock project documents to satisfy artifact checking
   project.addMockProjectDocs();
-  
+
   return project;
 }
 
 /**
  * Create a temporary project with default state machine (no custom one)
  */
-export function createTempProjectWithDefaultStateMachine(baseDirectory?: string): TempProject {
+export function createTempProjectWithDefaultStateMachine(
+  baseDirectory?: string
+): TempProject {
   const project = new TempProject({
     projectName: `default-sm-${Date.now()}`,
-    baseDirectory
+    baseDirectory,
   });
-  
+
   // Add mock project documents to satisfy artifact checking
   project.addMockProjectDocs();
-  
+
   return project;
 }
 
@@ -268,6 +299,8 @@ export function safeParseServerResponse(content: any[]): any {
   try {
     return JSON.parse(text);
   } catch (error) {
-    throw new Error(`Failed to parse server response as JSON: ${text.substring(0, 100)}...`);
+    throw new Error(
+      `Failed to parse server response as JSON: ${text.substring(0, 100)}...`
+    );
   }
 }

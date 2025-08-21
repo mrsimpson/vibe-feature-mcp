@@ -29,6 +29,7 @@ resources/templates/
 ## Dynamic Discovery Process
 
 ### 1. Template Scanning
+
 ```typescript
 async getAvailableTemplates(): Promise<{
   architecture: string[];
@@ -45,7 +46,7 @@ async getAvailableTemplates(): Promise<{
   for (const [type, templates] of Object.entries(result)) {
     const typePath = join(this.templatesPath, type);
     const entries = await readdir(typePath, { withFileTypes: true });
-    
+
     for (const entry of entries) {
       if (entry.isDirectory()) {
         // Directory-based template (like arc42)
@@ -56,36 +57,38 @@ async getAvailableTemplates(): Promise<{
         templates.push(templateName);
       }
     }
-    
+
     templates.sort(); // Consistent ordering
   }
-  
+
   return result;
 }
 ```
 
 ### 2. Dynamic MCP Tool Registration
+
 ```typescript
 // Register setup_project_docs tool with dynamic template discovery
 const templateManager = new TemplateManager();
 const availableTemplates = await templateManager.getAvailableTemplates();
 
-mcpServer.registerTool(
-  'setup_project_docs',
-  {
-    inputSchema: {
-      architecture: z.enum(buildTemplateEnum(availableTemplates.architecture))
-        .describe(generateTemplateDescription(availableTemplates.architecture, 'Architecture')),
-      requirements: z.enum(buildTemplateEnum(availableTemplates.requirements))
-        .describe(generateTemplateDescription(availableTemplates.requirements, 'Requirements')),
-      design: z.enum(buildTemplateEnum(availableTemplates.design))
-        .describe(generateTemplateDescription(availableTemplates.design, 'Design'))
-    }
-  }
-);
+mcpServer.registerTool('setup_project_docs', {
+  inputSchema: {
+    architecture: z
+      .enum(buildTemplateEnum(availableTemplates.architecture))
+      .describe(generateTemplateDescription(availableTemplates.architecture, 'Architecture')),
+    requirements: z
+      .enum(buildTemplateEnum(availableTemplates.requirements))
+      .describe(generateTemplateDescription(availableTemplates.requirements, 'Requirements')),
+    design: z
+      .enum(buildTemplateEnum(availableTemplates.design))
+      .describe(generateTemplateDescription(availableTemplates.design, 'Design')),
+  },
+});
 ```
 
 ### 3. Dynamic Validation
+
 ```typescript
 async validateOptions(options: TemplateOptions): Promise<void> {
   const availableTemplates = await this.getAvailableTemplates();
@@ -100,21 +103,25 @@ async validateOptions(options: TemplateOptions): Promise<void> {
 ## Benefits
 
 ### ✅ **Zero Maintenance**
+
 - Adding new templates requires no code changes
 - Removing templates automatically updates available options
 - Template descriptions generated automatically
 
 ### ✅ **Extensibility**
+
 - Support for custom templates without modification
 - Easy to add new template types
 - File system is the single source of truth
 
 ### ✅ **Consistency**
+
 - Same discovery logic used everywhere
 - No risk of hardcoded lists getting out of sync
 - Automatic alphabetical ordering
 
 ### ✅ **Developer Experience**
+
 - Clear error messages with actual available options
 - Dynamic help text in MCP tool descriptions
 - Self-documenting through file structure
@@ -124,6 +131,7 @@ async validateOptions(options: TemplateOptions): Promise<void> {
 ### Adding a New Template
 
 1. **Create the template file**:
+
    ```bash
    echo "# Custom Architecture Template" > resources/templates/architecture/custom.md
    ```
@@ -133,10 +141,10 @@ async validateOptions(options: TemplateOptions): Promise<void> {
 3. **Use the new template**:
    ```javascript
    setup_project_docs({
-     architecture: "custom",  // Now available automatically
-     requirements: "ears",
-     design: "comprehensive"
-   })
+     architecture: 'custom', // Now available automatically
+     requirements: 'ears',
+     design: 'comprehensive',
+   });
    ```
 
 ### Template Discovery Results
@@ -146,7 +154,7 @@ Based on the file structure above, the system discovers:
 ```javascript
 {
   architecture: ['arc42', 'freestyle'],
-  requirements: ['ears', 'freestyle'], 
+  requirements: ['ears', 'freestyle'],
   design: ['comprehensive', 'freestyle']
 }
 ```

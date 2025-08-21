@@ -5279,10 +5279,7 @@
       }
     ]
   ],
-  "valid_history_range": [
-    0,
-    100
-  ],
+  "valid_history_range": [0, 100],
   "transcript": [
     "> I want to make it easier for a developer using this mcp server to get a proper system prompt. we already have an npm target but when other users execute the server using npx, they don't see that.",
     "I understand you want to make it easier for developers to get the proper system prompt when using the responsible-vibe-mcp server, especially when they're running it via `npx` rather than having the repository locally.\n\nLet me check what's currently available and then suggest improvements.\n[Tool uses: fs_read]",
@@ -5453,9 +5450,7 @@
           "description": "Semantically search within the fetched documentation from GitHub repository: vitest-dev/vitest. Useful for specific queries.",
           "input_schema": {
             "json": {
-              "required": [
-                "query"
-              ],
+              "required": ["query"],
               "type": "object",
               "$schema": "http://json-schema.org/draft-07/schema#",
               "additionalProperties": false,
@@ -5476,9 +5471,7 @@
           "input_schema": {
             "json": {
               "$schema": "http://json-schema.org/draft-07/schema#",
-              "required": [
-                "query"
-              ],
+              "required": ["query"],
               "properties": {
                 "page": {
                   "description": "Page number to retrieve (starting from 1). Each page contains 30 results.",
@@ -5519,9 +5512,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "url"
-              ],
+              "required": ["url"],
               "type": "object",
               "$schema": "http://json-schema.org/draft-07/schema#"
             }
@@ -5554,9 +5545,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "title"
-              ],
+              "required": ["title"],
               "type": "object"
             }
           }
@@ -5616,12 +5605,7 @@
                 "mode": {
                   "description": "The mode to run in: `Line`, `Directory`, `Search`. `Line` and `Search` are only for text files, and `Directory` is only for directories. `Image` is for image files, in this mode `image_paths` is required.",
                   "type": "string",
-                  "enum": [
-                    "Line",
-                    "Directory",
-                    "Search",
-                    "Image"
-                  ]
+                  "enum": ["Line", "Directory", "Search", "Image"]
                 },
                 "end_line": {
                   "description": "Ending line number (optional, for Line mode). A negative index represents a line number starting from the end of the file.",
@@ -5629,10 +5613,7 @@
                   "type": "integer"
                 }
               },
-              "required": [
-                "path",
-                "mode"
-              ]
+              "required": ["path", "mode"]
             }
           }
         }
@@ -5654,9 +5635,7 @@
                   "description": "A brief explanation of what the command does"
                 }
               },
-              "required": [
-                "command"
-              ]
+              "required": ["command"]
             }
           }
         }
@@ -5670,12 +5649,7 @@
               "type": "object",
               "properties": {
                 "command": {
-                  "enum": [
-                    "create",
-                    "str_replace",
-                    "insert",
-                    "append"
-                  ],
+                  "enum": ["create", "str_replace", "insert", "append"],
                   "type": "string",
                   "description": "The commands to run. Allowed options are: `create`, `str_replace`, `insert`, `append`."
                 },
@@ -5700,10 +5674,7 @@
                   "description": "Absolute path to file or directory, e.g. `/repo/file.py` or `/repo`."
                 }
               },
-              "required": [
-                "command",
-                "path"
-              ]
+              "required": ["command", "path"]
             }
           }
         }
@@ -5714,12 +5685,7 @@
           "description": "Make an AWS CLI api call with the specified service, operation, and parameters. All arguments MUST conform to the AWS CLI specification. Should the output of the invocation indicate a malformed command, invoke help to obtain the the correct command.",
           "input_schema": {
             "json": {
-              "required": [
-                "region",
-                "service_name",
-                "operation_name",
-                "label"
-              ],
+              "required": ["region", "service_name", "operation_name", "label"],
               "properties": {
                 "operation_name": {
                   "description": "The name of the operation to perform.",
@@ -5766,17 +5732,11 @@
                 "recent_messages": {
                   "items": {
                     "additionalProperties": false,
-                    "required": [
-                      "role",
-                      "content"
-                    ],
+                    "required": ["role", "content"],
                     "type": "object",
                     "properties": {
                       "role": {
-                        "enum": [
-                          "user",
-                          "assistant"
-                        ],
+                        "enum": ["user", "assistant"],
                         "description": "Who sent the message (user or assistant)",
                         "type": "string"
                       },
@@ -5843,9 +5803,7 @@
               },
               "$schema": "http://json-schema.org/draft-07/schema#",
               "additionalProperties": false,
-              "required": [
-                "target_phase"
-              ],
+              "required": ["target_phase"],
               "type": "object"
             }
           }
@@ -5902,9 +5860,7 @@
               "$schema": "http://json-schema.org/draft-07/schema#",
               "additionalProperties": false,
               "type": "object",
-              "required": [
-                "confirm"
-              ],
+              "required": ["confirm"],
               "properties": {
                 "confirm": {
                   "type": "boolean",
@@ -5927,9 +5883,7 @@
           "description": "Search for code within the GitHub repository: \"modelcontextprotocol/typescript-sdk\" using the GitHub Search API (exact match). Returns matching files for you to query further if relevant.",
           "input_schema": {
             "json": {
-              "required": [
-                "query"
-              ],
+              "required": ["query"],
               "$schema": "http://json-schema.org/draft-07/schema#",
               "additionalProperties": false,
               "properties": {
@@ -5954,9 +5908,7 @@
           "input_schema": {
             "json": {
               "additionalProperties": false,
-              "required": [
-                "url"
-              ],
+              "required": ["url"],
               "properties": {
                 "url": {
                   "description": "The URL of the document or page to fetch",
@@ -5982,9 +5934,7 @@
                   "description": "The search query to find relevant documentation"
                 }
               },
-              "required": [
-                "query"
-              ],
+              "required": ["query"],
               "type": "object",
               "$schema": "http://json-schema.org/draft-07/schema#"
             }
@@ -6030,9 +5980,7 @@
                 }
               },
               "$schema": "http://json-schema.org/draft-07/schema#",
-              "required": [
-                "url"
-              ]
+              "required": ["url"]
             }
           }
         }
@@ -6053,9 +6001,7 @@
                   "description": "The search query to find relevant code files"
                 }
               },
-              "required": [
-                "query"
-              ],
+              "required": ["query"],
               "additionalProperties": false,
               "$schema": "http://json-schema.org/draft-07/schema#",
               "type": "object"
@@ -6078,9 +6024,7 @@
                   "description": "The search query to find relevant documentation"
                 }
               },
-              "required": [
-                "query"
-              ]
+              "required": ["query"]
             }
           }
         }
@@ -6090,11 +6034,7 @@
   "context_manager": {
     "max_context_files_size": 150000,
     "global_config": {
-      "paths": [
-        ".amazonq/rules/**/*.md",
-        "README.md",
-        "AmazonQ.md"
-      ],
+      "paths": [".amazonq/rules/**/*.md", "README.md", "AmazonQ.md"],
       "hooks": {}
     },
     "current_profile": "vibe",

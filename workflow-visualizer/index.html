@@ -1,53 +1,58 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Workflow Visualizer</title>
-    <link rel="stylesheet" href="./styles/main.css">
-    <link rel="stylesheet" href="./styles/diagram.css">
-    <link rel="stylesheet" href="./styles/components.css">
-</head>
-<body>
+    <link rel="stylesheet" href="./styles/main.css" />
+    <link rel="stylesheet" href="./styles/diagram.css" />
+    <link rel="stylesheet" href="./styles/components.css" />
+  </head>
+  <body>
     <div id="app">
-        <header class="app-header">
-            <h1>Workflow Visualizer</h1>
-            <div class="workflow-controls">
-                <select id="workflow-selector" class="workflow-selector">
-                    <option value="">Select a workflow...</option>
-                </select>
-                <input type="file" id="file-upload" accept=".yaml,.yml" class="file-upload">
-                <label for="file-upload" class="file-upload-label">Upload YAML</label>
-            </div>
-        </header>
-
-        <main class="app-main">
-            <div class="diagram-container">
-                <div id="diagram-canvas" class="diagram-canvas">
-                    <div class="loading-message">Select a workflow to visualize</div>
-                </div>
-            </div>
-            
-            <aside class="side-panel">
-                <div class="side-panel-header">
-                    <h2>Details</h2>
-                </div>
-                <div class="side-panel-content">
-                    <div class="empty-state">
-                        Click on a state or transition to see details
-                    </div>
-                </div>
-            </aside>
-        </main>
-
-        <div id="error-container" class="error-container hidden">
-            <div class="error-message">
-                <span class="error-text"></span>
-                <button class="error-close">&times;</button>
-            </div>
+      <header class="app-header">
+        <h1>Workflow Visualizer</h1>
+        <div class="workflow-controls">
+          <select id="workflow-selector" class="workflow-selector">
+            <option value="">Select a workflow...</option>
+          </select>
+          <input
+            type="file"
+            id="file-upload"
+            accept=".yaml,.yml"
+            class="file-upload"
+          />
+          <label for="file-upload" class="file-upload-label">Upload YAML</label>
         </div>
+      </header>
+
+      <main class="app-main">
+        <div class="diagram-container">
+          <div id="diagram-canvas" class="diagram-canvas">
+            <div class="loading-message">Select a workflow to visualize</div>
+          </div>
+        </div>
+
+        <aside class="side-panel">
+          <div class="side-panel-header">
+            <h2>Details</h2>
+          </div>
+          <div class="side-panel-content">
+            <div class="empty-state">
+              Click on a state or transition to see details
+            </div>
+          </div>
+        </aside>
+      </main>
+
+      <div id="error-container" class="error-container hidden">
+        <div class="error-message">
+          <span class="error-text"></span>
+          <button class="error-close">&times;</button>
+        </div>
+      </div>
     </div>
 
     <script type="module" src="./src/main.ts"></script>
-</body>
+  </body>
 </html>

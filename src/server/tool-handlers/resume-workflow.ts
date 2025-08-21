@@ -1,8 +1,8 @@
 /**
  * ResumeWorkflow Tool Handler
- * 
- * Handles resuming development workflow after conversation compression. 
- * Returns comprehensive project context, current state, system prompt instructions, 
+ *
+ * Handles resuming development workflow after conversation compression.
+ * Returns comprehensive project context, current state, system prompt instructions,
  * and next steps to seamlessly continue development.
  */
 
@@ -46,8 +46,10 @@ export interface ResumeWorkflowResult {
 /**
  * ResumeWorkflow tool handler implementation
  */
-export class ResumeWorkflowHandler extends ConversationRequiredToolHandler<ResumeWorkflowArgs, ResumeWorkflowResult> {
-
+export class ResumeWorkflowHandler extends ConversationRequiredToolHandler<
+  ResumeWorkflowArgs,
+  ResumeWorkflowResult
+> {
   protected async executeWithConversation(
     args: ResumeWorkflowArgs,
     context: ServerContext,
@@ -55,33 +57,37 @@ export class ResumeWorkflowHandler extends ConversationRequiredToolHandler<Resum
   ): Promise<ResumeWorkflowResult> {
     const includeSystemPrompt = args.include_system_prompt !== false; // Default to true
 
-    this.logger.debug('Processing resume_workflow request', { 
+    this.logger.debug('Processing resume_workflow request', {
       conversationId: conversationContext.conversationId,
-      includeSystemPrompt
+      includeSystemPrompt,
     });
 
     // Get plan file information
-    const planInfo = await context.planManager.getPlanFileInfo(conversationContext.planFilePath);
-    
+    const planInfo = await context.planManager.getPlanFileInfo(
+      conversationContext.planFilePath
+    );
+
     // Analyze plan file content for key information
-    const planAnalysis = planInfo.exists ? this.analyzePlanFile(planInfo.content!) : null;
-    
+    const planAnalysis = planInfo.exists
+      ? this.analyzePlanFile(planInfo.content!)
+      : null;
+
     // Get current state machine information
     const stateMachineInfo = await this.getStateMachineInfo(
-      context, 
-      conversationContext.projectPath, 
+      context,
+      conversationContext.projectPath,
       conversationContext.workflowName
     );
     const stateMachine = context.transitionEngine.getStateMachine(
-      conversationContext.projectPath, 
+      conversationContext.projectPath,
       conversationContext.workflowName
     );
-    
+
     // Generate system prompt if requested
-    const systemPrompt = includeSystemPrompt 
-      ? generateSystemPrompt(stateMachine) 
+    const systemPrompt = includeSystemPrompt
+      ? generateSystemPrompt(stateMachine)
       : null;
-    
+
     // Build comprehensive response
     const response: ResumeWorkflowResult = {
       // Core workflow resumption info
@@ -90,34 +96,38 @@ export class ResumeWorkflowHandler extends ConversationRequiredToolHandler<Resum
         current_phase: conversationContext.currentPhase,
         project_path: conversationContext.projectPath,
         git_branch: conversationContext.gitBranch,
-        state_machine: stateMachineInfo
+        state_machine: stateMachineInfo,
       },
-      
+
       // Plan file analysis
       plan_status: {
         exists: planInfo.exists,
         path: conversationContext.planFilePath,
-        analysis: planAnalysis
+        analysis: planAnalysis,
       },
-      
+
       // System prompt (if requested)
       system_prompt: systemPrompt,
-      
+
       // Next steps and recommendations
-      recommendations: this.generateRecommendations(conversationContext, planAnalysis, context),
-      
+      recommendations: this.generateRecommendations(
+        conversationContext,
+        planAnalysis,
+        context
+      ),
+
       // Metadata
       generated_at: new Date().toISOString(),
-      tool_version: '1.0.0'
+      tool_version: '1.0.0',
     };
-    
-    this.logger.debug('resume_workflow response generated', { 
+
+    this.logger.debug('resume_workflow response generated', {
       conversationId: conversationContext.conversationId,
       phase: conversationContext.currentPhase,
       planExists: planInfo.exists,
-      includeSystemPrompt
+      includeSystemPrompt,
     });
-    
+
     return response;
   }
 
@@ -129,7 +139,7 @@ export class ResumeWorkflowHandler extends ConversationRequiredToolHandler<Resum
       active_tasks: [] as string[],
       completed_tasks: [] as string[],
       recent_decisions: [] as string[],
-      next_steps: [] as string[]
+      next_steps: [] as string[],
     };
 
     const lines = content.split('\n');
@@ -138,13 +148,14 @@ export class ResumeWorkflowHandler extends ConversationRequiredToolHandler<Resum
 
     for (const line of lines) {
       const trimmed = line.trim();
-      
+
       // Detect sections
       if (trimmed.startsWith('##')) {
         currentSection = trimmed.toLowerCase();
-        inTaskSection = currentSection.includes('task') || currentSection.includes('todo');
+        inTaskSection =
+          currentSection.includes('task') || currentSection.includes('todo');
       }
-      
+
       // Extract tasks
       if (inTaskSection) {
         if (trimmed.startsWith('- [x]')) {
@@ -153,7 +164,7 @@ export class ResumeWorkflowHandler extends ConversationRequiredToolHandler<Resum
           analysis.active_tasks.push(trimmed.substring(5).trim());
         }
       }
-      
+
       // Extract decisions (look for decision log sections)
       if (currentSection.includes('decision') && trimmed.startsWith('- ')) {
         analysis.recent_decisions.push(trimmed.substring(2).trim());
@@ -167,14 +178,17 @@ export class ResumeWorkflowHandler extends ConversationRequiredToolHandler<Resum
    * Get state machine information
    */
   private async getStateMachineInfo(
-    context: ServerContext, 
-    projectPath: string, 
+    context: ServerContext,
+    projectPath: string,
     workflowName?: string
   ): Promise<any> {
     try {
       // Get the actual state machine for this project
-      const stateMachine = context.transitionEngine.getStateMachine(projectPath, workflowName);
-      
+      const stateMachine = context.transitionEngine.getStateMachine(
+        projectPath,
+        workflowName
+      );
+
       return {
         name: stateMachine.name,
         description: stateMachine.description,
@@ -182,16 +196,19 @@ export class ResumeWorkflowHandler extends ConversationRequiredToolHandler<Resum
         phases: Object.keys(stateMachine.states),
         phase_descriptions: Object.fromEntries(
           Object.entries(stateMachine.states).map(([phase, definition]) => [
-            phase, 
-            (definition as any).description
+            phase,
+            (definition as any).description,
           ])
-        )
+        ),
       };
     } catch (error) {
-      this.logger.warn('Could not determine state machine info', error as Error);
+      this.logger.warn(
+        'Could not determine state machine info',
+        error as Error
+      );
       return {
         type: 'unknown',
-        phases: []
+        phases: [],
       };
     }
   }
@@ -200,20 +217,20 @@ export class ResumeWorkflowHandler extends ConversationRequiredToolHandler<Resum
    * Generate recommendations for next steps based on state machine transitions
    */
   private generateRecommendations(
-    conversationContext: any, 
-    planAnalysis: any, 
+    conversationContext: any,
+    planAnalysis: any,
     context: ServerContext
   ): any {
     const recommendations = {
       immediate_actions: [] as string[],
       phase_guidance: '',
-      potential_issues: [] as string[]
+      potential_issues: [] as string[],
     };
 
     try {
       // Get the state machine for this project
       const stateMachine = context.transitionEngine.getStateMachine(
-        conversationContext.projectPath, 
+        conversationContext.projectPath,
         conversationContext.workflowName
       );
       const currentPhase = conversationContext.currentPhase;
@@ -224,34 +241,55 @@ export class ResumeWorkflowHandler extends ConversationRequiredToolHandler<Resum
         recommendations.phase_guidance = `Current phase: ${(phaseDefinition as any).description}`;
 
         // Generate transition-based recommendations
-        if ((phaseDefinition as any).transitions && (phaseDefinition as any).transitions.length > 0) {
-          recommendations.immediate_actions.push('From here, you can transition to:');
-          
+        if (
+          (phaseDefinition as any).transitions &&
+          (phaseDefinition as any).transitions.length > 0
+        ) {
+          recommendations.immediate_actions.push(
+            'From here, you can transition to:'
+          );
+
           (phaseDefinition as any).transitions.forEach((transition: any) => {
             const targetPhase = stateMachine.states[transition.to];
-            const targetDescription = targetPhase ? (targetPhase as any).description : transition.to;
-            recommendations.immediate_actions.push(`• ${transition.to}: ${targetDescription}`);
+            const targetDescription = targetPhase
+              ? (targetPhase as any).description
+              : transition.to;
+            recommendations.immediate_actions.push(
+              `• ${transition.to}: ${targetDescription}`
+            );
           });
 
           // Add instruction on how to transition
-          recommendations.immediate_actions.push('Use proceed_to_phase() tool when ready to transition');
+          recommendations.immediate_actions.push(
+            'Use proceed_to_phase() tool when ready to transition'
+          );
         } else {
-          recommendations.immediate_actions.push('Continue working in current phase');
+          recommendations.immediate_actions.push(
+            'Continue working in current phase'
+          );
         }
 
         // Add current phase specific guidance
-        recommendations.immediate_actions.push(`Focus on: ${(phaseDefinition as any).description}`);
+        recommendations.immediate_actions.push(
+          `Focus on: ${(phaseDefinition as any).description}`
+        );
       } else {
         // Fallback if phase not found in state machine
         recommendations.phase_guidance = `Current phase: ${currentPhase}`;
-        recommendations.immediate_actions.push('Continue working in current phase');
+        recommendations.immediate_actions.push(
+          'Continue working in current phase'
+        );
       }
-
     } catch (error) {
-      this.logger.warn('Could not generate state machine recommendations', error as Error);
+      this.logger.warn(
+        'Could not generate state machine recommendations',
+        error as Error
+      );
       // Basic fallback
       recommendations.phase_guidance = `Current phase: ${conversationContext.currentPhase}`;
-      recommendations.immediate_actions.push('Continue working in current phase');
+      recommendations.immediate_actions.push(
+        'Continue working in current phase'
+      );
     }
 
     // Plan-based recommendations
@@ -261,15 +299,26 @@ export class ResumeWorkflowHandler extends ConversationRequiredToolHandler<Resum
           `Continue working on active tasks: ${planAnalysis.active_tasks.slice(0, 2).join(', ')}`
         );
       }
-      
-      if (planAnalysis.active_tasks.length === 0 && planAnalysis.completed_tasks.length > 0) {
-        recommendations.potential_issues.push('No active tasks found - may be ready to transition to next phase');
+
+      if (
+        planAnalysis.active_tasks.length === 0 &&
+        planAnalysis.completed_tasks.length > 0
+      ) {
+        recommendations.potential_issues.push(
+          'No active tasks found - may be ready to transition to next phase'
+        );
       }
     }
 
     // Always recommend calling whats_next
-    if (!recommendations.immediate_actions.some(action => action.includes('whats_next'))) {
-      recommendations.immediate_actions.unshift('Call whats_next() to get current phase-specific guidance');
+    if (
+      !recommendations.immediate_actions.some(action =>
+        action.includes('whats_next')
+      )
+    ) {
+      recommendations.immediate_actions.unshift(
+        'Call whats_next() to get current phase-specific guidance'
+      );
     }
 
     return recommendations;

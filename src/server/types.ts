@@ -80,7 +80,10 @@ export interface ToolHandler<TArgs = any, TResult = any> {
  * All resource handlers must implement this interface
  */
 export interface ResourceHandler {
-  handle(uri: URL, context: ServerContext): Promise<HandlerResult<ResourceContent>>;
+  handle(
+    uri: URL,
+    context: ServerContext
+  ): Promise<HandlerResult<ResourceContent>>;
 }
 
 /**
@@ -89,7 +92,9 @@ export interface ResourceHandler {
  */
 export interface ResponseRenderer {
   renderToolResponse<T>(result: HandlerResult<T>): McpToolResponse;
-  renderResourceResponse(result: HandlerResult<ResourceContent>): McpResourceResponse;
+  renderResourceResponse(
+    result: HandlerResult<ResourceContent>
+  ): McpResourceResponse;
   renderError(error: Error | string): McpToolResponse;
 }
 

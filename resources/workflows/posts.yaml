@@ -1,27 +1,27 @@
 name: posts
-description: "A comprehensive workflow for writing posts - from blog posts to short-form content, with research, story development, and multi-platform publishing"
+description: 'A comprehensive workflow for writing posts - from blog posts to short-form content, with research, story development, and multi-platform publishing'
 initial_state: discovery
 
 # Enhanced metadata for better discoverability
 metadata:
-  complexity: "medium"
+  complexity: 'medium'
   bestFor:
-    - "Blog post writing"
-    - "Content creation"
-    - "Article development"
-    - "Social media content"
+    - 'Blog post writing'
+    - 'Content creation'
+    - 'Article development'
+    - 'Social media content'
   useCases:
-    - "Writing technical blog posts"
-    - "Creating marketing content"
-    - "Developing thought leadership articles"
+    - 'Writing technical blog posts'
+    - 'Creating marketing content'
+    - 'Developing thought leadership articles'
   examples:
-    - "Write a tutorial blog post"
-    - "Create a product announcement"
-    - "Develop a technical deep-dive article"
+    - 'Write a tutorial blog post'
+    - 'Create a product announcement'
+    - 'Develop a technical deep-dive article'
 
 states:
   discovery:
-    description: "Research topic, decide format, and analyze competitive landscape"
+    description: 'Research topic, decide format, and analyze competitive landscape'
     default_instructions: |
       You are in the discovery phase for post development. This is where you define the foundation of your post.
 
@@ -41,20 +41,20 @@ states:
         to: story
         additional_instructions: |
           Discovery complete! ✅ You have clear format decision, unique angle, and research foundation.
-          
+
           Update the plan file with story development tasks and mark completed discovery work.
-        transition_reason: "Topic researched and format decided, ready for story structure development"
+        transition_reason: 'Topic researched and format decided, ready for story structure development'
 
       - trigger: abandon_post
         to: discovery
         instructions: |
           Post development abandoned. Clean up any discovery work and prepare for new post topics.
           The plan file will remain for future reference if needed.
-        additional_instructions: "Post development abandoned. Prepare for new post topics."
-        transition_reason: "User decided to abandon current post development"
+        additional_instructions: 'Post development abandoned. Prepare for new post topics.'
+        transition_reason: 'User decided to abandon current post development'
 
   story:
-    description: "Create narrative structure and story outline"
+    description: 'Create narrative structure and story outline'
     default_instructions: |
       Working on story development phase. Focus on creating a compelling narrative structure.
 
@@ -74,25 +74,25 @@ states:
         to: writing
         additional_instructions: |
           Story complete! ✅ You have a clear narrative structure and content outline.
-          
+
           Update the plan file with writing tasks and mark completed story work.
-        transition_reason: "Story structure and outline complete, ready for content creation"
+        transition_reason: 'Story structure and outline complete, ready for content creation'
 
       - trigger: need_more_discovery
         to: discovery
-        additional_instructions: "Story development revealed gaps in research or format clarity. Focus on clarifying these foundational aspects."
-        transition_reason: "Story work revealed need for additional discovery or research"
+        additional_instructions: 'Story development revealed gaps in research or format clarity. Focus on clarifying these foundational aspects.'
+        transition_reason: 'Story work revealed need for additional discovery or research'
 
       - trigger: abandon_post
         to: discovery
         instructions: |
           Post development abandoned during story phase. Clean up story work and return to discovery.
           The plan file and any completed work will remain for future reference.
-        additional_instructions: "Post abandoned during story phase. Clean up and prepare for new topics."
-        transition_reason: "User decided to abandon post during story phase"
+        additional_instructions: 'Post abandoned during story phase. Clean up and prepare for new topics.'
+        transition_reason: 'User decided to abandon post during story phase'
 
   writing:
-    description: "Create the actual post content following story outline"
+    description: 'Create the actual post content following story outline'
     default_instructions: |
       Working on writing phase. Focus purely on creating engaging content.
 
@@ -113,25 +113,25 @@ states:
         to: illustration
         additional_instructions: |
           Writing complete! ✅ You have solid content that follows your story outline.
-          
+
           Update the plan file with illustration tasks and mark completed writing work.
-        transition_reason: "Content creation complete, ready for visual enhancement"
+        transition_reason: 'Content creation complete, ready for visual enhancement'
 
       - trigger: need_story_revision
         to: story
-        additional_instructions: "Writing revealed issues with story structure or narrative flow. Focus on refining the story foundation."
-        transition_reason: "Content creation revealed need for story structure refinement"
+        additional_instructions: 'Writing revealed issues with story structure or narrative flow. Focus on refining the story foundation.'
+        transition_reason: 'Content creation revealed need for story structure refinement'
 
       - trigger: abandon_post
         to: discovery
         instructions: |
           Post development abandoned during writing. Clean up writing work and return to discovery.
           The plan file and any completed work will remain for future reference.
-        additional_instructions: "Post abandoned during writing phase. Clean up and prepare for new topics."
-        transition_reason: "User decided to abandon post during writing phase"
+        additional_instructions: 'Post abandoned during writing phase. Clean up and prepare for new topics.'
+        transition_reason: 'User decided to abandon post during writing phase'
 
   illustration:
-    description: "Create and integrate visual elements"
+    description: 'Create and integrate visual elements'
     default_instructions: |
       Working on illustration phase. Focus on visual enhancement of your content.
 
@@ -152,25 +152,25 @@ states:
         to: distribution
         additional_instructions: |
           Illustration complete! ✅ You have visually enhanced content ready for publishing.
-          
+
           Update the plan file with distribution tasks and mark completed illustration work.
-        transition_reason: "Visual elements complete, ready for SEO optimization and publishing"
+        transition_reason: 'Visual elements complete, ready for SEO optimization and publishing'
 
       - trigger: need_more_content
         to: writing
-        additional_instructions: "Illustration work revealed gaps in written content. Focus on completing the content foundation."
-        transition_reason: "Visual work revealed need for additional written content"
+        additional_instructions: 'Illustration work revealed gaps in written content. Focus on completing the content foundation.'
+        transition_reason: 'Visual work revealed need for additional written content'
 
       - trigger: abandon_post
         to: discovery
         instructions: |
           Post development abandoned during illustration. Clean up illustration work and return to discovery.
           The plan file and any completed work will remain for future reference.
-        additional_instructions: "Post abandoned during illustration phase. Clean up and prepare for new topics."
-        transition_reason: "User decided to abandon post during illustration phase"
+        additional_instructions: 'Post abandoned during illustration phase. Clean up and prepare for new topics.'
+        transition_reason: 'User decided to abandon post during illustration phase'
 
   distribution:
-    description: "Optimize for SEO and publish across platforms"
+    description: 'Optimize for SEO and publish across platforms'
     default_instructions: |
       Working on distribution phase. Focus on optimization and multi-platform publishing.
 
@@ -189,18 +189,18 @@ states:
     transitions:
       - trigger: distribution_complete
         to: discovery
-        additional_instructions: "Post successfully published. Ready for next post project."
-        transition_reason: "Post publishing completed successfully, ready for new projects"
+        additional_instructions: 'Post successfully published. Ready for next post project.'
+        transition_reason: 'Post publishing completed successfully, ready for new projects'
 
       - trigger: need_final_review
         to: illustration
-        additional_instructions: "Distribution preparation revealed issues with visuals or content presentation. Focus on final refinements."
-        transition_reason: "Publishing preparation identified issues requiring visual or content refinement"
+        additional_instructions: 'Distribution preparation revealed issues with visuals or content presentation. Focus on final refinements.'
+        transition_reason: 'Publishing preparation identified issues requiring visual or content refinement'
 
       - trigger: abandon_post
         to: discovery
         instructions: |
           Post development abandoned before distribution. Clean up distribution preparation and return to discovery.
           The plan file and completed work will remain for future reference.
-        additional_instructions: "Post abandoned before distribution. Clean up and prepare for new topics."
-        transition_reason: "User decided to abandon post before distribution"
+        additional_instructions: 'Post abandoned before distribution. Clean up and prepare for new topics.'
+        transition_reason: 'User decided to abandon post before distribution'

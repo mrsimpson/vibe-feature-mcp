@@ -1,171 +1,171 @@
 # yaml-language-server: $schema=../state-machine-schema.json
 ---
-name: "bugfix"
-description: "A focused workflow for bug fixing: Reproduce, Analyze, Fix, Verify - optimized for debugging and fixing existing issues"
-initial_state: "reproduce"
+name: 'bugfix'
+description: 'A focused workflow for bug fixing: Reproduce, Analyze, Fix, Verify - optimized for debugging and fixing existing issues'
+initial_state: 'reproduce'
 
 # Enhanced metadata for better discoverability
 metadata:
-  complexity: "medium"
+  complexity: 'medium'
   bestFor:
-    - "Bug fixes"
-    - "Issue resolution"
-    - "Error debugging"
-    - "Performance problems"
+    - 'Bug fixes'
+    - 'Issue resolution'
+    - 'Error debugging'
+    - 'Performance problems'
   useCases:
-    - "Fixing a crash or error"
-    - "Resolving incorrect behavior"
-    - "Performance optimization"
+    - 'Fixing a crash or error'
+    - 'Resolving incorrect behavior'
+    - 'Performance optimization'
   examples:
-    - "Fix login authentication error"
-    - "Resolve memory leak issue"
-    - "Fix incorrect calculation in reports"
+    - 'Fix login authentication error'
+    - 'Resolve memory leak issue'
+    - 'Fix incorrect calculation in reports'
 
 # States with default instructions and transitions
 states:
   reproduce:
-    description: "Reproduce and understand the bug"
-    default_instructions: "You are in the bug reproduction phase. Work to reliably reproduce the reported bug. Gather information about the conditions, environment, and steps that lead to the issue. Create test cases that demonstrate the problem. Document your findings in the plan file."
+    description: 'Reproduce and understand the bug'
+    default_instructions: 'You are in the bug reproduction phase. Work to reliably reproduce the reported bug. Gather information about the conditions, environment, and steps that lead to the issue. Create test cases that demonstrate the problem. Document your findings in the plan file.'
     transitions:
-      - trigger: "bug_reproduced"
-        to: "analyze"
-        additional_instructions: "Bug successfully reproduced! ✅ Now transition to analysis phase."
-        transition_reason: "Bug reproduced successfully, ready to analyze root cause"
-      
-      - trigger: "bug_not_reproducible"
-        to: "reproduce"
+      - trigger: 'bug_reproduced'
+        to: 'analyze'
+        additional_instructions: 'Bug successfully reproduced! ✅ Now transition to analysis phase.'
+        transition_reason: 'Bug reproduced successfully, ready to analyze root cause'
+
+      - trigger: 'bug_not_reproducible'
+        to: 'reproduce'
         instructions: >
           Unable to reproduce the bug with current information. Gather more details about the environment,
           conditions, or steps that might be missing. Contact the reporter for additional information if needed.
           Continue attempting reproduction with new information.
-        transition_reason: "Bug could not be reproduced, need more information"
-      
-      - trigger: "abandon_bug"
-        to: "reproduce"
-        additional_instructions: "Bug investigation abandoned. Clean up any reproduction work and prepare for new bug reports."
-        transition_reason: "Bug investigation abandoned"
+        transition_reason: 'Bug could not be reproduced, need more information'
+
+      - trigger: 'abandon_bug'
+        to: 'reproduce'
+        additional_instructions: 'Bug investigation abandoned. Clean up any reproduction work and prepare for new bug reports.'
+        transition_reason: 'Bug investigation abandoned'
 
   analyze:
-    description: "Analyze the bug and identify root cause"
-    default_instructions: "You are in the bug analysis phase. Examine the code paths involved in the bug, identify the root cause, and understand why the issue occurs. Use debugging tools, add logging, and trace through the problematic code. Document your analysis in the plan file."
+    description: 'Analyze the bug and identify root cause'
+    default_instructions: 'You are in the bug analysis phase. Examine the code paths involved in the bug, identify the root cause, and understand why the issue occurs. Use debugging tools, add logging, and trace through the problematic code. Document your analysis in the plan file.'
     transitions:
-      - trigger: "need_more_reproduction"
-        to: "reproduce"
-        additional_instructions: "Analysis revealed need for additional reproduction scenarios. Focus on reproducing the specific conditions identified during analysis."
-        transition_reason: "Analysis revealed need for additional reproduction work"
-      
-      - trigger: "root_cause_identified"
-        to: "fix"
-        additional_instructions: "Root cause identified! ✅ Now transition to fix phase. Document the fix approach in the plan file."
-        transition_reason: "Root cause identified, ready to implement fix"
+      - trigger: 'need_more_reproduction'
+        to: 'reproduce'
+        additional_instructions: 'Analysis revealed need for additional reproduction scenarios. Focus on reproducing the specific conditions identified during analysis.'
+        transition_reason: 'Analysis revealed need for additional reproduction work'
+
+      - trigger: 'root_cause_identified'
+        to: 'fix'
+        additional_instructions: 'Root cause identified! ✅ Now transition to fix phase. Document the fix approach in the plan file.'
+        transition_reason: 'Root cause identified, ready to implement fix'
         review_perspectives:
-          - perspective: "architect"
+          - perspective: 'architect'
             prompt: "Review root cause analysis and ensure the proposed fix doesn't introduce architectural issues or technical debt. Consider the broader system impact of the proposed solution."
-          - perspective: "security_expert"
+          - perspective: 'security_expert'
             prompt: "Evaluate if the bug has security implications and ensure the fix doesn't introduce new vulnerabilities. Review the security aspects of the proposed solution."
-      
-      - trigger: "abandon_bug"
-        to: "reproduce"
-        additional_instructions: "Bug analysis abandoned. Clean up any analysis work and prepare for new bug reports."
-        transition_reason: "Bug analysis abandoned"
+
+      - trigger: 'abandon_bug'
+        to: 'reproduce'
+        additional_instructions: 'Bug analysis abandoned. Clean up any analysis work and prepare for new bug reports.'
+        transition_reason: 'Bug analysis abandoned'
 
   fix:
-    description: "Implement the bug fix"
-    default_instructions: "Implement the solution based on your analysis and design from $DESIGN_DOC. Make targeted changes that address the root cause without introducing new issues. Be careful to maintain existing functionality while fixing the bug."
+    description: 'Implement the bug fix'
+    default_instructions: 'Implement the solution based on your analysis and design from $DESIGN_DOC. Make targeted changes that address the root cause without introducing new issues. Be careful to maintain existing functionality while fixing the bug.'
     transitions:
-      - trigger: "need_more_analysis"
-        to: "analyze"
-        additional_instructions: "Fix implementation revealed additional complexity or issues. Focus on analyzing the newly discovered aspects of the problem."
-        transition_reason: "Fix work revealed need for additional analysis"
-      
-      - trigger: "fix_implemented"
-        to: "verify"
-        additional_instructions: "Fix implemented! ✅ Now transition to verification phase. Document verification results in the plan file."
-        transition_reason: "Fix implemented, ready for verification"
+      - trigger: 'need_more_analysis'
+        to: 'analyze'
+        additional_instructions: 'Fix implementation revealed additional complexity or issues. Focus on analyzing the newly discovered aspects of the problem.'
+        transition_reason: 'Fix work revealed need for additional analysis'
+
+      - trigger: 'fix_implemented'
+        to: 'verify'
+        additional_instructions: 'Fix implemented! ✅ Now transition to verification phase. Document verification results in the plan file.'
+        transition_reason: 'Fix implemented, ready for verification'
         review_perspectives:
-          - perspective: "senior_software_developer"
-            prompt: "Review fix implementation, code quality, and ensure the solution properly addresses the root cause. Check for potential side effects and code maintainability."
-          - perspective: "performance_engineer"
+          - perspective: 'senior_software_developer'
+            prompt: 'Review fix implementation, code quality, and ensure the solution properly addresses the root cause. Check for potential side effects and code maintainability.'
+          - perspective: 'performance_engineer'
             prompt: "Verify that the fix doesn't introduce performance regressions or new bottlenecks. Assess the performance impact of the implemented solution."
-      
-      - trigger: "abandon_bug"
-        to: "reproduce"
-        additional_instructions: "Bug fix abandoned. Clean up any fix work and prepare for new bug reports."
-        transition_reason: "Bug fix abandoned"
+
+      - trigger: 'abandon_bug'
+        to: 'reproduce'
+        additional_instructions: 'Bug fix abandoned. Clean up any fix work and prepare for new bug reports.'
+        transition_reason: 'Bug fix abandoned'
 
   verify:
-    description: "Verify the fix and ensure no regressions"
-    default_instructions: "You are in the bug verification phase. Test the fix thoroughly to ensure the original bug is resolved and no new issues were introduced. Run existing tests, create new ones if needed, and verify the solution is robust."
+    description: 'Verify the fix and ensure no regressions'
+    default_instructions: 'You are in the bug verification phase. Test the fix thoroughly to ensure the original bug is resolved and no new issues were introduced. Run existing tests, create new ones if needed, and verify the solution is robust.'
     transitions:
-      - trigger: "fix_needs_adjustment"
-        to: "fix"
-        additional_instructions: "Verification revealed issues with the current fix. Focus on addressing the specific problems identified during verification."
-        transition_reason: "Verification found issues requiring fix adjustments"
-      
-      - trigger: "need_more_analysis"
-        to: "analyze"
+      - trigger: 'fix_needs_adjustment'
+        to: 'fix'
+        additional_instructions: 'Verification revealed issues with the current fix. Focus on addressing the specific problems identified during verification.'
+        transition_reason: 'Verification found issues requiring fix adjustments'
+
+      - trigger: 'need_more_analysis'
+        to: 'analyze'
         additional_instructions: "Verification revealed the fix doesn't fully address the root cause. Focus on deeper analysis of the remaining issues."
-        transition_reason: "Verification revealed need for additional analysis"
-      
-      - trigger: "bug_fixed"
-        to: "finalize"
-        additional_instructions: "Bug successfully fixed and verified! ✅ Now transition to finalization phase. Mark all verification tasks complete. Clean up verification work and prepare for new bug reports."
-        transition_reason: "Bug fix complete and verified, ready for next issue"
-      
-      - trigger: "abandon_bug"
-        to: "reproduce"
-        additional_instructions: "Bug verification abandoned. Clean up any verification work and prepare for new bug reports."
-        transition_reason: "Bug verification abandoned"
+        transition_reason: 'Verification revealed need for additional analysis'
+
+      - trigger: 'bug_fixed'
+        to: 'finalize'
+        additional_instructions: 'Bug successfully fixed and verified! ✅ Now transition to finalization phase. Mark all verification tasks complete. Clean up verification work and prepare for new bug reports.'
+        transition_reason: 'Bug fix complete and verified, ready for next issue'
+
+      - trigger: 'abandon_bug'
+        to: 'reproduce'
+        additional_instructions: 'Bug verification abandoned. Clean up any verification work and prepare for new bug reports.'
+        transition_reason: 'Bug verification abandoned'
 
   finalize:
-    description: "Code cleanup and documentation finalization"
+    description: 'Code cleanup and documentation finalization'
     default_instructions: >
       You are in the finalize phase. This phase ensures code quality and documentation accuracy through systematic cleanup and review.
-      
+
       **STEP 1: Code Cleanup**
       Systematically clean up development artifacts:
-      
+
       1. **Remove Debug Output**: Search for and remove all temporary debug output statements used during bug investigation.
          Look for language-specific debug output methods (console logging, print statements, debug output functions).
          Remove any debugging statements that were added for investigation purposes.
-      
+
       2. **Review TODO/FIXME Comments**: 
          - Address each TODO/FIXME comment by either implementing the solution or documenting why it's deferred
          - Remove completed TODOs
          - Convert remaining TODOs to proper issue tracking if needed
-      
+
       3. **Remove Debugging Code Blocks**:
          - Remove temporary debugging code, test code blocks, and commented-out code
          - Clean up any experimental code that's no longer needed
          - Ensure proper error handling replaces temporary debug logging
-      
+
       **STEP 2: Documentation Review**
       Review and update documentation to reflect the bug fix:
-      
+
       1. **Compare Against Implementation**: Review documentation against the actual bug fix implemented
       2. **Update Changed Sections**: Only modify documentation sections that have functional changes
       3. **Remove Development Progress**: Remove references to investigation iterations, progress notes, and temporary decisions
       4. **Focus on Final State**: Ensure documentation describes the final fixed state, not the debugging process
       5. **Document Solution**: Ensure the bug fix solution is properly documented for future reference
-      
+
       **STEP 3: Final Validation**
       - Run existing tests to ensure cleanup didn't break functionality
       - Verify documentation accuracy with a final review
       - Ensure bug fix is ready for production
-      
+
       Update the plan file with finalization progress and mark completed tasks.
     transitions:
-      - trigger: "need_fix_changes"
-        to: "fix"
-        additional_instructions: "Finalization revealed issues with the bug fix. Focus on addressing the specific problems identified during final review."
-        transition_reason: "Finalization revealed issues requiring fix changes"
-      
-      - trigger: "finalization_complete"
-        to: "reproduce"
-        additional_instructions: "Bug fix complete and finalized! Clean up finalization work and prepare for new bug reports."
-        transition_reason: "Bug fix complete and finalized, ready for next issue"
-      
-      - trigger: "abandon_bug"
-        to: "reproduce"
-        additional_instructions: "Bug finalization abandoned. Clean up any finalization work and prepare for new bug reports."
-        transition_reason: "Bug finalization abandoned"
+      - trigger: 'need_fix_changes'
+        to: 'fix'
+        additional_instructions: 'Finalization revealed issues with the bug fix. Focus on addressing the specific problems identified during final review.'
+        transition_reason: 'Finalization revealed issues requiring fix changes'
+
+      - trigger: 'finalization_complete'
+        to: 'reproduce'
+        additional_instructions: 'Bug fix complete and finalized! Clean up finalization work and prepare for new bug reports.'
+        transition_reason: 'Bug fix complete and finalized, ready for next issue'
+
+      - trigger: 'abandon_bug'
+        to: 'reproduce'
+        additional_instructions: 'Bug finalization abandoned. Clean up any finalization work and prepare for new bug reports.'
+        transition_reason: 'Bug finalization abandoned'

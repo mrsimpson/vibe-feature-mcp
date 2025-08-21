@@ -7,6 +7,7 @@ I want to call the `whats_next` tool to get contextual development guidance
 So that I can provide structured assistance to users throughout their development process
 
 ### Background:
+
 - `whats_next` is the primary tool for conversation analysis
 - It accepts optional context, user_input, conversation_summary, and recent_messages
 - It returns phase, instructions, plan_file_path, transition_reason, and completed_tasks
@@ -26,6 +27,7 @@ So that I can provide structured assistance to users throughout their developmen
 **And** the transition reason should indicate new feature detection
 
 ### Expected Behavior:
+
 - Database should be queried for existing conversation state
 - New conversation record should be created with unique ID
 - Project path should be detected from current working directory
@@ -46,6 +48,7 @@ So that I can provide structured assistance to users throughout their developmen
 **And** instructions should be contextually appropriate
 
 ### Expected Behavior:
+
 - Existing conversation state should be retrieved from database
 - Plan file should be read and analyzed for task completion
 - Phase should remain current if tasks are incomplete
@@ -64,6 +67,7 @@ So that I can provide structured assistance to users throughout their developmen
 **And** not crash the server
 
 ### Expected Behavior:
+
 - Tool should handle missing or invalid parameters gracefully
 - Error responses should be properly formatted with isError flag
 - Server should not crash on malformed requests
@@ -81,6 +85,7 @@ So that I can provide structured assistance to users throughout their developmen
 **And** provide contextually relevant instructions
 
 ### Expected Behavior:
+
 - Conversation summary and recent messages should be analyzed by transition engine
 - Context should influence phase transition decisions
 - Rich conversation history should provide better phase completion detection

@@ -14,7 +14,7 @@ describe('Reset Functionality', () => {
   beforeEach(async () => {
     tempProject = new TempProject({ projectName: 'reset-test' });
     MockDocsHelper.addToTempProject(tempProject);
-    
+
     server = await ServerTestHelper.createServer(tempProject.projectPath);
   });
 
@@ -29,26 +29,28 @@ describe('Reset Functionality', () => {
       await server.handleResetDevelopment({ confirm: false });
       expect.fail('Should have thrown an error');
     } catch (error) {
-      expect(error.message).toContain('Reset operation requires explicit confirmation');
+      expect(error.message).toContain(
+        'Reset operation requires explicit confirmation'
+      );
     }
   });
 
   it('should successfully reset with confirmation', async () => {
     // First, initialize development with a workflow
     await server.handleStartDevelopment({
-      workflow: 'waterfall'
+      workflow: 'waterfall',
     });
-    
+
     // Then create some state by calling whats_next
     await server.handleWhatsNext({
       context: 'test context',
-      user_input: 'test input'
+      user_input: 'test input',
     });
 
     // Now reset with confirmation
-    const result = await server.handleResetDevelopment({ 
+    const result = await server.handleResetDevelopment({
       confirm: true,
-      reason: 'test reset'
+      reason: 'test reset',
     });
 
     expect(result.success).toBe(true);

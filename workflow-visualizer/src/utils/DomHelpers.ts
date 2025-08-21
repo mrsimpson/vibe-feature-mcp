@@ -11,11 +11,11 @@ export function getRequiredElement<T extends HTMLElement>(
   context: Document | HTMLElement = document
 ): T {
   const element = context.querySelector(selector) as T;
-  
+
   if (!element) {
     throw new Error(`Required element not found: ${selector}`);
   }
-  
+
   return element;
 }
 
@@ -48,38 +48,47 @@ export function createElement<K extends keyof HTMLElementTagNameMap>(
   textContent?: string
 ): HTMLElementTagNameMap[K] {
   const element = document.createElement(tagName);
-  
+
   // Set attributes
   for (const [key, value] of Object.entries(attributes)) {
     element.setAttribute(key, value);
   }
-  
+
   // Set text content if provided
   if (textContent !== undefined) {
     element.textContent = textContent;
   }
-  
+
   return element;
 }
 
 /**
  * Add CSS classes to an element
  */
-export function addClasses(element: HTMLElement, ...classNames: string[]): void {
+export function addClasses(
+  element: HTMLElement,
+  ...classNames: string[]
+): void {
   element.classList.add(...classNames);
 }
 
 /**
  * Remove CSS classes from an element
  */
-export function removeClasses(element: HTMLElement, ...classNames: string[]): void {
+export function removeClasses(
+  element: HTMLElement,
+  ...classNames: string[]
+): void {
   element.classList.remove(...classNames);
 }
 
 /**
  * Toggle CSS classes on an element
  */
-export function toggleClasses(element: HTMLElement, ...classNames: string[]): void {
+export function toggleClasses(
+  element: HTMLElement,
+  ...classNames: string[]
+): void {
   classNames.forEach(className => {
     element.classList.toggle(className);
   });
@@ -95,7 +104,10 @@ export function hasClass(element: HTMLElement, className: string): boolean {
 /**
  * Set multiple CSS styles on an element
  */
-export function setStyles(element: HTMLElement, styles: Record<string, string>): void {
+export function setStyles(
+  element: HTMLElement,
+  styles: Record<string, string>
+): void {
   for (const [property, value] of Object.entries(styles)) {
     element.style.setProperty(property, value);
   }
@@ -113,7 +125,10 @@ export function clearChildren(element: HTMLElement): void {
 /**
  * Append multiple children to an element
  */
-export function appendChildren(parent: HTMLElement, ...children: HTMLElement[]): void {
+export function appendChildren(
+  parent: HTMLElement,
+  ...children: HTMLElement[]
+): void {
   children.forEach(child => {
     parent.appendChild(child);
   });
@@ -138,9 +153,11 @@ export function hideElement(element: HTMLElement): void {
  * Check if an element is visible
  */
 export function isElementVisible(element: HTMLElement): boolean {
-  return !element.classList.contains('hidden') && 
-         element.style.display !== 'none' &&
-         element.offsetParent !== null;
+  return (
+    !element.classList.contains('hidden') &&
+    element.style.display !== 'none' &&
+    element.offsetParent !== null
+  );
 }
 
 /**
@@ -151,7 +168,7 @@ export function setSafeInnerHTML(element: HTMLElement, html: string): void {
   const sanitized = html
     .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
     .replace(/\son\w+\s*=\s*["'][^"']*["']/gi, '');
-  
+
   element.innerHTML = sanitized;
 }
 
@@ -163,7 +180,7 @@ export function debounce<T extends (...args: any[]) => any>(
   delay: number
 ): (...args: Parameters<T>) => void {
   let timeoutId: number;
-  
+
   return (...args: Parameters<T>) => {
     clearTimeout(timeoutId);
     timeoutId = window.setTimeout(() => func(...args), delay);
@@ -178,7 +195,7 @@ export function throttle<T extends (...args: any[]) => any>(
   delay: number
 ): (...args: Parameters<T>) => void {
   let lastCall = 0;
-  
+
   return (...args: Parameters<T>) => {
     const now = Date.now();
     if (now - lastCall >= delay) {

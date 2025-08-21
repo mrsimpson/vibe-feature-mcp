@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 
-import { spawn } from 'child_process';
-import { fileURLToPath } from 'url';
-import { dirname, join } from 'path';
-import { existsSync } from 'fs';
+import { spawn } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
+import { dirname, join } from 'node:path';
+import { existsSync } from 'node:fs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -26,16 +26,16 @@ if (hasBuiltFiles) {
 } else if (hasPackageJson && !hasBuiltFiles) {
   // We're in development - build and serve
   console.log('🔧 Development mode - building and serving...');
-  
+
   // Check if dependencies are installed
   if (!hasNodeModules) {
     console.log('📦 Installing dependencies...');
-    const install = spawn('npm', ['install'], { 
-      cwd: visualizerDir, 
-      stdio: 'inherit' 
+    const install = spawn('npm', ['install'], {
+      cwd: visualizerDir,
+      stdio: 'inherit',
     });
-    
-    install.on('close', (code) => {
+
+    install.on('close', code => {
       if (code === 0) {
         startDevServer();
       } else {
@@ -53,15 +53,15 @@ if (hasBuiltFiles) {
 
 function startDevServer() {
   console.log('🌐 Starting development server...');
-  const server = spawn('npm', ['run', 'dev'], { 
-    cwd: visualizerDir, 
-    stdio: 'inherit' 
+  const server = spawn('npm', ['run', 'dev'], {
+    cwd: visualizerDir,
+    stdio: 'inherit',
   });
-  
-  server.on('close', (code) => {
+
+  server.on('close', code => {
     console.log(`Server exited with code ${code}`);
   });
-  
+
   // Handle Ctrl+C
   process.on('SIGINT', () => {
     console.log('\n👋 Shutting down visualizer...');
@@ -72,12 +72,12 @@ function startDevServer() {
 
 async function startStaticServer() {
   console.log('🌐 Starting static file server...');
-  
+
   // Use a simple static server
-  const { createServer } = await import('http');
-  const { readFile } = await import('fs/promises');
-  const { extname } = await import('path');
-  
+  const { createServer } = await import('node:http');
+  const { readFile } = await import('node:fs/promises');
+  const { extname } = await import('node:path');
+
   const mimeTypes = {
     '.html': 'text/html',
     '.js': 'application/javascript',
@@ -87,31 +87,35 @@ async function startStaticServer() {
     '.jpg': 'image/jpeg',
     '.gif': 'image/gif',
     '.svg': 'image/svg+xml',
-    '.ico': 'image/x-icon'
+    '.ico': 'image/x-icon',
   };
-  
+
   const server = createServer(async (req, res) => {
     try {
-      let filePath = join(visualizerDir, 'dist', req.url === '/' ? 'index.html' : req.url);
-      
+      let filePath = join(
+        visualizerDir,
+        'dist',
+        req.url === '/' ? 'index.html' : req.url
+      );
+
       // Security check - ensure we're serving from dist directory
       if (!filePath.startsWith(join(visualizerDir, 'dist'))) {
         res.writeHead(403);
         res.end('Forbidden');
         return;
       }
-      
+
       console.log(`Serving: ${req.url} -> ${filePath}`);
-      
+
       const content = await readFile(filePath);
       const ext = extname(filePath);
       const mimeType = mimeTypes[ext] || 'application/octet-stream';
-      
-      res.writeHead(200, { 
+
+      res.writeHead(200, {
         'Content-Type': mimeType,
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type'
+        'Access-Control-Allow-Headers': 'Content-Type',
       });
       res.end(content);
     } catch (error) {
@@ -125,14 +129,16 @@ async function startStaticServer() {
       }
     }
   });
-  
+
   const port = process.env.PORT || 3000;
   server.listen(port, () => {
     console.log(`✅ Workflow Visualizer running at http://localhost:${port}`);
-    console.log('📦 Workflows are bundled in the JavaScript - no external files needed!');
+    console.log(
+      '📦 Workflows are bundled in the JavaScript - no external files needed!'
+    );
     console.log('Press Ctrl+C to stop');
   });
-  
+
   // Handle Ctrl+C
   process.on('SIGINT', () => {
     console.log('\n👋 Shutting down visualizer...');

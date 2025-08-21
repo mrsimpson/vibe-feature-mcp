@@ -268,13 +268,21 @@
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes fadeOut {
-  from { opacity: 1; }
-  to { opacity: 0; }
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
 }
 
 @keyframes slideInRight {
@@ -306,11 +314,11 @@
     --color-gray-400: #808080;
     --color-gray-500: #606060;
   }
-  
+
   .state-node circle {
     stroke-width: 3px;
   }
-  
+
   .transition-link path {
     stroke-width: 3px;
   }

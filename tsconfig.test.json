@@ -6,14 +6,6 @@
     "noEmit": true,
     "types": ["vitest/globals", "node"]
   },
-  "include": [
-    "src/**/*",
-    "test/**/*",
-    "__mocks__/**/*"
-  ],
-  "exclude": [
-    "node_modules",
-    "dist",
-    "dist-test"
-  ]
+  "include": ["src/**/*", "test/**/*", "__mocks__/**/*"],
+  "exclude": ["node_modules", "dist", "dist-test"]
 }
