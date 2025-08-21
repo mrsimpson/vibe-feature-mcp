@@ -5,16 +5,12 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { ResponsibleVibeMCPServer } from '../../src/server';
+
 
 // Mock conversation manager
 const mockGetConversationContext = vi.fn();
 const mockCreateConversationContext = vi.fn();
-const mockConversationManager = {
-  getConversationContext: mockGetConversationContext,
-  createConversationContext: mockCreateConversationContext,
-  updateConversationState: vi.fn()
-};
+
 
 // Mock database
 vi.mock('../../src/database', () => {

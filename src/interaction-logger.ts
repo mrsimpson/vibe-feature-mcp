@@ -6,7 +6,7 @@
 
 import { Database } from './database.js';
 import { createLogger } from './logger.js';
-import type { DevelopmentPhase } from './state-machine.js';
+
 import type { InteractionLog } from './types.js';
 
 const logger = createLogger('InteractionLogger');

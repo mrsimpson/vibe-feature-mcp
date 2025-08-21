@@ -11,7 +11,7 @@ import { FileDetectionManager } from '../../src/file-detection-manager.js';
 import { ProjectDocsManager } from '../../src/project-docs-manager.js';
 import { join } from 'path';
 import { tmpdir } from 'os';
-import { mkdir, writeFile, rmdir, readlink, lstat } from 'fs/promises';
+import { mkdir, writeFile, rmdir, lstat } from 'fs/promises';
 
 describe('File Linking Integration', () => {
   let testProjectPath: string;

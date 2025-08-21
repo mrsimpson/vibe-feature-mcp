@@ -136,7 +136,7 @@ describe('Plan Management', () => {
       const start = await client.callTool('whats_next', {
         user_input: 'start project'
       });
-      const startResponse = assertToolSuccess(start);
+      
 
       // Get initial plan content
       const initialPlan = await client.readResource('plan://current');

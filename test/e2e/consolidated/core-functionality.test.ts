@@ -16,7 +16,7 @@ vi.unmock('fs/promises');
  */
 describe('Core Functionality', () => {
   let client: DirectServerInterface;
-  let tempProject: TempProject;
+  let _tempProject: TempProject;
   let cleanup: () => Promise<void>;
 
   beforeEach(async () => {
@@ -25,7 +25,7 @@ describe('Core Functionality', () => {
       tempProjectFactory: createTempProjectWithDefaultStateMachine
     });
     client = scenario.client;
-    tempProject = scenario.tempProject;
+    _tempProject = scenario.tempProject;
     cleanup = scenario.cleanup;
     
     // Initialize development with default workflow before each test

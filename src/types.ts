@@ -2,7 +2,7 @@
  * Common types used across the application
  */
 
-import type { DevelopmentPhase } from './state-machine.js';
+
 
 /**
  * Interface for interaction log entries

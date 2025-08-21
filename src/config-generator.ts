@@ -10,7 +10,7 @@ import { writeFile, mkdir } from 'fs/promises';
 import { join } from 'path';
 import { generateSystemPrompt } from './system-prompt-generator.js';
 import { StateMachineLoader } from './state-machine-loader.js';
-import { createLogger, LogLevel } from './logger.js';
+import { } from './logger.js';
 
 /**
  * Abstract base class for configuration generators
@@ -81,7 +81,7 @@ class AmazonQConfigGenerator extends ConfigGenerator {
   async generate(outputDir: string): Promise<void> {
     const systemPrompt = this.getSystemPrompt();
     const mcpServers = this.getDefaultMcpConfig();
-    const allowedTools = this.getDefaultAllowedTools();
+    
 
     const config = {
       "name": "vibe",
@@ -146,7 +146,7 @@ class ClaudeConfigGenerator extends ConfigGenerator {
   async generate(outputDir: string): Promise<void> {
     const systemPrompt = this.getSystemPrompt();
     const mcpServers = this.getDefaultMcpConfig();
-    const allowedTools = this.getDefaultAllowedTools();
+    
 
     // Generate CLAUDE.md (system prompt)
     const claudeMdPath = join(outputDir, 'CLAUDE.md');

@@ -4,7 +4,7 @@
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { ConversationManager } from '../../src/conversation-manager';
-import { Database } from '../../src/database';
+
 
 // Mock database
 const mockGetConversationState = vi.fn();

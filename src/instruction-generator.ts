@@ -173,7 +173,7 @@ ${baseInstructions}
     if (this.stateMachine) {
       const phaseDefinition = this.stateMachine.states[phase];
       if (phaseDefinition) {
-        const capitalizedPhase = this.capitalizePhase(phase);
+        
         return `**Remember**: \n- Focus on: ${phaseDefinition.description}\n- Update plan file with ${phase} progress\n- Mark completed tasks with [x]\n- Stay focused on current phase objectives`;
       }
     }

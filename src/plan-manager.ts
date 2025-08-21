@@ -10,7 +10,7 @@ import { writeFile, readFile, access } from 'fs/promises';
 import { dirname } from 'path';
 import { mkdir } from 'fs/promises';
 import { createLogger } from './logger.js';
-import type { DevelopmentPhase } from './state-machine.js';
+
 import type { YamlStateMachine } from './state-machine-types.js';
 
 const logger = createLogger('PlanManager');
@@ -200,7 +200,7 @@ export class PlanManager {
       return `Update the ${this.capitalizePhase(phase)} section with current progress and mark completed tasks.`;
     }
 
-    const phaseDescription = phaseDefinition.description;
+    
     const capitalizedPhase = this.capitalizePhase(phase);
 
     return `Update the ${capitalizedPhase} section with progress. Mark completed tasks with [x] and add new tasks as they are identified.`;

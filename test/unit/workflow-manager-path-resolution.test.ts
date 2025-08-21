@@ -4,8 +4,8 @@
  * Tests the robust workflow directory finding functionality
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { existsSync, readFileSync, writeFileSync, mkdirSync, rmSync } from 'fs';
+import { describe, it, expect, beforeEach, afterEach, } from 'vitest';
+import { existsSync, writeFileSync, mkdirSync, rmSync } from 'fs';
 import { resolve, join } from 'path';
 import { tmpdir } from 'os';
 import { WorkflowManager } from '../../src/workflow-manager.js';

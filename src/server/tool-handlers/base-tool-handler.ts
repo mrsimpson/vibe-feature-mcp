@@ -11,8 +11,7 @@ import {
   safeExecute, 
   logHandlerExecution, 
   logHandlerCompletion,
-  createConversationNotFoundResult 
-} from '../server-helpers.js';
+  } from '../server-helpers.js';
 
 /**
  * Abstract base class for tool handlers

@@ -7,7 +7,7 @@
  * file linking via symlinks.
  */
 
-import { writeFile, readFile, access, mkdir, unlink, symlink, lstat, stat, readdir } from 'fs/promises';
+import { writeFile, access, mkdir, unlink, symlink, lstat, stat, readdir } from 'fs/promises';
 import { join, dirname, relative, extname, basename } from 'path';
 import { createLogger } from './logger.js';
 import { TemplateManager, TemplateOptions } from './template-manager.js';
@@ -216,7 +216,7 @@ export class ProjectDocsManager {
     const paths = await this.getDocumentPathsWithExtensions(projectPath, filePaths);
     
     // Check existing documents using the old static paths for backward compatibility
-    const staticPaths = this.getDocumentPaths(projectPath);
+    
     const info = await this.getProjectDocsInfo(projectPath);
 
     // Ensure docs directory exists

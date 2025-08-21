@@ -4,7 +4,7 @@
  * Tests template loading, validation, and rendering functionality
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, } from 'vitest';
 import { TemplateManager } from '../../src/template-manager.js';
 import { mkdir, writeFile, rmdir } from 'fs/promises';
 import { join } from 'path';

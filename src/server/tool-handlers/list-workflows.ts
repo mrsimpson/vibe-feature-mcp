@@ -7,7 +7,7 @@
 
 import { z } from 'zod';
 import { BaseToolHandler } from './base-tool-handler.js';
-import { ServerContext, HandlerResult } from '../types.js';
+import { ServerContext, } from '../types.js';
 import { createLogger } from '../../logger.js';
 
 const logger = createLogger('ListWorkflowsHandler');

@@ -5,9 +5,9 @@
  * including npx scenarios and various npm installation patterns
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { existsSync, readFileSync, writeFileSync, mkdirSync, rmSync } from 'fs';
-import { resolve, join, dirname } from 'path';
+import { describe, it, expect, beforeEach, afterEach, } from 'vitest';
+import { existsSync, writeFileSync, mkdirSync, rmSync } from 'fs';
+import { resolve, join, } from 'path';
 import { tmpdir } from 'os';
 import { WorkflowManager } from '../../src/workflow-manager.js';
 
@@ -151,8 +151,8 @@ states:
     it('should find workflows in local node_modules', () => {
       // Simulate local node_modules installation
       const projectRoot = process.cwd();
-      const nodeModulesDir = join(projectRoot, 'node_modules', 'responsible-vibe-mcp');
-      const workflowsDir = join(nodeModulesDir, 'resources', 'workflows');
+      
+      
       
       // Note: We can't actually create files in the real node_modules during tests,
       // but we can verify the path resolution logic works

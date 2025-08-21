@@ -199,10 +199,10 @@ Once you've defined these criteria, we can begin development. Throughout the pro
     
     // Get workflow name from conversation state
     const conversationState = await this.conversationManager?.getConversationState(conversationId);
-    const workflowName = conversationState?.workflowName;
+    
     
     // Load the appropriate workflow for this project/conversation
-    const stateMachine = this.workflowManager.loadWorkflowForProject(projectPath, workflowName);
+    
     
     logger.debug('Analyzing phase transition', {
       currentPhase,

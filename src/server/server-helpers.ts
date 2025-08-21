@@ -7,7 +7,7 @@
 
 import { homedir } from 'os';
 import { createLogger } from '../logger.js';
-import { ServerConfig, ServerContext, HandlerResult } from './types.js';
+import { HandlerResult } from './types.js';
 
 const logger = createLogger('ServerHelpers');
 

@@ -4,7 +4,7 @@
  * Provides common mocking and server setup functions for integration tests
  */
 
-import { vi } from 'vitest';
+
 import { join } from 'path';
 
 /**

@@ -9,7 +9,7 @@
 import sqlite3 from 'sqlite3';
 import { mkdir } from 'fs/promises';
 import { dirname } from 'path';
-import { homedir } from 'os';
+
 import { join } from 'path';
 import { createLogger } from './logger.js';
 import type { DevelopmentPhase } from './state-machine.js';
