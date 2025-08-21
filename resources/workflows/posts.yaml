@@ -39,7 +39,7 @@ states:
     transitions:
       - trigger: discovery_complete
         to: story
-        instructions: |
+        additional_instructions: |
           Discovery complete! ✅ You have clear format decision, unique angle, and research foundation.
 
           Now transition to story phase to create narrative structure:
@@ -79,7 +79,7 @@ states:
     transitions:
       - trigger: story_complete
         to: writing
-        instructions: |
+        additional_instructions: |
           Story complete! ✅ You have a clear narrative structure and content outline.
 
           Now transition to writing phase for content creation:
@@ -126,7 +126,7 @@ states:
     transitions:
       - trigger: writing_complete
         to: illustration
-        instructions: |
+        additional_instructions: |
           Writing complete! ✅ You have solid content that follows your story outline.
 
           Now transition to illustration phase for visual enhancement:
@@ -172,7 +172,7 @@ states:
     transitions:
       - trigger: illustration_complete
         to: distribution
-        instructions: |
+        additional_instructions: |
           Illustration complete! ✅ You have visually enhanced content ready for publishing.
 
           Now transition to distribution phase for optimization and publishing:
@@ -218,7 +218,7 @@ states:
     transitions:
       - trigger: distribution_complete
         to: discovery
-        instructions: |
+        additional_instructions: |
           Distribution complete! ✅ Your post has been successfully published across platforms.
 
           Return to discovery phase, ready for the next post project:

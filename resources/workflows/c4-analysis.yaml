@@ -268,7 +268,7 @@ states:
       
       - trigger: "discovery_complete"
         to: "context_analysis"
-        instructions: >
+        additional_instructions: >
           Discovery is complete! ✅ Now set up project documentation and transition to context analysis.
 
           1. First, set up project documents for living documentation:
@@ -325,7 +325,7 @@ states:
       
       - trigger: "context_complete"
         to: "container_analysis"
-        instructions: >
+        additional_instructions: >
           Context analysis is complete! ✅ Now transition to container analysis phase (C4 Level 2).
           Reference DISCOVERY.md for the hierarchical sketch of containers. Focus on high-level system architecture.
           Identify major containers, services, and modules. Map communication between containers.
@@ -367,7 +367,7 @@ states:
       
       - trigger: "containers_complete"
         to: "component_analysis"
-        instructions: >
+        additional_instructions: >
           Container analysis is complete! ✅ Now transition to component analysis phase (C4 Level 3).
           Reference DISCOVERY.md for the component information. Analyze components one-by-one.
           Focus on selected components based on user priorities. Deep dive into component responsibilities and interfaces.
@@ -411,7 +411,7 @@ states:
       
       - trigger: "components_complete"
         to: "documentation_consolidation"
-        instructions: >
+        additional_instructions: >
           Component analysis is complete! ✅ Now transition to documentation consolidation phase.
           The $ARCHITECTURE_DOC and $DESIGN_DOC have been enhanced throughout the analysis phases with comprehensive findings.
           Focus on final polish and consolidation of all analysis results.
@@ -457,7 +457,7 @@ states:
       
       - trigger: "documentation_complete"
         to: "analysis_complete"
-        instructions: >
+        additional_instructions: >
           Documentation consolidation is complete! ✅ Now transition to analysis complete phase.
           The legacy system analysis is finished with comprehensive documentation and findings.
           Update the plan file and mark completed documentation tasks.

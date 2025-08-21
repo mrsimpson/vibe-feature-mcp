@@ -29,12 +29,7 @@ states:
     transitions:
       - trigger: "requirements_complete"
         to: "design"
-        instructions: >
-            Requirements are complete! ✅ Now transition to design phase. Analyze the current software project.
-            Particularly pay attention to interfaces, design patterns and architecture documentation if exists.
-            Help the user design the technical solution by asking about architecture, technologies, quality goals, and implementation approach. 
-            Focus on HOW to build what was defined in requirements. Suggest alternative solutions and present tradeoffs.
-            Document design decisions in the plan file and mark completed requirements tasks.
+        additional_instructions: "Requirements are complete! ✅ Now transition to design phase. Mark completed requirements tasks."
         transition_reason: "All requirements tasks completed, moving to technical design"
         review_perspectives:
           - perspective: "business_analyst"
@@ -53,11 +48,7 @@ states:
       
       - trigger: "design_complete"
         to: "implementation"
-        instructions: >
-            Design is complete! ✅ Now transition to implementation phase. Follow the technical design you've created.
-            Build the solution with clean, well-structured code following the architectural decisions made in design.
-            Focus on code quality, error handling, and maintainability. Update the plan file with implementation progress
-            and mark completed design tasks.
+        additional_instructions: "Design is complete! ✅ Now transition to implementation phase. Mark completed design tasks."
         transition_reason: "Technical design is complete, ready for implementation"
         review_perspectives:
           - perspective: "architect"
@@ -81,10 +72,7 @@ states:
       
       - trigger: "implementation_complete"
         to: "qa"
-        instructions: >
-            Implementation is complete! ✅ Now transition to quality assurance phase. Review the implemented solution
-            for code quality, security, performance, and compliance with requirements. Run syntax checks, build verification,
-            linting, and existing tests. Conduct comprehensive code review and update the plan file with QA progress.
+        additional_instructions: "Implementation is complete! ✅ Now transition to quality assurance phase."
         transition_reason: "Core implementation is complete, ready for quality assurance"
         review_perspectives:
           - perspective: "senior_software_developer"
@@ -108,11 +96,7 @@ states:
       
       - trigger: "qa_complete"
         to: "testing"
-        instructions: >
-            Quality assurance is complete! ✅ Now transition to testing phase. Create comprehensive test plans,
-            write and execute tests, validate feature completeness, and ensure everything works as expected.
-            Focus on test coverage, edge cases, integration testing, and user acceptance validation.
-            Update the plan file and mark completed QA tasks.
+        additional_instructions: "Quality assurance is complete! ✅ Now transition to testing phase. Mark completed QA tasks."
         transition_reason: "Quality assurance is complete, ready for comprehensive testing"
 
   testing:
@@ -131,10 +115,7 @@ states:
       
       - trigger: "testing_complete"
         to: "finalize"
-        instructions: >
-            Testing is complete! ✅ All tests pass and the feature is validated. Transition to finalization phase.
-            Clean up code and finalize documentation to ensure everything is ready for delivery.
-            Mark all testing tasks as complete.
+        additional_instructions: "Testing is complete! ✅ All tests pass and the feature is validated. Transition to finalization phase. Mark all testing tasks as complete."
         transition_reason: "All testing is complete, feature is ready for delivery"
         review_perspectives:
           - perspective: "business_analyst"

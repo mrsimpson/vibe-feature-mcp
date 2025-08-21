@@ -29,11 +29,7 @@ states:
     transitions:
       - trigger: "exploration_complete"
         to: "plan"
-        instructions: >
-          Exploration is complete! ✅ Now transition to planning phase. Create a detailed implementation strategy.
-          Break down the work into specific, actionable tasks. Consider edge cases, dependencies, and potential challenges.
-          Present the plan to the user, describing the impact of the changes.
-          Document the plan thoroughly and mark completed exploration tasks.
+        additional_instructions: "Exploration is complete! ✅ Now transition to planning phase. Present the plan to the user, describing the impact of the changes. Mark completed exploration tasks."
         transition_reason: "Sufficient understanding gained, ready to create implementation plan"
       
       - trigger: "abandon_feature"
@@ -55,12 +51,7 @@ states:
       
       - trigger: "plan_complete"
         to: "code"
-        instructions: >
-          Plan is complete! ✅ Now transition to implementation. Follow the plan you've created.
-          Read specific documentation before using libraries or frameworks. Write clean, well-structured code with proper error handling.
-          Modularize your code as per the good practices of the libraries and frameworks involved.
-          Update the plan file with implementation progress and mark completed planning tasks.
-          Stay focused on the current feature, do not implement features that were not planned.
+        additional_instructions: "Plan is complete! ✅ Now transition to implementation. Read specific documentation before using libraries or frameworks. Modularize your code as per the good practices of the libraries and frameworks involved. Mark completed planning tasks."
         transition_reason: "Implementation plan is complete and ready for coding"
         review_perspectives:
           - perspective: "architect"
@@ -92,12 +83,7 @@ states:
       
       - trigger: "code_complete"
         to: "commit"
-        instructions: >
-          Implementation is complete! ✅ Now transition to commit phase. 
-          Summarize the changes for the user. 
-          Review your work, ensure code quality, run tests, and prepare for final delivery. 
-          Clean up any temporary code and ensure everything is ready.
-          Update the plan file and mark completed implementation tasks.
+        additional_instructions: "Implementation is complete! ✅ Now transition to commit phase. Summarize the changes for the user. Mark completed implementation tasks."
         transition_reason: "Core implementation is complete, ready for finalization"
         review_perspectives:
           - perspective: "senior_software_developer"

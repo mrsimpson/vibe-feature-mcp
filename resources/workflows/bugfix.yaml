@@ -29,10 +29,7 @@ states:
     transitions:
       - trigger: "bug_reproduced"
         to: "analyze"
-        instructions: >
-          Bug successfully reproduced! ✅ Now transition to analysis phase. Examine the code paths involved,
-          identify the root cause, and understand why the bug occurs. Use debugging tools, add logging,
-          and trace through the problematic code. Document findings in the plan file.
+        additional_instructions: "Bug successfully reproduced! ✅ Now transition to analysis phase."
         transition_reason: "Bug reproduced successfully, ready to analyze root cause"
       
       - trigger: "bug_not_reproducible"
@@ -59,10 +56,7 @@ states:
       
       - trigger: "root_cause_identified"
         to: "fix"
-        instructions: >
-          Root cause identified! ✅ Now transition to fix phase. Implement the solution based on your analysis.
-          Make targeted changes that address the root cause without introducing new issues. Be careful to
-          maintain existing functionality while fixing the bug. Document the fix approach in the plan file.
+        additional_instructions: "Root cause identified! ✅ Now transition to fix phase. Document the fix approach in the plan file."
         transition_reason: "Root cause identified, ready to implement fix"
         review_perspectives:
           - perspective: "architect"
@@ -86,10 +80,7 @@ states:
       
       - trigger: "fix_implemented"
         to: "verify"
-        instructions: >
-          Fix implemented! ✅ Now transition to verification phase. Test the fix thoroughly to ensure
-          the original bug is resolved and no new issues were introduced. Run existing tests, create new ones
-          if needed, and verify the solution is robust. Document verification results in the plan file.
+        additional_instructions: "Fix implemented! ✅ Now transition to verification phase. Document verification results in the plan file."
         transition_reason: "Fix implemented, ready for verification"
         review_perspectives:
           - perspective: "senior_software_developer"
@@ -118,11 +109,7 @@ states:
       
       - trigger: "bug_fixed"
         to: "finalize"
-        instructions: >
-          Bug successfully fixed and verified! ✅ Now transition to finalization phase.
-          Clean up any debug code added during investigation and finalize documentation.
-          Mark all verification tasks complete.
-        additional_instructions: "Bug successfully fixed and verified! Clean up verification work and prepare for new bug reports."
+        additional_instructions: "Bug successfully fixed and verified! ✅ Now transition to finalization phase. Mark all verification tasks complete. Clean up verification work and prepare for new bug reports."
         transition_reason: "Bug fix complete and verified, ready for next issue"
       
       - trigger: "abandon_bug"

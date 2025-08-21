@@ -263,7 +263,7 @@ states:
       
       - trigger: "implementation_complete"
         to: "conversion_readiness"
-        instructions: >
+        additional_instructions: >
           Parallel implementation is complete! ✅ Now create the CONVERSION_PLAN.md file and transition to conversion readiness phase.
           
           Create the CONVERSION_PLAN.md file at .vibe/CONVERSION_PLAN.md with this exact template content:
@@ -534,7 +534,7 @@ states:
       
       - trigger: "conversion_ready"
         to: "conversion_readiness"
-        instructions: >
+        additional_instructions: >
           Big-bang conversion workflow is complete! ✅ The system is ready for production conversion.
           
           **Final Status:**

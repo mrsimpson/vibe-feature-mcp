@@ -29,12 +29,7 @@ states:
     transitions:
       - trigger: "ideation_complete"
         to: "architecture"
-        instructions: >
-          Ideation is complete! ✅ You have a solid PRD with clear requirements, scope, and target audience.
-          Now transition to architecture phase. Start discussing technical approaches, tech stack options, and architectural decisions.
-          Ask about the user's technical preferences, but also challenge them with alternatives.
-          Evaluate pros and cons of different approaches considering non-functional requirements.
-          Document architectural decisions and mark completed ideation tasks.
+        additional_instructions: "Ideation is complete! ✅ Present the PRD to the user. Mark completed ideation tasks."
         transition_reason: "PRD is complete with clear requirements, ready for technical architecture design"
         review_perspectives:
           - perspective: "business_analyst"
@@ -61,12 +56,7 @@ states:
       
       - trigger: "architecture_complete"
         to: "plan"
-        instructions: >
-          Architecture is complete! ✅ You have a solid technical foundation with clear tech stack choices and architectural decisions.
-          Now transition to planning phase. Create a detailed implementation strategy based on your architecture.
-          Break down the work into specific, actionable tasks. Consider dependencies, risks, and implementation order.
-          Present the implementation plan to the user and document it thoroughly.
-          Mark completed architecture tasks and focus on implementation planning.
+        additional_instructions: "Architecture is complete! ✅ You have a solid technical foundation with clear tech stack choices and architectural decisions. Present the implementation plan to the user and document it thoroughly. Mark completed architecture tasks."
         transition_reason: "Technical architecture is complete, ready for implementation planning"
         review_perspectives:
           - perspective: "architect"
@@ -93,12 +83,7 @@ states:
       
       - trigger: "plan_complete"
         to: "code"
-        instructions: >
-          Implementation plan is complete! ✅ Now transition to coding phase. Follow the plan you've created based on your architecture.
-          Read specific documentation before using the chosen libraries and frameworks. Write clean, well-structured code with proper error handling.
-          Follow the architectural patterns and tech stack decisions you've made. Modularize your code according to best practices.
-          Update the plan file with implementation progress and mark completed planning tasks.
-          Stay focused on the current project scope defined in your PRD.
+        additional_instructions: "Implementation plan is complete! ✅ Now transition to coding phase. Read specific documentation before using the chosen libraries and frameworks. Follow the architectural patterns and tech stack decisions you've made. Modularize your code according to best practices. Stay focused on the current project scope defined in your PRD. Mark completed planning tasks."
         transition_reason: "Implementation plan is complete and ready for coding"
       
       - trigger: "abandon_project"
@@ -125,10 +110,7 @@ states:
       
       - trigger: "code_complete"
         to: "finalize"
-        instructions: >
-          Implementation is complete! ✅ Now transition to finalization phase.
-          Clean up code and finalize documentation to ensure everything is ready for users and contributors.
-          Update the plan file and mark completed implementation tasks.
+        additional_instructions: "Implementation is complete! ✅ Now transition to finalization phase. Mark completed implementation tasks."
         transition_reason: "Core implementation is complete, ready for comprehensive documentation"
       
       - trigger: "abandon_project"

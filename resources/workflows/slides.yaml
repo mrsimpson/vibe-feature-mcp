@@ -38,7 +38,7 @@ states:
     transitions:
       - trigger: ideation_complete
         to: structure
-        instructions: |
+        additional_instructions: |
           Ideation complete! ✅ You have a clear presentation concept, defined audience, and established goals.
 
           Now transition to structure phase to organize your content flow:
@@ -78,7 +78,7 @@ states:
     transitions:
       - trigger: structure_complete
         to: draft
-        instructions: |
+        additional_instructions: |
           Structure complete! ✅ You have a well-organized outline and clear content flow.
 
           Now transition to draft phase to create the actual content:
@@ -125,7 +125,7 @@ states:
     transitions:
       - trigger: draft_complete
         to: style
-        instructions: |
+        additional_instructions: |
           Draft complete! ✅ You have solid content, speaker notes, and visual planning.
 
           Now transition to style phase to apply design and create visuals:
@@ -174,7 +174,7 @@ states:
     transitions:
       - trigger: style_complete
         to: review
-        instructions: |
+        additional_instructions: |
           Styling complete! ✅ You have a visually appealing presentation with consistent design.
 
           Now transition to review phase to validate and refine:
@@ -223,7 +223,7 @@ states:
     transitions:
       - trigger: review_complete
         to: deliver
-        instructions: |
+        additional_instructions: |
           Review complete! ✅ Your presentation has been validated and refined for delivery.
 
           Now transition to deliver phase for final preparation:
@@ -276,7 +276,7 @@ states:
     transitions:
       - trigger: delivery_complete
         to: ideate
-        instructions: |
+        additional_instructions: |
           Presentation delivery complete! ✅ Your presentation has been successfully delivered.
 
           Return to ideation phase, ready for the next presentation project:

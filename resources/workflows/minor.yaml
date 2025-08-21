@@ -35,12 +35,7 @@ states:
     transitions:
       - trigger: "exploration_complete"
         to: "implement"
-        instructions: >
-          Analysis and design complete! ✅ Now transition to implementation phase.
-          You have a clear understanding of the problem and a solid design approach.
-          Now implement the solution by writing code, testing it, and preparing for commit.
-          Follow your design decisions and keep the scope focused on the minor enhancement.
-          Update the plan file with implementation progress and mark completed exploration tasks.
+        additional_instructions: "Analysis and design complete! ✅ Now transition to implementation phase. You have a clear understanding of the problem and a solid design approach. Keep the scope focused on the minor enhancement. Mark completed exploration tasks."
         transition_reason: "Analysis and design complete, ready for streamlined implementation"
       
       - trigger: "abandon_feature"
