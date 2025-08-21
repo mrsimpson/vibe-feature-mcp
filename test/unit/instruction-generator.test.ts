@@ -34,7 +34,7 @@ describe('InstructionGenerator', () => {
       generatePlanFileGuidance: vi
         .fn()
         .mockReturnValue('Test plan file guidance'),
-    } as any;
+    } as unknown;
 
     // Mock ProjectDocsManager
     mockProjectDocsManager = {
@@ -53,7 +53,7 @@ describe('InstructionGenerator', () => {
         ),
         $DESIGN_DOC: join(testProjectPath, '.vibe', 'docs', 'design.md'),
       }),
-    } as any;
+    } as unknown;
 
     // Create instruction generator and inject mocks
     instructionGenerator = new InstructionGenerator(mockPlanManager);

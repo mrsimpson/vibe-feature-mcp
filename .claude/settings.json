@@ -1,12 +1,15 @@
 {
   "permissions": {
     "allow": [
-      "Bash(ls:*)",
-      "Bash(find:*)",
-      "mcp__repsonsible-vibe__whats_next",
-      "mcp__repsonsible-vibe__start_development"
+      "MCP(responsible-vibe-mcp:whats_next)",
+      "MCP(responsible-vibe-mcp:conduct_review)",
+      "MCP(responsible-vibe-mcp:list_workflows)",
+      "MCP(responsible-vibe-mcp:get_tool_info)",
+      "Read(README.md)",
+      "Read(./.vibe/**)",
+      "Write(./.vibe/**)"
     ],
-    "deny": ["Bash(curl:*)"]
-  },
-  "env": {}
+    "ask": ["Bash(*)", "Write(**)"],
+    "deny": ["Read(./.env)", "Read(./.env.*)", "Read(./secrets/**)"]
+  }
 }

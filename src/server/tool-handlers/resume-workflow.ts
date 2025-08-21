@@ -9,7 +9,7 @@
 import { ConversationRequiredToolHandler } from './base-tool-handler.js';
 import { ServerContext } from '../types.js';
 import { generateSystemPrompt } from '../../system-prompt-generator.js';
-import type { YamlStateMachine } from '../../state-machine-types.js';
+import type { YamlStateMachine, YamlState } from '../../state-machine-types.js';
 
 /**
  * Arguments for the resume_workflow tool
@@ -135,7 +135,7 @@ export class ResumeWorkflowHandler extends ConversationRequiredToolHandler<
         current_phase: conversationContext.currentPhase,
         project_path: conversationContext.projectPath,
         git_branch: conversationContext.gitBranch,
-        state_machine: stateMachineInfo,
+        state_machine: stateMachineInfo as YamlStateMachine,
       },
 
       // Plan file analysis
@@ -229,7 +229,7 @@ export class ResumeWorkflowHandler extends ConversationRequiredToolHandler<
     context: ServerContext,
     projectPath: string,
     workflowName?: string
-  ): Promise<any> {
+  ): Promise<unknown> {
     try {
       // Get the actual state machine for this project
       const stateMachine = context.transitionEngine.getStateMachine(
@@ -245,7 +245,7 @@ export class ResumeWorkflowHandler extends ConversationRequiredToolHandler<
         phase_descriptions: Object.fromEntries(
           Object.entries(stateMachine.states).map(([phase, definition]) => [
             phase,
-            (definition as any).description,
+            (definition as YamlState).description,
           ])
         ),
       };
@@ -255,8 +255,11 @@ export class ResumeWorkflowHandler extends ConversationRequiredToolHandler<
         error as Error
       );
       return {
-        type: 'unknown',
+        name: 'unknown',
+        description: 'Could not load workflow',
+        initial_state: 'unknown',
         phases: [],
+        phase_descriptions: {},
       };
     }
   }
@@ -286,18 +289,18 @@ export class ResumeWorkflowHandler extends ConversationRequiredToolHandler<
 
       if (phaseDefinition) {
         // Set phase guidance from state machine description
-        recommendations.phase_guidance = `Current phase: ${(phaseDefinition as any).description}`;
+        recommendations.phase_guidance = `Current phase: ${(phaseDefinition as YamlState).description}`;
 
         // Generate transition-based recommendations
         if (
-          (phaseDefinition as any).transitions &&
-          (phaseDefinition as any).transitions.length > 0
+          (phaseDefinition as YamlState).transitions &&
+          (phaseDefinition as YamlState).transitions.length > 0
         ) {
           recommendations.immediate_actions.push(
             'From here, you can transition to:'
           );
 
-          phaseDefinition.transitions.forEach(transition => {
+          for (const transition of phaseDefinition.transitions) {
             const targetPhase = stateMachine.states[transition.to];
             const targetDescription = targetPhase
               ? targetPhase.description
@@ -305,7 +308,7 @@ export class ResumeWorkflowHandler extends ConversationRequiredToolHandler<
             recommendations.immediate_actions.push(
               `• ${transition.to}: ${targetDescription}`
             );
-          });
+          }
 
           // Add instruction on how to transition
           recommendations.immediate_actions.push(

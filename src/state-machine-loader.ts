@@ -142,7 +142,7 @@ export class StateMachineLoader {
     }
 
     // Validate states and transitions
-    Object.entries(stateMachine.states).forEach(([stateName, state]) => {
+    for (const [stateName, state] of Object.entries(stateMachine.states)) {
       // Check required state properties
       if (!state.description || !state.default_instructions) {
         throw new Error(
@@ -156,7 +156,7 @@ export class StateMachineLoader {
         );
       }
 
-      state.transitions.forEach(transition => {
+      for (const transition of state.transitions) {
         if (!stateNames.includes(transition.to)) {
           throw new Error(
             `State "${stateName}" has transition to unknown state "${transition.to}"`
@@ -168,8 +168,8 @@ export class StateMachineLoader {
             `Transition from "${stateName}" to "${transition.to}" is missing transition_reason`
           );
         }
-      });
-    });
+      }
+    }
 
     logger.debug('State machine validation successful');
   }

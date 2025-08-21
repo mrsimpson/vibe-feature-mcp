@@ -9,7 +9,13 @@ import { ErrorHandler } from './utils/ErrorHandler';
 import { PlantUMLRenderer } from './visualization/PlantUMLRenderer';
 import { getRequiredElement } from './utils/DomHelpers';
 import type { InteractionEvent } from './types/ui-types';
-import { YamlStateMachine, AppState, TransitionData } from './types/ui-types';
+import {
+  YamlStateMachine,
+  YamlState,
+  YamlTransition,
+  AppState,
+  TransitionData,
+} from './types/ui-types';
 
 class WorkflowVisualizerApp {
   private readonly workflowLoader: WorkflowLoader;
@@ -131,12 +137,12 @@ class WorkflowVisualizerApp {
       }
 
       // Add workflow options
-      workflows.forEach(workflow => {
+      for (const workflow of workflows) {
         const option = document.createElement('option');
         option.value = workflow.name;
         option.textContent = `${workflow.displayName} - ${workflow.description}`;
         this.workflowSelector.appendChild(option);
-      });
+      }
     } catch (error) {
       console.error('Failed to populate workflow selector:', error);
       this.errorHandler.showError('Failed to load available workflows');
@@ -372,7 +378,10 @@ class WorkflowVisualizerApp {
   /**
    * Render state details with back button in header
    */
-  private renderStateDetailsWithHeader(stateId: string, stateData: any): void {
+  private renderStateDetailsWithHeader(
+    stateId: string,
+    stateData: YamlState
+  ): void {
     const workflow = this.appState.currentWorkflow!;
     const isInitial = stateId === workflow.initial_state;
 
@@ -425,7 +434,7 @@ class WorkflowVisualizerApp {
         <ul class="transitions-list">
           ${stateData.transitions
             .map(
-              (transition: any) => `
+              (transition: YamlTransition) => `
             <li class="transition-item clickable-transition" data-from="${stateId}" data-to="${transition.to}" data-trigger="${transition.trigger}">
               <div class="transition-trigger">${transition.trigger}</div>
               <div class="transition-target">→ ${transition.to}</div>
@@ -442,7 +451,7 @@ class WorkflowVisualizerApp {
     const transitionItems = this.sidePanelContent.querySelectorAll(
       '.clickable-transition'
     );
-    transitionItems.forEach(item => {
+    for (const item of transitionItems) {
       item.addEventListener('click', e => {
         e.stopPropagation();
         const fromState = item.getAttribute('data-from');
@@ -452,7 +461,7 @@ class WorkflowVisualizerApp {
         if (fromState && toState && trigger) {
           // Find the full transition data
           const fullTransition = stateData.transitions.find(
-            (t: any) => t.to === toState && t.trigger === trigger
+            (t: YamlTransition) => t.to === toState && t.trigger === trigger
           );
 
           if (fullTransition) {
@@ -481,7 +490,7 @@ class WorkflowVisualizerApp {
         (item as HTMLElement).style.backgroundColor = '';
         (item as HTMLElement).style.cursor = '';
       });
-    });
+    }
   }
 
   /**

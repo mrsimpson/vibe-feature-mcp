@@ -352,11 +352,11 @@ describe('Workflow Integration', () => {
       const results = await Promise.all(promises);
 
       // All requests should succeed
-      results.forEach((result, index) => {
+      for (const result of results) {
         const response = assertToolSuccess(result);
         expect(response.phase).toBeTruthy();
         expect(response.conversation_id).toBeTruthy();
-      });
+      }
 
       // Final state should be consistent
       const stateResource = await client.readResource('state://current');

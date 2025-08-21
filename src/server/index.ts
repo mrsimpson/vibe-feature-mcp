@@ -6,7 +6,7 @@
  */
 
 import { setMcpServerForLogging, createLogger } from '../logger.js';
-import { ServerConfig } from './types.js';
+import { ServerConfig, HandlerResult } from './types.js';
 import {
   initializeServerComponents,
   registerMcpTools,
@@ -16,6 +16,10 @@ import {
 import { createToolRegistry } from './tool-handlers/index.js';
 import { createResourceRegistry } from './resource-handlers/index.js';
 import { createResponseRenderer } from './response-renderer.js';
+import type {
+  WhatsNextArgs,
+  WhatsNextResult,
+} from './tool-handlers/whats-next.js';
 
 const logger = createLogger('ResponsibleVibeMCPServer');
 
@@ -122,7 +126,7 @@ export class ResponsibleVibeMCPServer {
   /**
    * Direct access to tool handlers for testing
    */
-  public async handleWhatsNext(args: any): Promise<any> {
+  public async handleWhatsNext(args: unknown): Promise<unknown> {
     if (!this.components) {
       throw new Error('Server not initialized. Call initialize() first.');
     }
@@ -137,7 +141,7 @@ export class ResponsibleVibeMCPServer {
       throw new Error(result.error || 'Handler execution failed');
     }
 
-    return result.data;
+    return result;
   }
 
   /**

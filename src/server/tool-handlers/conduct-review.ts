@@ -9,6 +9,8 @@
 import { ConversationRequiredToolHandler } from './base-tool-handler.js';
 import { ServerContext } from '../types.js';
 import { validateRequiredArgs } from '../server-helpers.js';
+import type { ConversationContext } from '../../types.js';
+import type { YamlTransition } from '../../state-machine-types.js';
 
 /**
  * Arguments for the conduct_review tool
@@ -38,7 +40,7 @@ export class ConductReviewHandler extends ConversationRequiredToolHandler<
   protected async executeWithConversation(
     args: ConductReviewArgs,
     context: ServerContext,
-    conversationContext: any
+    conversationContext: ConversationContext
   ): Promise<ConductReviewResult> {
     // Validate required arguments
     validateRequiredArgs(args, ['target_phase']);
@@ -112,7 +114,7 @@ export class ConductReviewHandler extends ConversationRequiredToolHandler<
     }
 
     const transition = currentState.transitions.find(
-      (t: any) => t.to === targetPhase
+      (t: YamlTransition) => t.to === targetPhase
     );
     if (!transition) {
       throw new Error(
@@ -139,7 +141,7 @@ export class ConductReviewHandler extends ConversationRequiredToolHandler<
    */
   private async conductAutomatedReview(
     perspectives: Array<{ perspective: string; prompt: string }>,
-    conversationContext: any
+    conversationContext: ConversationContext
   ): Promise<ConductReviewResult> {
     // TODO: Implement automated review when sampling tools are available
     // For now, fall back to guided instructions

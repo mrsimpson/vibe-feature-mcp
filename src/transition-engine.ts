@@ -8,6 +8,7 @@
 import { createLogger } from './logger.js';
 import { StateMachineLoader } from './state-machine-loader.js';
 import { WorkflowManager } from './workflow-manager.js';
+import type { ConversationState } from './types.js';
 
 const logger = createLogger('TransitionEngine');
 
@@ -33,7 +34,9 @@ export class TransitionEngine {
   private workflowManager: WorkflowManager;
   private conversationManager?: {
     hasInteractions: (conversationId: string) => Promise<boolean>;
-    getConversationState: (conversationId: string) => Promise<any>;
+    getConversationState: (
+      conversationId: string
+    ) => Promise<ConversationState | null>;
   };
 
   constructor(projectPath: string) {
@@ -48,7 +51,9 @@ export class TransitionEngine {
    */
   setConversationManager(conversationManager: {
     hasInteractions: (conversationId: string) => Promise<boolean>;
-    getConversationState: (conversationId: string) => Promise<any>;
+    getConversationState: (
+      conversationId: string
+    ) => Promise<ConversationState | null>;
   }) {
     this.conversationManager = conversationManager;
   }
