@@ -40,8 +40,8 @@ export class InteractionLogger {
   async logInteraction(
     conversationId: string,
     toolName: string,
-    inputParams: any,
-    responseData: any,
+    inputParams: unknown,
+    responseData: unknown,
     currentPhase: string
   ): Promise<void> {
     logger.debug('Logging interaction', {
