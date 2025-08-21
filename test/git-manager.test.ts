@@ -4,7 +4,6 @@
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { GitManager } from '../src/git-manager.js';
-import { GitCommitConfig } from '../src/types.js';
 import { execSync } from 'child_process';
 import { mkdirSync, rmSync, writeFileSync } from 'fs';
 import { resolve } from 'path';
@@ -68,89 +67,7 @@ describe('GitManager', () => {
     });
   });
 
-  describe('hasChangesToCommit', () => {
-    it('should detect no changes initially', () => {
-      expect(GitManager.hasChangesToCommit(testDir)).toBe(false);
-    });
 
-    it('should detect changes when files are modified', () => {
-      writeFileSync(resolve(testDir, 'test.txt'), 'test content');
-      expect(GitManager.hasChangesToCommit(testDir)).toBe(true);
-    });
-  });
-
-  describe('createWipCommitIfNeeded', () => {
-    it('should create WIP commit when changes exist and config is enabled', () => {
-      const config: GitCommitConfig = {
-        enabled: true,
-        commitOnStep: true,
-        commitOnPhase: false,
-        commitOnComplete: false,
-        initialMessage: 'Test feature'
-      };
-
-      // Create some changes
-      writeFileSync(resolve(testDir, 'test.txt'), 'test content');
-
-      const result = GitManager.createWipCommitIfNeeded(
-        testDir,
-        config,
-        'test context',
-        'test-phase'
-      );
-
-      expect(result).toBe(true);
-      
-      // Verify commit was created
-      const log = execSync('git log --oneline -1', { 
-        cwd: testDir, 
-        encoding: 'utf-8' 
-      }).trim();
-      
-      expect(log).toContain('WIP: Test feature - test context (test-phase)');
-    });
-
-    it('should not create commit when disabled', () => {
-      const config: GitCommitConfig = {
-        enabled: false,
-        commitOnStep: true,
-        commitOnPhase: false,
-        commitOnComplete: false,
-        initialMessage: 'Test feature'
-      };
-
-      // Create some changes
-      writeFileSync(resolve(testDir, 'test.txt'), 'test content');
-
-      const result = GitManager.createWipCommitIfNeeded(
-        testDir,
-        config,
-        'test context',
-        'test-phase'
-      );
-
-      expect(result).toBe(false);
-    });
-
-    it('should not create commit when no changes exist', () => {
-      const config: GitCommitConfig = {
-        enabled: true,
-        commitOnStep: true,
-        commitOnPhase: false,
-        commitOnComplete: false,
-        initialMessage: 'Test feature'
-      };
-
-      const result = GitManager.createWipCommitIfNeeded(
-        testDir,
-        config,
-        'test context',
-        'test-phase'
-      );
-
-      expect(result).toBe(false);
-    });
-  });
 
   describe('getCurrentCommitHash', () => {
     it('should get current commit hash', () => {

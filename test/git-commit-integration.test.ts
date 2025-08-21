@@ -18,11 +18,7 @@ describe('Git Commit Integration', () => {
       expect(typeof GitManager.getCurrentCommitHash).toBe('function');
     });
 
-    it('should provide git commit functionality', () => {
-      // This test verifies that GitManager provides commit functionality
-      expect(typeof GitManager.hasChangesToCommit).toBe('function');
-      expect(typeof GitManager.createWipCommitIfNeeded).toBe('function');
-    });
+
   });
 
   describe('Commit Behaviour Parameter', () => {

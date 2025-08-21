@@ -8,7 +8,6 @@
 import { ConversationRequiredToolHandler } from './base-tool-handler.js';
 import { ServerContext } from '../types.js';
 import { validateRequiredArgs } from '../server-helpers.js';
-import { GitManager } from '../../git-manager.js';
 
 /**
  * Arguments for the proceed_to_phase tool
@@ -29,7 +28,6 @@ export interface ProceedToPhaseResult {
   transition_reason: string;
   is_modeled_transition: boolean;
   conversation_id: string;
-  commit_created?: boolean;
 }
 
 /**
@@ -117,35 +115,21 @@ export class ProceedToPhaseHandler extends ConversationRequiredToolHandler<Proce
       }
     );
 
-    // Handle git commits if configured (after phase transition)
-    let commitCreated = false;
+    // Add commit instructions if configured
+    let finalInstructions = instructions.instructions;
     if (conversationContext.gitCommitConfig?.enabled && conversationContext.gitCommitConfig.commitOnPhase) {
-      commitCreated = GitManager.createWipCommitIfNeeded(
-        conversationContext.projectPath,
-        conversationContext.gitCommitConfig,
-        `Phase transition: ${currentPhase} → ${target_phase}`,
-        transitionResult.newPhase
-      );
-      
-      if (commitCreated) {
-        this.logger.info('Created WIP commit for phase transition', {
-          conversationId,
-          fromPhase: currentPhase,
-          toPhase: transitionResult.newPhase,
-          reason
-        });
-      }
+      const commitMessage = `Phase transition: ${currentPhase} → ${target_phase}`;
+      finalInstructions += `\n\n**Git Commit Required**: Create a commit for this phase transition using:\n\`\`\`bash\ngit add . && git commit -m "${commitMessage}"\n\`\`\``;
     }
 
     // Prepare response
     const response: ProceedToPhaseResult = {
       phase: transitionResult.newPhase,
-      instructions: instructions.instructions,
+      instructions: finalInstructions,
       plan_file_path: conversationContext.planFilePath,
       transition_reason: transitionResult.transitionReason,
       is_modeled_transition: transitionResult.isModeled,
-      conversation_id: conversationContext.conversationId,
-      commit_created: commitCreated
+      conversation_id: conversationContext.conversationId
     };
 
     // Log interaction

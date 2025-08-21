@@ -7,7 +7,6 @@
 
 import { ConversationRequiredToolHandler } from './base-tool-handler.js';
 import { ServerContext } from '../types.js';
-import { GitManager } from '../../git-manager.js';
 
 /**
  * Arguments for the whats_next tool
@@ -132,28 +131,17 @@ export class WhatsNextHandler extends ConversationRequiredToolHandler<WhatsNextA
       }
     );
 
-    // Handle git commits if configured
+    // Add commit instructions if configured
+    let finalInstructions = instructions.instructions;
     if (conversationContext.gitCommitConfig?.enabled && conversationContext.gitCommitConfig.commitOnStep) {
-      const commitCreated = GitManager.createWipCommitIfNeeded(
-        conversationContext.projectPath,
-        conversationContext.gitCommitConfig,
-        requestContext || 'Step completion',
-        transitionResult.newPhase
-      );
-      
-      if (commitCreated) {
-        this.logger.info('Created WIP commit after step', {
-          conversationId,
-          phase: transitionResult.newPhase,
-          context: requestContext
-        });
-      }
+      const commitMessage = requestContext || 'Step completion';
+      finalInstructions += `\n\n**Git Commit Required**: Create a commit for this step using:\n\`\`\`bash\ngit add . && git commit -m "${commitMessage}"\n\`\`\``;
     }
 
     // Prepare response
     const response: WhatsNextResult = {
       phase: transitionResult.newPhase,
-      instructions: instructions.instructions,
+      instructions: finalInstructions,
       plan_file_path: conversationContext.planFilePath,
       is_modeled_transition: transitionResult.isModeled,
       conversation_id: conversationContext.conversationId
