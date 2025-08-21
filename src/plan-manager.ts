@@ -251,8 +251,8 @@ export class PlanManager {
 
       logger.info('Plan file deleted successfully', { planFilePath });
       return true;
-    } catch (error: any) {
-      if (error.code === 'ENOENT') {
+    } catch (error: unknown) {
+      if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
         logger.debug('Plan file does not exist, nothing to delete', {
           planFilePath,
         });
@@ -279,8 +279,8 @@ export class PlanManager {
         planFilePath,
       });
       return false;
-    } catch (error: any) {
-      if (error.code === 'ENOENT') {
+    } catch (error: unknown) {
+      if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
         logger.debug('Plan file successfully deleted (does not exist)', {
           planFilePath,
         });

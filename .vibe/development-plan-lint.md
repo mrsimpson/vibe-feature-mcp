@@ -93,7 +93,10 @@ Add comprehensive code quality tooling to the responsible-vibe-mcp project inclu
 - [x] Fix unused function parameters (5 warnings fixed)
 - [x] Fix Record<string, any> types (3 warnings fixed)
 - [x] Comment out unused functions (2 warnings fixed)
-- [ ] Continue with forEach → for...of loop conversions
+- [x] Add proper types to resume-workflow.ts (10 warnings fixed: 320→310)
+- [x] Fix generic types and interaction logger (5 warnings fixed: 310→305)
+- [x] Fix catch blocks and forEach loops (5 warnings fixed: 305→300)
+- [x] Continue with forEach → for...of loop conversions
 - [ ] Address remaining no-explicit-any issues selectively
 - [ ] Handle non-null assertion operators carefully
 

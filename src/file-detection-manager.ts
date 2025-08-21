@@ -261,29 +261,29 @@ export class FileDetectionManager {
 
     if (detectionResult.architecture.length > 0) {
       suggestions.push(`**Architecture files found:**`);
-      detectionResult.architecture.slice(0, 3).forEach(file => {
+      for (const file of detectionResult.architecture.slice(0, 3)) {
         suggestions.push(
           `  - ${file.relativePath} (${file.confidence} confidence)`
         );
-      });
+      }
     }
 
     if (detectionResult.requirements.length > 0) {
       suggestions.push(`**Requirements files found:**`);
-      detectionResult.requirements.slice(0, 3).forEach(file => {
+      for (const file of detectionResult.requirements.slice(0, 3)) {
         suggestions.push(
           `  - ${file.relativePath} (${file.confidence} confidence)`
         );
-      });
+      }
     }
 
     if (detectionResult.design.length > 0) {
       suggestions.push(`**Design files found:**`);
-      detectionResult.design.slice(0, 3).forEach(file => {
+      for (const file of detectionResult.design.slice(0, 3)) {
         suggestions.push(
           `  - ${file.relativePath} (${file.confidence} confidence)`
         );
-      });
+      }
     }
 
     if (suggestions.length === 0) {
