@@ -31,7 +31,7 @@ export interface HandlerResult<T = any> {
   success: boolean;
   data?: T;
   error?: string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 /**

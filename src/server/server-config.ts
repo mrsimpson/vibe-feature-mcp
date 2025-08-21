@@ -38,12 +38,12 @@ const logger = createLogger('ServerConfig');
 /**
  * Build dynamic enum for template options
  */
-function buildTemplateEnum(templates: string[]): [string, ...string[]] {
-  if (templates.length === 0) {
-    return ['freestyle']; // Fallback if no templates found
-  }
-  return [templates[0], ...templates.slice(1)];
-}
+// function buildTemplateEnum(templates: string[]): [string, ...string[]] {
+//   if (templates.length === 0) {
+//     return ['freestyle']; // Fallback if no templates found
+//   }
+//   return [templates[0], ...templates.slice(1)];
+// }
 
 /**
  * Generate template descriptions for MCP tool schema
@@ -719,7 +719,7 @@ export function registerMcpResources(
         'Access workflow definition files by name. Use the list_workflows tool to discover available workflows.',
       mimeType: 'application/x-yaml',
     },
-    async (uri, variables) => {
+    async (uri, _variables) => {
       const handler = resourceRegistry.resolve(uri.href);
       if (!handler) {
         throw new Error(`Workflow resource handler not found for ${uri.href}`);

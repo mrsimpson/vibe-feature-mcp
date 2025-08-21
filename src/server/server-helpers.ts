@@ -35,7 +35,7 @@ export function normalizeProjectPath(projectPath?: string): string {
  */
 export function createSuccessResult<T>(
   data: T,
-  metadata?: Record<string, any>
+  metadata?: Record<string, unknown>
 ): HandlerResult<T> {
   return {
     success: true,
@@ -49,7 +49,7 @@ export function createSuccessResult<T>(
  */
 export function createErrorResult(
   error: string | Error,
-  metadata?: Record<string, any>
+  metadata?: Record<string, unknown>
 ): HandlerResult<never> {
   const errorMessage = error instanceof Error ? error.message : error;
 

@@ -121,7 +121,7 @@ export class InstructionGenerator {
   private async enhanceInstructions(
     baseInstructions: string,
     context: InstructionContext,
-    planFileGuidance: string
+    _planFileGuidance: string
   ): Promise<string> {
     const {
       phase,

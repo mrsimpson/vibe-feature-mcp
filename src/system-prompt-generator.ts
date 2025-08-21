@@ -28,7 +28,7 @@ export function generateSystemPrompt(stateMachine: YamlStateMachine): string {
 /**
  * Generate a simple system prompt for LLM integration
  */
-function generateSimpleSystemPrompt(stateMachine: YamlStateMachine): string {
+function generateSimpleSystemPrompt(_stateMachine: YamlStateMachine): string {
   logger.debug('Generating system prompt');
 
   const systemPrompt = `
@@ -114,9 +114,9 @@ Remember: responsible-vibe-mcp guides the development process but relies on you 
 /**
  * Capitalize phase name for display
  */
-function capitalizePhase(phase: string): string {
-  return phase
-    .split('_')
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(' ');
-}
+// function capitalizePhase(phase: string): string {
+//   return phase
+//     .split('_')
+//     .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+//     .join(' ');
+// }

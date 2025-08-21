@@ -127,7 +127,7 @@ export class ConductReviewHandler extends ConversationRequiredToolHandler<
    * Check if MCP environment supports sampling capabilities
    */
   private async checkSamplingCapability(
-    context: ServerContext
+    _context: ServerContext
   ): Promise<boolean> {
     // For now, assume non-sampling (most common case)
     // In the future, this could check for specific LLM interaction tools

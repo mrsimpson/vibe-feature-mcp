@@ -165,7 +165,7 @@ export class PlanManager {
 `;
 
     // Generate simple sections for each phase
-    phases.forEach((phase, index) => {
+    phases.forEach((phase, _index) => {
       if (phase !== initialPhase) {
         content += `## ${this.capitalizePhase(phase)}
 ### Tasks
