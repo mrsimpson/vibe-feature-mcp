@@ -534,24 +534,5 @@ states:
       
       - trigger: "conversion_ready"
         to: "conversion_readiness"
-        additional_instructions: >
-          Big-bang conversion workflow is complete! ✅ The system is ready for production conversion.
-          
-          **Final Status:**
-          - New system implementation complete with proven functional equivalence
-          - Behavioral comparison mechanism operational and validated
-          - CONVERSION_PLAN.md created with comprehensive production execution guidance
-          - Operations team ready for production conversion execution
-          - Rollback procedures tested and ready
-          
-          **Next Steps (Outside Development Conversation):**
-          - Use CONVERSION_PLAN.md to execute production conversion
-          - Follow the detailed checklist for conversion execution
-          - Execute rollback procedures if needed
-          - Conduct post-conversion review and lessons learned
-          
-          The development work is complete. Production conversion execution happens outside this conversation using the provided CONVERSION_PLAN.md guidance.
-          
-          Mark all conversion readiness tasks as complete in the plan file.
         additional_instructions: "Big-bang conversion workflow complete! System ready for production conversion using CONVERSION_PLAN.md guidance."
         transition_reason: "System conversion readiness validated, ready for production execution"

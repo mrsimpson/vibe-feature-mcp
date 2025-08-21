@@ -189,10 +189,6 @@ states:
     transitions:
       - trigger: distribution_complete
         to: discovery
-        additional_instructions: |
-          Distribution complete! ✅ Your post has been successfully published across platforms.
-          
-          Mark all distribution tasks as complete and prepare for new work.
         additional_instructions: "Post successfully published. Ready for next post project."
         transition_reason: "Post publishing completed successfully, ready for new projects"
 
