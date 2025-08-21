@@ -39,10 +39,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
 
+    - name: Generate GitHub App Token
+      id: generate_token
+      uses: tibdex/github-app-token@v1
+      with:
+        app_id: ${{ vars.VERSION_BUMPER_APPID }}
+        private_key: ${{ secrets.VERSION_BUMPER_SECRET }}
+
     - name: Checkout
       uses: actions/checkout@v4
       with:
         fetch-depth: 0
+        token: ${{ steps.generate_token.outputs.token }}
         
     - name: Setup Node.js
       uses: actions/setup-node@v4
@@ -85,6 +93,8 @@ jobs:
         git add package.json package-lock.json
         git commit -m "chore: bump version to $NEW_VERSION [skip ci]" || exit 0
         git push
+      env:
+        GITHUB_TOKEN: ${{ steps.generate_token.outputs.token }}
         
     - name: Create GitHub Release
       if: steps.version.outputs.new_tag
