@@ -1,14 +1,15 @@
 # Git Commit Feature
 
-The responsible-vibe-mcp server now supports configurable automatic git commits during development interactions. This feature allows users to control when the system creates commits, providing better integration with git workflows.
+The responsible-vibe-mcp server supports configurable automatic git commits during development interactions. This feature allows users to control when the system creates commits, providing better integration with git workflows.
 
 ## Overview
 
-The git commit feature provides three levels of commit automation:
+The git commit feature provides four levels of commit automation:
 
-1. **Step-level commits**: Commit after each step (before `whats_next` calls)
-2. **Phase-level commits**: Commit after each phase transition (before `proceed_to_phase` calls)
-3. **Development-end commits**: Final commit at development completion with rebase+squash of intermediate commits
+1. **`step`**: Commit after each development step (most granular)
+2. **`phase`**: Commit before each phase transition (milestone commits)
+3. **`end`**: Single final commit at development completion (default)
+4. **`none`**: No automatic commits (manual git control)
 
 ## Configuration
 
@@ -16,110 +17,106 @@ Git commit behavior is configured when starting development using the `start_dev
 
 ```javascript
 start_development({
-  workflow: 'minor',
-  git_commit_config: {
-    enabled: true,
-    commit_on_step: true,
-    commit_on_phase: true,
-    commit_on_complete: true,
-    initial_message: 'Implement user authentication feature',
-  },
+  workflow: 'waterfall',
+  commit_behaviour: 'end', // Options: "step", "phase", "end", "none"
 });
 ```
 
-### Configuration Options
+### Commit Behavior Options
 
-- **`enabled`** (boolean): Master switch to enable/disable git commits
-- **`commit_on_step`** (boolean): Create WIP commits after each development step
-- **`commit_on_phase`** (boolean): Create WIP commits before phase transitions
-- **`commit_on_complete`** (boolean): Create final commit with rebase+squash at development end
-- **`initial_message`** (string): Base message used in commit messages for context
+- **`step`**: Creates commits after each development step, providing detailed progress tracking
+- **`phase`**: Creates commits before phase transitions, marking major milestones
+- **`end`**: Creates a single commit when development is complete (recommended default)
+- **`none`**: Disables automatic commits, giving you full manual control
 
-## Commit Message Format
+## Default Behavior
 
-### WIP Commits
+The system automatically chooses sensible defaults:
 
-WIP commits use the following format:
-
-```
-WIP: {initial_message} - {context} ({phase})
-```
-
-Examples:
-
-- `WIP: Implement user authentication - Step completion (requirements)`
-- `WIP: Implement user authentication - Phase transition: requirements → design (requirements)`
-
-### Final Commits
-
-Final commits use a clean message based on the development context and will squash any intermediate WIP commits created during the session.
+- **Git repositories**: Defaults to `"end"` (single final commit)
+- **Non-git projects**: Automatically uses `"none"` (no commits possible)
 
 ## Usage Examples
 
-### Basic Usage
+### Recommended Usage (Default)
 
 ```javascript
-// Enable commits at all levels
+// Single final commit (recommended for most cases)
 start_development({
   workflow: 'waterfall',
-  git_commit_config: {
-    enabled: true,
-    commit_on_step: true,
-    commit_on_phase: true,
-    commit_on_complete: true,
-    initial_message: 'Add user dashboard feature',
-  },
+  commit_behaviour: 'end',
 });
 ```
 
-### Phase-only Commits
+### Detailed Progress Tracking
 
 ```javascript
-// Only commit at phase transitions
+// Commit after each step for detailed history
 start_development({
   workflow: 'epcc',
-  git_commit_config: {
-    enabled: true,
-    commit_on_step: false,
-    commit_on_phase: true,
-    commit_on_complete: true,
-    initial_message: 'Fix authentication bug',
-  },
+  commit_behaviour: 'step',
 });
 ```
 
-### Manual Control
+### Milestone Tracking
 
 ```javascript
-// Disable automatic commits (manual git control)
+// Commit at major phase transitions
+start_development({
+  workflow: 'bugfix',
+  commit_behaviour: 'phase',
+});
+```
+
+### Manual Git Control
+
+```javascript
+// No automatic commits
 start_development({
   workflow: 'minor',
-  git_commit_config: {
-    enabled: false,
-  },
+  commit_behaviour: 'none',
 });
+```
+
+## Commit Message Format
+
+The system creates descriptive commit messages based on the development context:
+
+### Step Commits (`"step"`)
+
+```
+WIP: [workflow] - [current phase] step completion
+
+Example: "WIP: waterfall - requirements step completion"
+```
+
+### Phase Commits (`"phase"`)
+
+```
+WIP: [workflow] - transition to [next phase]
+
+Example: "WIP: waterfall - transition to design phase"
+```
+
+### Final Commits (`"end"`)
+
+```
+[conventional commit format based on development context]
+
+Example: "feat: implement user authentication system"
 ```
 
 ## Technical Details
 
 ### Git Repository Detection
 
-The system automatically detects if the current project is a git repository. If not, commit operations are silently skipped.
+The system automatically detects if the current project is a git repository. If not, commit operations are silently skipped regardless of the `commit_behaviour` setting.
 
 ### Commit Creation Logic
 
 - **Change Detection**: Only creates commits when there are actual changes to commit
 - **Staging**: Automatically stages all changes before committing (`git add .`)
 - **Error Handling**: Gracefully handles git errors without interrupting development flow
-
-### Rebase and Squashing
-
-When `commit_on_complete` is enabled:
-
-- Tracks the starting commit hash when development begins
-- Counts intermediate commits created during the session
-- Uses `git reset --soft` and recommit to squash multiple commits into one clean final commit
-- Preserves the development history while providing a clean final result
 
 ## Integration with Workflows
 
@@ -134,34 +131,29 @@ The git commit feature works with all available workflows:
 
 ## Best Practices
 
-1. **Use descriptive initial messages**: The initial message appears in all WIP commits, so make it descriptive of the feature being developed.
-
-2. **Choose appropriate commit levels**:
-   - Use step-level commits for detailed development tracking
-   - Use phase-level commits for milestone tracking
-   - Use development-end commits for clean final history
-
-3. **Branch management**: Consider creating feature branches before starting development with commits enabled.
-
-4. **Review before final commit**: The system creates the final commit automatically, but you can always amend or modify it afterward.
+1. **Use `"end"` for most cases**: Single final commit keeps history clean while preserving work
+2. **Use `"phase"` for milestone tracking**: Good for longer development sessions
+3. **Use `"step"` for detailed tracking**: Helpful when debugging or learning the workflow
+4. **Use `"none"` for manual control**: When you have specific git workflow requirements
 
 ## Troubleshooting
 
 ### No Commits Created
 
-- Verify `enabled: true` in configuration
+- Verify the directory is a git repository (`git status`)
 - Check that there are actual file changes to commit
-- Ensure the directory is a git repository
-- Check git configuration (user.name and user.email)
+- Ensure git configuration is correct (`git config user.name` and `git config user.email`)
+- Check that `commit_behaviour` is not set to `"none"`
 
 ### Git Errors
 
 - Git errors are logged but don't interrupt development flow
 - Check git repository status and permissions
 - Verify git configuration is correct
+- Ensure no merge conflicts or other git issues
 
-### Commit History Issues
+### Unexpected Commit Behavior
 
-- Use `git log --oneline` to review commit history
-- WIP commits can be manually squashed or rebased if needed
-- The automatic squashing only affects commits created during the current development session
+- Remember that `commit_behaviour` is set once at the start of development
+- Different workflows may have different phase structures affecting when commits occur
+- Check the development plan file to see which phase you're currently in

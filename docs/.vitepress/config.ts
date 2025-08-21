@@ -9,12 +9,9 @@ export default withMermaid(
       'Model Context Protocol server for intelligent conversation state management and development guidance',
     base: '/responsible-vibe-mcp/',
     ignoreDeadLinks: true, // Temporarily ignore dead links
-
-    // Map files from project root to docs
     rewrites: {
-      '../README.md': 'index.md',
+      'README.md': 'index.md',
     },
-
     vite: {
       resolve: {
         alias: {

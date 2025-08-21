@@ -4,7 +4,83 @@ aside: false
 
 # How it works
 
-This document provides comprehensive interaction examples and workflows for the Responsible Vibe MCP Server.
+This document explains how the Responsible Vibe MCP Server integrates with AI coding agents to provide structured development workflows.
+
+## Architecture Overview
+
+**Responsible Vibe MCP** is a Model Context Protocol (MCP) server that acts as an intelligent conversation coordinator for AI coding agents. It doesn't work standalone - it requires integration with an AI agent (like Claude, Amazon Q, or Gemini) that hosts the MCP server.
+
+```mermaid
+flowchart TD
+    A[User] --> B[AI Coding Agent]
+    B --> C[responsible-vibe-mcp Server]
+    C --> D[Project Files]
+    C --> E[Development Plan]
+    C --> F[Conversation State]
+
+    B -.-> G[System Prompt]
+    G -.-> H[Tool Call Instructions]
+
+    style C fill:#e1f5fe
+    style G fill:#fff3e0
+    style H fill:#fff3e0
+```
+
+### Key Components
+
+1. **AI Coding Agent**: Your chosen AI assistant (Claude, Amazon Q, Gemini, etc.)
+2. **MCP Server**: The responsible-vibe-mcp server running as a subprocess
+3. **System Prompt**: Critical configuration that tells the AI how to use the MCP tools
+4. **Project Context**: Development plans, conversation state, and project artifacts
+
+## Setup Requirement
+
+🚨 **System prompt configuration is essential** - the AI agent needs specific instructions to interact with the MCP server properly.
+
+**Quick Setup**: Use `npx responsible-vibe-mcp --generate-config your-agent` for automated configuration.
+
+**Manual Setup**: Get the system prompt with `npx responsible-vibe-mcp --system-prompt` and configure your agent.
+
+👉 **For detailed setup instructions, see [Agent Setup Guide](./agent-setup.md)**
+
+## Core Interaction Pattern
+
+Once configured, the integration follows this pattern:
+
+```mermaid
+sequenceDiagram
+    participant User as User
+    participant Agent as AI Agent
+    participant MCP as responsible-vibe-mcp
+    participant Files as Project Files
+
+    User->>Agent: "implement feature X"
+    Agent->>MCP: whats_next(context, user_input, summary)
+    MCP->>Files: Check conversation state & plan
+    MCP-->>Agent: Phase-specific instructions
+    Agent->>User: Follow instructions (ask questions, etc.)
+    Agent->>Files: Update plan file as instructed
+
+    Note over Agent,MCP: This loop continues throughout development
+
+    User->>Agent: Provides more details
+    Agent->>MCP: whats_next(updated context)
+    MCP-->>Agent: Continue current phase or suggest transition
+    Agent->>User: Continue development work
+```
+
+### Tool Usage Pattern
+
+The AI agent automatically calls these tools based on the system prompt:
+
+1. **`whats_next()`**: Called after each user interaction to get guidance
+2. **`proceed_to_phase()`**: Called to transition between development phases
+3. **`start_development()`**: Called once to begin a development workflow
+4. **Other tools**: Used as needed for specific functionality
+
+### Stateless Design
+
+The MCP server is stateless - the AI agent provides conversation context with each tool call, and plan files serve as persistent memory across sessions.
 
 ## Phase Progression Flow
 
@@ -285,30 +361,6 @@ _[Continues with implementation guidance, updates plan file]_"
 [Process continues through implementation, QA, and testing phases...]
 
 ```
-
-## LLM System Prompt Integration
-
-To properly integrate with responsible-vibe-mcp, the LLM should be configured with a system prompt that establishes the interaction pattern. The key requirement for the stateless approach is that the LLM must provide conversation context when calling `whats_next()`.
-
-### Key Requirements for LLM Integration:
-
-1. **Always call whats_next() after user interactions**
-2. **Provide conversation context**: Include summary and recent messages
-3. **Follow instructions precisely** from responsible-vibe-mcp
-4. **Continuously update the plan file** as instructed
-5. **Mark completed tasks** when directed
-
-### Conversation Context Parameters:
-
-When calling `whats_next()`, the LLM should provide:
-- **context**: Brief description of current situation
-- **user_input**: The user's latest message or request
-- **conversation_summary**: Summary of the conversation so far (optional but recommended)
-- **recent_messages**: Array of recent relevant messages (optional)
-
-This stateless approach ensures that responsible-vibe-mcp can make informed decisions about phase transitions without storing potentially inconsistent conversation history.
-
-For a complete system prompt template, see [SYSTEM_PROMPT.md](./SYSTEM_PROMPT.md).
 
 ## Development Workflow Examples
 

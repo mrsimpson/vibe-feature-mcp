@@ -298,6 +298,25 @@ test: add integration tests for phase transitions
 5. Update documentation as needed
 6. Submit a pull request
 
+### Automated Checks
+
+The project includes several automated checks that run on every PR:
+
+- **Tests**: Comprehensive test suite including MCP contract tests
+- **Linting**: Code style and quality checks
+- **Type Checking**: TypeScript compilation verification
+- **Build Verification**: Ensures the project builds successfully
+
+### Dependency Management
+
+This project uses **Renovate** for automated dependency management:
+
+- Automatically creates PRs for dependency updates
+- Follows semantic versioning for update scheduling
+- Includes security updates with higher priority
+- Configuration in `.github/renovate.json`
+- Helps keep dependencies current and secure
+
 ### Release Process
 
 The project uses automated releases based on conventional commits:
