@@ -2,5 +2,82 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
     "config:recommended"
+  ],
+  "description": "Frictionless Renovate configuration with automerge when CI passes",
+  "platformAutomerge": true,
+  "automerge": true,
+  "automergeType": "pr",
+  "automergeStrategy": "squash",
+  "semanticCommits": "enabled",
+  "semanticCommitType": "chore",
+  "semanticCommitScope": "deps",
+  "prConcurrentLimit": 5,
+  "prHourlyLimit": 3,
+  "schedule": [
+    "after 10pm every weekday",
+    "before 5am every weekday",
+    "every weekend"
+  ],
+  "packageRules": [
+    {
+      "description": "Automerge patch updates - safest changes",
+      "matchUpdateTypes": ["patch"],
+      "automerge": true,
+      "addLabels": ["automerge", "patch"]
+    },
+    {
+      "description": "Automerge dev dependencies - testing/build tools",
+      "matchDepTypes": ["devDependencies"],
+      "automerge": true,
+      "addLabels": ["automerge", "dev-deps"]
+    },
+    {
+      "description": "Group and automerge TypeScript ecosystem",
+      "matchPackageNames": ["typescript", "@types/**"],
+      "groupName": "TypeScript",
+      "automerge": true,
+      "addLabels": ["typescript"]
+    },
+    {
+      "description": "Group testing dependencies",
+      "matchPackageNames": ["vitest", "@vitest/**", "jsdom", "@types/jsdom"],
+      "groupName": "Testing",
+      "automerge": true,
+      "addLabels": ["testing"]
+    },
+    {
+      "description": "Group build tools",
+      "matchPackageNames": ["tsx", "vite-node", "@rollup/**"],
+      "groupName": "Build Tools",
+      "automerge": true,
+      "addLabels": ["build"]
+    },
+    {
+      "description": "Manual review for major updates",
+      "matchUpdateTypes": ["major"],
+      "automerge": false,
+      "addLabels": ["major-update", "needs-review"]
+    },
+    {
+      "description": "Careful with core dependencies - manual review for minor+",
+      "matchPackageNames": ["@modelcontextprotocol/sdk", "sqlite3", "zod", "js-yaml"],
+      "matchUpdateTypes": ["minor", "major"],
+      "automerge": false,
+      "addLabels": ["core-dependency", "needs-review"]
+    }
+  ],
+  "vulnerabilityAlerts": {
+    "enabled": true,
+    "automerge": true,
+    "addLabels": ["security", "automerge"]
+  },
+  "lockFileMaintenance": {
+    "enabled": true,
+    "automerge": true,
+    "schedule": ["before 4am on monday"],
+    "addLabels": ["lockfile-maintenance"]
+  },
+  "suppressNotifications": [
+    "prIgnoreNotification"
   ]
 }
