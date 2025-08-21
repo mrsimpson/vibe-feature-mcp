@@ -9,12 +9,51 @@
 import { ConversationRequiredToolHandler } from './base-tool-handler.js';
 import { ServerContext } from '../types.js';
 import { generateSystemPrompt } from '../../system-prompt-generator.js';
+import type { YamlStateMachine } from '../../state-machine-types.js';
 
 /**
  * Arguments for the resume_workflow tool
  */
 export interface ResumeWorkflowArgs {
   include_system_prompt?: boolean;
+}
+
+/**
+ * Plan file analysis result
+ */
+interface PlanAnalysis {
+  sections: string[];
+  tasks_completed: number;
+  tasks_total: number;
+  key_decisions: string[];
+  recent_updates: string[];
+  active_tasks?: string[];
+  completed_tasks?: string[];
+}
+
+/**
+ * Conversation context for resume workflow
+ */
+interface ConversationContext {
+  conversationId: string;
+  currentPhase: string;
+  projectPath: string;
+  workflowName: string;
+  gitBranch: string;
+  planFilePath: string;
+  current_phase?: string;
+  workflow_name?: string;
+  project_context?: string;
+  recent_activity?: string[];
+}
+
+/**
+ * Recommendations for resuming workflow
+ */
+interface WorkflowRecommendations {
+  immediate_actions: string[];
+  phase_guidance: string;
+  potential_issues: string[];
 }
 
 /**
@@ -26,12 +65,12 @@ export interface ResumeWorkflowResult {
     current_phase: string;
     project_path: string;
     git_branch: string;
-    state_machine: any;
+    state_machine: YamlStateMachine;
   };
   plan_status: {
     exists: boolean;
     path: string;
-    analysis?: any;
+    analysis?: PlanAnalysis;
   };
   system_prompt?: string | null;
   recommendations: {
@@ -53,7 +92,7 @@ export class ResumeWorkflowHandler extends ConversationRequiredToolHandler<
   protected async executeWithConversation(
     args: ResumeWorkflowArgs,
     context: ServerContext,
-    conversationContext: any
+    conversationContext: ConversationContext
   ): Promise<ResumeWorkflowResult> {
     const includeSystemPrompt = args.include_system_prompt !== false; // Default to true
 
@@ -70,7 +109,7 @@ export class ResumeWorkflowHandler extends ConversationRequiredToolHandler<
     // Analyze plan file content for key information
     const planAnalysis = planInfo.exists
       ? this.analyzePlanFile(planInfo.content!)
-      : null;
+      : undefined;
 
     // Get current state machine information
     const stateMachineInfo = await this.getStateMachineInfo(
@@ -134,7 +173,7 @@ export class ResumeWorkflowHandler extends ConversationRequiredToolHandler<
   /**
    * Analyze plan file content to extract key information
    */
-  private analyzePlanFile(content: string): any {
+  private analyzePlanFile(content: string): PlanAnalysis {
     const analysis = {
       active_tasks: [] as string[],
       completed_tasks: [] as string[],
@@ -171,7 +210,16 @@ export class ResumeWorkflowHandler extends ConversationRequiredToolHandler<
       }
     }
 
-    return analysis;
+    return {
+      sections: [currentSection],
+      tasks_completed: analysis.completed_tasks.length,
+      tasks_total:
+        analysis.active_tasks.length + analysis.completed_tasks.length,
+      key_decisions: analysis.recent_decisions,
+      recent_updates: analysis.next_steps,
+      active_tasks: analysis.active_tasks,
+      completed_tasks: analysis.completed_tasks,
+    };
   }
 
   /**
@@ -217,10 +265,10 @@ export class ResumeWorkflowHandler extends ConversationRequiredToolHandler<
    * Generate recommendations for next steps based on state machine transitions
    */
   private generateRecommendations(
-    conversationContext: any,
-    planAnalysis: any,
+    conversationContext: ConversationContext,
+    planAnalysis: PlanAnalysis | undefined,
     context: ServerContext
-  ): any {
+  ): WorkflowRecommendations {
     const recommendations = {
       immediate_actions: [] as string[],
       phase_guidance: '',
@@ -249,10 +297,10 @@ export class ResumeWorkflowHandler extends ConversationRequiredToolHandler<
             'From here, you can transition to:'
           );
 
-          (phaseDefinition as any).transitions.forEach((transition: any) => {
+          phaseDefinition.transitions.forEach(transition => {
             const targetPhase = stateMachine.states[transition.to];
             const targetDescription = targetPhase
-              ? (targetPhase as any).description
+              ? targetPhase.description
               : transition.to;
             recommendations.immediate_actions.push(
               `• ${transition.to}: ${targetDescription}`
@@ -294,14 +342,16 @@ export class ResumeWorkflowHandler extends ConversationRequiredToolHandler<
 
     // Plan-based recommendations
     if (planAnalysis) {
-      if (planAnalysis.active_tasks.length > 0) {
+      if (planAnalysis.active_tasks && planAnalysis.active_tasks.length > 0) {
         recommendations.immediate_actions.push(
           `Continue working on active tasks: ${planAnalysis.active_tasks.slice(0, 2).join(', ')}`
         );
       }
 
       if (
-        planAnalysis.active_tasks.length === 0 &&
+        (!planAnalysis.active_tasks ||
+          planAnalysis.active_tasks.length === 0) &&
+        planAnalysis.completed_tasks &&
         planAnalysis.completed_tasks.length > 0
       ) {
         recommendations.potential_issues.push(
