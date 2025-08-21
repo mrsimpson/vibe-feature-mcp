@@ -33,9 +33,9 @@ describe('Workflow Validation', () => {
       // Check that we have the expected core workflows
       const expectedCoreWorkflows = ['bugfix', 'waterfall', 'epcc', 'minor'];
       const workflowNames = workflows.map(w => w.name);
-      expectedCoreWorkflows.forEach(workflow => {
+      for (const workflow of expectedCoreWorkflows) {
         expect(workflowNames).toContain(workflow);
-      });
+      }
     });
 
     it('should load ALL workflow files from resources directory', () => {

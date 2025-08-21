@@ -134,8 +134,8 @@ Please update the plan file with a "Phase Entrance Criteria" section that define
 `;
 
     // Generate criteria template for each phase (except initial state)
-    phases.forEach(phase => {
-      if (phase === stateMachine.initial_state) return; // Skip initial state
+    for (const phase of phases) {
+      if (phase === stateMachine.initial_state) continue; // Skip initial state
 
       const phaseDefinition = stateMachine.states[phase];
       const capitalizedPhase = this.capitalizePhase(phase);
@@ -149,7 +149,7 @@ Please update the plan file with a "Phase Entrance Criteria" section that define
 - [ ] [Include any deliverables or milestones required]
 
 `;
-    });
+    }
 
     instructions += `
 Once you've defined these criteria, we can begin development. Throughout the process, consult these criteria when considering phase transitions.

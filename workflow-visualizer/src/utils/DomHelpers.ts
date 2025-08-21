@@ -89,9 +89,9 @@ export function toggleClasses(
   element: HTMLElement,
   ...classNames: string[]
 ): void {
-  classNames.forEach(className => {
+  for (const className of classNames) {
     element.classList.toggle(className);
-  });
+  }
 }
 
 /**
@@ -129,9 +129,9 @@ export function appendChildren(
   parent: HTMLElement,
   ...children: HTMLElement[]
 ): void {
-  children.forEach(child => {
+  for (const child of children) {
     parent.appendChild(child);
-  });
+  }
 }
 
 /**
