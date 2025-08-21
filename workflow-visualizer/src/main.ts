@@ -133,7 +133,10 @@ class WorkflowVisualizerApp {
 
       // Clear existing options (except the first placeholder)
       while (this.workflowSelector.children.length > 1) {
-        this.workflowSelector.removeChild(this.workflowSelector.lastChild!);
+        const lastChild = this.workflowSelector.lastChild;
+        if (lastChild) {
+          this.workflowSelector.removeChild(lastChild);
+        }
       }
 
       // Add workflow options
@@ -206,10 +209,14 @@ class WorkflowVisualizerApp {
    * Handle element clicks in the diagram
    */
   private handleElementClick(event: InteractionEvent): void {
-    if (event.elementType === 'node' && event.data) {
-      this.selectState(event.elementId!, event.data);
-    } else if (event.elementType === 'transition' && event.data) {
-      this.selectTransition(event.elementId!, event.data);
+    if (event.elementType === 'node' && event.data && event.elementId) {
+      this.selectState(event.elementId, event.data);
+    } else if (
+      event.elementType === 'transition' &&
+      event.data &&
+      event.elementId
+    ) {
+      this.selectTransition(event.elementId, event.data);
     }
   }
 

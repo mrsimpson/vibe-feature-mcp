@@ -247,7 +247,7 @@ Once you've defined these criteria, we can begin development. Throughout the pro
     } = context;
 
     // Get workflow name from conversation state
-    const conversationState =
+    const _conversationState =
       await this.conversationManager?.getConversationState(conversationId);
 
     // Load the appropriate workflow for this project/conversation
