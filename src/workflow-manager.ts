@@ -172,7 +172,7 @@ export class WorkflowManager {
             strategies.push(path.join(currentDir, 'resources/workflows'));
             break;
           }
-        } catch (error) {
+        } catch {
           // Ignore JSON parse errors and continue searching
         }
       }
@@ -234,7 +234,7 @@ export class WorkflowManager {
                 strategies.push(...possiblePaths);
               }
             }
-          } catch (error) {
+          } catch {
             // Ignore errors reading cache directories
           }
         }
@@ -256,7 +256,7 @@ export class WorkflowManager {
       const packagePath = require.resolve('responsible-vibe-mcp/package.json');
       const packageDir = path.dirname(packagePath);
       strategies.push(path.join(packageDir, 'resources/workflows'));
-    } catch (error) {
+    } catch {
       // require.resolve might fail in some environments, that's okay
     }
 

@@ -135,7 +135,7 @@ class Logger {
           try {
             const contextStr = JSON.stringify(context, null, 0);
             logData = `${message} ${contextStr}`;
-          } catch (jsonError) {
+          } catch {
             // If JSON serialization fails, just use the message
             logData = `${message} [context serialization failed]`;
           }
@@ -229,7 +229,7 @@ class Logger {
           try {
             const contextStr = JSON.stringify(context, null, 0);
             logData = `${enhancedMessage} ${contextStr}`;
-          } catch (jsonError) {
+          } catch {
             // If JSON serialization fails, just use the message
             logData = `${enhancedMessage} [context serialization failed]`;
           }
