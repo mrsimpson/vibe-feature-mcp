@@ -59,7 +59,7 @@ states:
       
       - trigger: "planning_complete"
         to: "target_architecture_design"
-        additional_instructions: "Conversion planning complete! Now design the target architecture for the new system. Focus on the technology stack and architectural patterns that will support the conversion strategy."
+        additional_instructions: "Conversion planning complete! ✅ Now transition to target architecture design phase."
         transition_reason: "Conversion strategy is planned, ready for target architecture design"
 
   target_architecture_design:
@@ -111,7 +111,7 @@ states:
       
       - trigger: "architecture_complete"
         to: "behavioral_comparison_setup"
-        additional_instructions: "Target architecture design complete! Now set up behavioral comparison mechanisms to validate functional equivalence between old and new systems."
+        additional_instructions: "Target architecture design complete! ✅ Now transition to behavioral comparison setup phase."
         transition_reason: "Target architecture is designed, ready for behavioral comparison setup"
 
   behavioral_comparison_setup:
@@ -162,7 +162,7 @@ states:
       
       - trigger: "comparison_setup_complete"
         to: "implementation_strategy"
-        additional_instructions: "Behavioral comparison setup complete! Now plan the detailed implementation strategy for building the new system with systematic validation."
+        additional_instructions: "Behavioral comparison setup complete! ✅ Now transition to implementation strategy phase."
         transition_reason: "Comparison mechanisms are designed, ready for implementation strategy"
 
   implementation_strategy:
@@ -213,7 +213,7 @@ states:
       
       - trigger: "strategy_complete"
         to: "parallel_implementation"
-        additional_instructions: "Implementation strategy complete! Now begin parallel implementation of the new system with systematic validation against the comparison mechanisms."
+        additional_instructions: "Implementation strategy complete! ✅ Now transition to parallel implementation phase."
         transition_reason: "Implementation strategy is complete, ready for parallel implementation"
 
   parallel_implementation:

@@ -41,14 +41,7 @@ states:
         to: story
         additional_instructions: |
           Discovery complete! ✅ You have clear format decision, unique angle, and research foundation.
-
-          Now transition to story phase to create narrative structure:
-          - Create story outline with clear narrative arc
-          - Identify key messages and supporting metaphors
-          - Define content scope boundaries to avoid adjacent topics
-          - Plan platform adaptation strategy
-          - Ensure story structure matches chosen format (tight for short, comprehensive for long)
-
+          
           Update the plan file with story development tasks and mark completed discovery work.
         transition_reason: "Topic researched and format decided, ready for story structure development"
 
@@ -81,15 +74,7 @@ states:
         to: writing
         additional_instructions: |
           Story complete! ✅ You have a clear narrative structure and content outline.
-
-          Now transition to writing phase for content creation:
-          - Write content following the story outline
-          - Maintain narrative consistency and personal voice
-          - Focus purely on text content creation
-          - Ensure length matches chosen format
-          - Keep content within defined scope boundaries
-          - Create engaging, conversational content that reflects user's style
-
+          
           Update the plan file with writing tasks and mark completed story work.
         transition_reason: "Story structure and outline complete, ready for content creation"
 
@@ -128,14 +113,7 @@ states:
         to: illustration
         additional_instructions: |
           Writing complete! ✅ You have solid content that follows your story outline.
-
-          Now transition to illustration phase for visual enhancement:
-          - Identify where visuals would enhance understanding or break up text
-          - Plan visual content (screenshots, diagrams, metaphorical images)
-          - Consider format-appropriate visual density (minimal for short posts)
-          - Create or source appropriate visual elements
-          - Ensure visuals support the story and maintain professional appearance
-
+          
           Update the plan file with illustration tasks and mark completed writing work.
         transition_reason: "Content creation complete, ready for visual enhancement"
 
@@ -174,14 +152,7 @@ states:
         to: distribution
         additional_instructions: |
           Illustration complete! ✅ You have visually enhanced content ready for publishing.
-
-          Now transition to distribution phase for optimization and publishing:
-          - Optimize for SEO (titles, descriptions, tags)
-          - Adapt content for different platforms while maintaining core message
-          - Format content appropriately for each target platform
-          - Conduct final quality review and polish
-          - Prepare for multi-platform publishing
-
+          
           Update the plan file with distribution tasks and mark completed illustration work.
         transition_reason: "Visual elements complete, ready for SEO optimization and publishing"
 
@@ -220,13 +191,7 @@ states:
         to: discovery
         additional_instructions: |
           Distribution complete! ✅ Your post has been successfully published across platforms.
-
-          Return to discovery phase, ready for the next post project:
-          - Document lessons learned and successful approaches
-          - Archive post materials and research
-          - Note improvements for future posts
-          - Prepare for new post topics and projects
-
+          
           Mark all distribution tasks as complete and prepare for new work.
         additional_instructions: "Post successfully published. Ready for next post project."
         transition_reason: "Post publishing completed successfully, ready for new projects"

@@ -51,7 +51,7 @@ states:
       
       - trigger: "plan_complete"
         to: "code"
-        additional_instructions: "Plan is complete! ✅ Now transition to implementation. Read specific documentation before using libraries or frameworks. Modularize your code as per the good practices of the libraries and frameworks involved. Mark completed planning tasks."
+        additional_instructions: "Plan is complete! ✅ Now transition to implementation. Mark completed planning tasks."
         transition_reason: "Implementation plan is complete and ready for coding"
         review_perspectives:
           - perspective: "architect"

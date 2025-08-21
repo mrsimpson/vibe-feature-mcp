@@ -40,14 +40,7 @@ states:
         to: structure
         additional_instructions: |
           Ideation complete! ✅ You have a clear presentation concept, defined audience, and established goals.
-
-          Now transition to structure phase to organize your content flow:
-          - Create presentation outline with main sections
-          - Define slide sequence and narrative progression
-          - Plan transitions between topics and sections
-          - Estimate timing for each section
-          - Identify key examples and supporting materials needed
-
+          
           Update the plan file with structural planning tasks and mark completed ideation work.
         transition_reason: "Presentation concept and goals clearly defined, ready for content structuring"
 
@@ -80,15 +73,7 @@ states:
         to: draft
         additional_instructions: |
           Structure complete! ✅ You have a well-organized outline and clear content flow.
-
-          Now transition to draft phase to create the actual content:
-          - Write presentation content for each slide/section
-          - Create detailed speaker notes as a primary deliverable
-          - Decide what content goes on slides vs. speaker notes
-          - Identify concepts that can be effectively visualized
-          - Plan visual content requirements and specifications
-          - Create content placeholders for visuals
-
+          
           Update the plan file with drafting tasks and mark completed structural work.
         transition_reason: "Content structure and flow established, ready for content creation"
 
@@ -127,16 +112,7 @@ states:
         to: style
         additional_instructions: |
           Draft complete! ✅ You have solid content, speaker notes, and visual planning.
-
-          Now transition to style phase to apply design and create visuals:
-          - Choose appropriate presentation tool/platform based on requirements
-          - Select themes, templates, and visual design approach
-          - Source existing visuals where available
-          - Create AI image generation prompts for missing visuals
-          - Generate or create required visual content
-          - Apply consistent visual design and branding
-          - Ensure visual elements support the content effectively
-
+          
           Update the plan file with styling tasks and mark completed drafting work.
         transition_reason: "Content and speaker notes complete, ready for visual design and styling"
 
@@ -176,16 +152,7 @@ states:
         to: review
         additional_instructions: |
           Styling complete! ✅ You have a visually appealing presentation with consistent design.
-
-          Now transition to review phase to validate and refine:
-          - Review overall content flow and narrative coherence
-          - Test presentation timing and pacing
-          - Verify visual quality and consistency throughout
-          - Practice delivery and identify potential issues
-          - Gather feedback from test audience or colleagues
-          - Check technical setup and compatibility
-          - Ensure all visual elements display correctly
-
+          
           Update the plan file with review tasks and mark completed styling work.
         transition_reason: "Visual design and styling complete, ready for content and delivery review"
 
@@ -225,15 +192,7 @@ states:
         to: deliver
         additional_instructions: |
           Review complete! ✅ Your presentation has been validated and refined for delivery.
-
-          Now transition to deliver phase for final preparation:
-          - Export presentation to required format(s) and backup formats
-          - Finalize speaker setup, notes, and delivery materials
-          - Configure presentation environment and technical setup
-          - Create contingency plans for potential technical issues
-          - Conduct final rehearsal in delivery environment if possible
-          - Prepare any handouts, follow-up materials, or resources
-
+          
           Update the plan file with delivery preparation tasks and mark completed review work.
         transition_reason: "Presentation reviewed and validated, ready for final delivery preparation"
 
@@ -278,15 +237,8 @@ states:
         to: ideate
         additional_instructions: |
           Presentation delivery complete! ✅ Your presentation has been successfully delivered.
-
-          Return to ideation phase, ready for the next presentation project:
-          - Document lessons learned and successful approaches
-          - Archive presentation materials and resources
-          - Note any improvements for future presentations
-          - Prepare for new presentation topics and projects
-
+          
           Mark all delivery tasks as complete in the plan file and prepare for new work.
-        additional_instructions: "Presentation successfully delivered. Ready for next presentation project."
         transition_reason: "Presentation delivery completed successfully, ready for new projects"
 
       - trigger: need_final_review

@@ -117,6 +117,16 @@ Fix two workflow transition issues:
 - [x] Systematically fix entrance transitions in posts.yaml (5 key transitions)
 - [x] Systematically fix entrance transitions in slides.yaml (6 key transitions)
 - [x] Verify all 235 tests pass with no YAML parsing errors
+- [x] Analyze all additional_instructions to identify redundant target phase information
+- [x] Move target phase information from additional_instructions to default_instructions where appropriate
+- [x] Remove redundant information that duplicates existing default_instructions
+- [x] Keep only transition-specific information in additional_instructions (completion messages, transition context)
+- [x] Clean up posts.yaml workflow (5 transitions)
+- [x] Clean up slides.yaml workflow (6 transitions) 
+- [x] Clean up c4-analysis.yaml workflow (5 key transitions)
+- [x] Clean up epcc.yaml workflow (1 transition)
+- [x] Clean up big-bang-conversion.yaml workflow (4 transitions)
+- [x] Verify all 235 tests still pass after cleanup
 
 ### Completed
 - [x] No debug output or temporary code found - code is clean
@@ -143,6 +153,14 @@ Fix two workflow transition issues:
   - **Posts (5 key transitions)**: discovery_complete → story, story_complete → writing, writing_complete → illustration, illustration_complete → distribution, distribution_complete → discovery
   - **Slides (6 key transitions)**: ideation_complete → structure, structure_complete → draft, draft_complete → style, style_complete → review, review_complete → deliver, delivery_complete → ideate
 - [x] **Final Verification**: All 235 tests pass with no YAML parsing errors or duplicate key issues
+- [x] **Additional Instructions Cleanup**: Systematically analyzed and cleaned up all `additional_instructions` across workflows:
+  - **Posts (5 transitions)**: Removed redundant target phase information, kept only completion messages and plan file updates
+  - **Slides (6 transitions)**: Removed redundant target phase information, fixed duplicate key issue in delivery_complete
+  - **C4-Analysis (5 key transitions)**: Removed redundant target phase information, kept setup instructions in discovery_complete
+  - **EPCC (1 transition)**: Removed implementation guidance that was redundant with default_instructions
+  - **Big-Bang-Conversion (4 transitions)**: Removed redundant target phase information, kept file creation instructions
+  - **Other workflows**: Already had clean transition-specific information
+- [x] **Quality Improvement**: `additional_instructions` now contain only transition-specific information (completion messages, plan updates, special setup tasks) rather than duplicating target phase guidance
 
 ## Analysis Summary
 
@@ -169,10 +187,17 @@ Fix two workflow transition issues:
 - **Migration Strategy**: Convert entrance transitions from full `instructions` to `additional_instructions` to preserve default phase instructions
 - **Affected Workflows**: Successfully migrated entrance transitions across all 10 workflows
 - **Solution Impact**: Users now receive complete phase guidance plus transition-specific messages, improving development experience
-- **Final Status**: **COMPLETE** - All entrance transition issues resolved across all workflows
+- **Additional Instructions Quality**: Identified and resolved redundancy where `additional_instructions` duplicated target phase information
+- **Cleanup Strategy**: Keep only transition-specific information in `additional_instructions` (completion messages, plan updates, special setup tasks)
+- **Instruction Composition**: `additional_instructions` are **APPENDED** to `default_instructions` with "**Additional Context:**" header
+  - **Format**: `${default_instructions}\n\n**Additional Context:**\n${additional_instructions}`
+  - **Location**: Lines 169 (transition-engine.ts) and 192, 276 (state-machine-loader.ts)
+  - **Behavior**: Additional instructions appear AFTER the default phase instructions, providing supplementary context
+- **Final Status**: **COMPLETE** - All entrance transition issues resolved and instruction quality improved
   - **Total Fixed**: 35+ entrance transitions across 9 workflows (waterfall, EPCC, greenfield, bugfix, minor, big-bang-conversion, c4-analysis, posts, slides)
   - **Boundary-Testing**: Already correct, no changes needed
   - **YAML Issues**: Resolved duplicate key problems caused by automated sed replacements
+  - **Instruction Quality**: Cleaned up 25+ transitions to remove redundant target phase information
   - **Test Results**: All 235 tests passing with no YAML parsing errors
 
 ## Notes
