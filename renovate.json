@@ -60,7 +60,7 @@
     },
     {
       "description": "Careful with core dependencies - manual review for minor+",
-      "matchPackageNames": ["@modelcontextprotocol/sdk", "sqlite3", "zod", "js-yaml"],
+      "matchPackageNames": ["@modelcontextprotocol/sdk"],
       "matchUpdateTypes": ["minor", "major"],
       "automerge": false,
       "addLabels": ["core-dependency", "needs-review"]
