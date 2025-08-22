@@ -4,7 +4,11 @@
  */
 
 import * as d3 from 'd3';
-import { DiagramLink, DiagramStyle, InteractionEvent } from '../types/visualization-types';
+import {
+  DiagramLink,
+  DiagramStyle,
+  InteractionEvent,
+} from '../types/visualization-types';
 
 export class TransitionRenderer {
   private style: DiagramStyle;
@@ -24,27 +28,31 @@ export class TransitionRenderer {
     console.log(`Rendering ${links.length} transition links`);
 
     // Bind data to transition link groups
-    const linkGroups = container.selectAll<SVGGElement, DiagramLink>('.transition-link')
+    const linkGroups = container
+      .selectAll<SVGGElement, DiagramLink>('.transition-link')
       .data(links, d => d.id);
 
     // Remove old links
     linkGroups.exit().remove();
 
     // Create new link groups
-    const linkEnter = linkGroups.enter()
+    const linkEnter = linkGroups
+      .enter()
       .append('g')
       .attr('class', d => `transition-link ${d.isSelfLoop ? 'self-loop' : ''}`)
       .attr('data-id', d => d.id);
 
     // Add paths for transitions
-    linkEnter.append('path')
+    linkEnter
+      .append('path')
       .attr('marker-end', 'url(#arrow)')
       .style('fill', 'none')
       .style('stroke', this.style.link.stroke)
       .style('stroke-width', this.style.link.strokeWidth);
 
     // Add labels for transitions
-    linkEnter.append('text')
+    linkEnter
+      .append('text')
       .attr('class', 'transition-label')
       .attr('text-anchor', 'middle')
       .attr('dominant-baseline', 'central')
@@ -57,14 +65,16 @@ export class TransitionRenderer {
     const linkUpdate = linkEnter.merge(linkGroups);
 
     // Update paths
-    linkUpdate.select('path')
+    linkUpdate
+      .select('path')
       .attr('d', d => this.createPath(d))
       .style('stroke', d => this.getLinkStroke(d))
       .style('stroke-width', d => this.getLinkStrokeWidth(d))
       .attr('marker-end', d => this.getMarkerEnd(d));
 
     // Update labels
-    linkUpdate.select('.transition-label')
+    linkUpdate
+      .select('.transition-label')
       .attr('transform', d => this.getLabelTransform(d))
       .style('fill', d => this.getLabelFill(d))
       .style('font-weight', d => this.getLabelWeight(d));
@@ -77,8 +87,10 @@ export class TransitionRenderer {
    * Create SVG path for a transition link
    */
   private createPath(link: DiagramLink): string {
-    const source = typeof link.source === 'object' ? link.source : { x: 0, y: 0 };
-    const target = typeof link.target === 'object' ? link.target : { x: 0, y: 0 };
+    const source =
+      typeof link.source === 'object' ? link.source : { x: 0, y: 0 };
+    const target =
+      typeof link.target === 'object' ? link.target : { x: 0, y: 0 };
 
     if (link.isSelfLoop) {
       return this.createSelfLoopPath(source);
@@ -157,7 +169,7 @@ export class TransitionRenderer {
     const dx = (target.x || 0) - (source.x || 0);
     const dy = (target.y || 0) - (source.y || 0);
     const distance = Math.sqrt(dx * dx + dy * dy);
-    
+
     // Use curved paths for longer connections
     return distance > 150;
   }
@@ -171,15 +183,15 @@ export class TransitionRenderer {
   ): string {
     const dx = target.x - source.x;
     const dy = target.y - source.y;
-    
+
     // Calculate control point for quadratic curve
     const midX = (source.x + target.x) / 2;
     const midY = (source.y + target.y) / 2;
-    
+
     // Offset control point perpendicular to the line
     const perpX = -dy * 0.2;
     const perpY = dx * 0.2;
-    
+
     const controlX = midX + perpX;
     const controlY = midY + perpY;
 
@@ -191,15 +203,18 @@ export class TransitionRenderer {
    */
   private getLabelTransform(link: DiagramLink): string {
     if (link.isSelfLoop) {
-      const source = typeof link.source === 'object' ? link.source : { x: 0, y: 0 };
+      const source =
+        typeof link.source === 'object' ? link.source : { x: 0, y: 0 };
       const x = source.x || 0;
       const y = (source.y || 0) - 60;
       return `translate(${x}, ${y})`;
     }
 
-    const source = typeof link.source === 'object' ? link.source : { x: 0, y: 0 };
-    const target = typeof link.target === 'object' ? link.target : { x: 0, y: 0 };
-    
+    const source =
+      typeof link.source === 'object' ? link.source : { x: 0, y: 0 };
+    const target =
+      typeof link.target === 'object' ? link.target : { x: 0, y: 0 };
+
     const midX = ((source.x || 0) + (target.x || 0)) / 2;
     const midY = ((source.y || 0) + (target.y || 0)) / 2;
 
@@ -211,20 +226,20 @@ export class TransitionRenderer {
    */
   private getLinkStroke(link: DiagramLink): string {
     const element = d3.select(`[data-id="${link.id}"]`);
-    
+
     // Check if element exists and has classList
     if (element.empty() || !element.node()) {
       return this.style.link.stroke;
     }
-    
+
     if (element.classed('highlighted')) {
       return '#d97706'; // warning color
     }
-    
+
     if (element.classed('selected')) {
       return this.style.link.selectedStroke;
     }
-    
+
     return this.style.link.stroke;
   }
 
@@ -233,20 +248,20 @@ export class TransitionRenderer {
    */
   private getLinkStrokeWidth(link: DiagramLink): number {
     const element = d3.select(`[data-id="${link.id}"]`);
-    
+
     // Check if element exists and has classList
     if (element.empty() || !element.node()) {
       return this.style.link.strokeWidth;
     }
-    
+
     if (element.classed('highlighted')) {
       return 4;
     }
-    
+
     if (element.classed('selected')) {
       return this.style.link.selectedStrokeWidth;
     }
-    
+
     return this.style.link.strokeWidth;
   }
 
@@ -255,16 +270,16 @@ export class TransitionRenderer {
    */
   private getMarkerEnd(link: DiagramLink): string {
     const element = d3.select(`[data-id="${link.id}"]`);
-    
+
     // Check if element exists and has classList
     if (element.empty() || !element.node()) {
       return 'url(#arrow)';
     }
-    
+
     if (element.classed('highlighted') || element.classed('selected')) {
       return 'url(#arrow-highlighted)';
     }
-    
+
     return 'url(#arrow)';
   }
 
@@ -273,20 +288,20 @@ export class TransitionRenderer {
    */
   private getLabelFill(link: DiagramLink): string {
     const element = d3.select(`[data-id="${link.id}"]`);
-    
+
     // Check if element exists and has classList
     if (element.empty() || !element.node()) {
       return this.style.text.fill;
     }
-    
+
     if (element.classed('highlighted')) {
       return '#d97706'; // warning color
     }
-    
+
     if (element.classed('selected')) {
       return this.style.link.selectedStroke;
     }
-    
+
     return this.style.text.fill;
   }
 
@@ -295,16 +310,16 @@ export class TransitionRenderer {
    */
   private getLabelWeight(link: DiagramLink): string {
     const element = d3.select(`[data-id="${link.id}"]`);
-    
+
     // Check if element exists and has classList
     if (element.empty() || !element.node()) {
       return '400';
     }
-    
+
     if (element.classed('highlighted') || element.classed('selected')) {
       return '600';
     }
-    
+
     return '400';
   }
 
@@ -316,7 +331,7 @@ export class TransitionRenderer {
     if (label.length > 15) {
       return label.substring(0, 13) + '...';
     }
-    
+
     return label;
   }
 
@@ -336,7 +351,7 @@ export class TransitionRenderer {
           elementType: 'link',
           elementId: d.id,
           data: d,
-          originalEvent: event
+          originalEvent: event,
         });
       })
       .on('mouseenter', (event: MouseEvent, d: DiagramLink) => {
@@ -345,7 +360,7 @@ export class TransitionRenderer {
           elementType: 'link',
           elementId: d.id,
           data: d,
-          originalEvent: event
+          originalEvent: event,
         });
       })
       .on('mouseleave', (event: MouseEvent, d: DiagramLink) => {
@@ -354,7 +369,7 @@ export class TransitionRenderer {
           elementType: 'link',
           elementId: d.id,
           data: d,
-          originalEvent: event
+          originalEvent: event,
         });
       });
   }
@@ -365,7 +380,7 @@ export class TransitionRenderer {
   public updateSelection(selectedLinkId: string | null): void {
     // Clear all selections
     d3.selectAll('.transition-link').classed('selected', false);
-    
+
     // Set new selection
     if (selectedLinkId) {
       d3.select(`[data-id="${selectedLinkId}"]`).classed('selected', true);
@@ -378,25 +393,29 @@ export class TransitionRenderer {
   public updateHighlights(highlightedLinkIds: string[]): void {
     // Clear all highlights
     d3.selectAll('.transition-link').classed('highlighted', false);
-    
+
     // Set new highlights
-    highlightedLinkIds.forEach(linkId => {
+    for (const linkId of highlightedLinkIds) {
       d3.select(`[data-id="${linkId}"]`).classed('highlighted', true);
-    });
+    }
   }
 
   /**
    * Animate link entrance
    */
-  public animateEntrance(linkGroups: d3.Selection<SVGGElement, DiagramLink, SVGGElement, unknown>): void {
-    linkGroups.select('path')
+  public animateEntrance(
+    linkGroups: d3.Selection<SVGGElement, DiagramLink, SVGGElement, unknown>
+  ): void {
+    linkGroups
+      .select('path')
       .style('opacity', 0)
       .transition()
       .duration(750)
       .delay((_d, i) => i * 50)
       .style('opacity', 1);
 
-    linkGroups.select('.transition-label')
+    linkGroups
+      .select('.transition-label')
       .style('opacity', 0)
       .transition()
       .duration(500)

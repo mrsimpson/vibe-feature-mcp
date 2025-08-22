@@ -5,6 +5,7 @@ This document describes the automated publishing setup for the responsible-vibe 
 ## Overview
 
 The project uses GitHub Actions to automatically:
+
 - Run tests on pull requests
 - Version bump using conventional commits
 - Publish to npm registry
@@ -38,6 +39,7 @@ The project uses GitHub Actions to automatically:
 
 **Triggers**: Pull requests to main branch
 **Actions**:
+
 - Tests on Node.js 18, 20, and latest
 - Build verification
 - Full test suite including MCP contract tests
@@ -46,6 +48,7 @@ The project uses GitHub Actions to automatically:
 
 **Triggers**: Push to main branch
 **Actions**:
+
 1. Run full test suite
 2. Analyze conventional commits for version bump
 3. Update package.json version
@@ -83,6 +86,7 @@ BREAKING CHANGE: API endpoints have changed"
 ## Manual Override
 
 If needed, you can manually trigger releases:
+
 1. Go to Actions tab in GitHub
 2. Select "Release and Publish" workflow
 3. Click "Run workflow" on main branch
@@ -105,6 +109,7 @@ If needed, you can manually trigger releases:
 ## Version History
 
 Versions and changelogs are automatically maintained in:
+
 - GitHub Releases
 - CHANGELOG.md (auto-generated)
 - Git tags (v1.2.3 format)

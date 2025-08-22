@@ -13,8 +13,8 @@ export class YamlParser {
    */
   public parseWorkflow(yamlContent: string): YamlStateMachine {
     try {
-      const parsed = yaml.load(yamlContent) as any;
-      
+      const parsed = yaml.load(yamlContent) as unknown;
+
       if (!parsed) {
         throw this.createValidationError('Empty YAML content');
       }
@@ -25,11 +25,11 @@ export class YamlParser {
       if (error instanceof yaml.YAMLException) {
         throw this.createParsingError(`YAML syntax error: ${error.message}`);
       }
-      
+
       if (error instanceof Error && error.message.includes('validation')) {
         throw error;
       }
-      
+
       throw this.createParsingError(`Failed to parse YAML: ${String(error)}`);
     }
   }
@@ -37,7 +37,7 @@ export class YamlParser {
   /**
    * Validate the structure of a parsed workflow object
    */
-  private validateWorkflowStructure(parsed: any): YamlStateMachine {
+  private validateWorkflowStructure(parsed: unknown): YamlStateMachine {
     // Check required top-level fields
     this.validateRequiredField(parsed, 'name', 'string');
     this.validateRequiredField(parsed, 'description', 'string');
@@ -46,7 +46,7 @@ export class YamlParser {
 
     // Validate states structure
     const states = this.validateStates(parsed.states);
-    
+
     // Validate initial state exists
     if (!states[parsed.initial_state]) {
       throw this.createValidationError(
@@ -62,14 +62,14 @@ export class YamlParser {
       description: parsed.description,
       initial_state: parsed.initial_state,
       states: states,
-      metadata: parsed.metadata
+      metadata: parsed.metadata,
     };
   }
 
   /**
    * Validate states object structure
    */
-  private validateStates(statesObj: any): Record<string, YamlState> {
+  private validateStates(statesObj: unknown): Record<string, YamlState> {
     if (!statesObj || typeof statesObj !== 'object') {
       throw this.createValidationError('States must be an object');
     }
@@ -78,23 +78,43 @@ export class YamlParser {
 
     for (const [stateName, stateData] of Object.entries(statesObj)) {
       if (!stateData || typeof stateData !== 'object') {
-        throw this.createValidationError(`State "${stateName}" must be an object`);
+        throw this.createValidationError(
+          `State "${stateName}" must be an object`
+        );
       }
 
-      const state = stateData as any;
-      
+      const state = stateData as unknown;
+
       // Validate required state fields
-      this.validateRequiredField(state, 'description', 'string', `State "${stateName}"`);
-      this.validateRequiredField(state, 'default_instructions', 'string', `State "${stateName}"`);
-      this.validateRequiredField(state, 'transitions', 'object', `State "${stateName}"`);
+      this.validateRequiredField(
+        state,
+        'description',
+        'string',
+        `State "${stateName}"`
+      );
+      this.validateRequiredField(
+        state,
+        'default_instructions',
+        'string',
+        `State "${stateName}"`
+      );
+      this.validateRequiredField(
+        state,
+        'transitions',
+        'object',
+        `State "${stateName}"`
+      );
 
       // Validate transitions
-      const transitions = this.validateTransitions(state.transitions, stateName);
+      const transitions = this.validateTransitions(
+        state.transitions,
+        stateName
+      );
 
       validatedStates[stateName] = {
         description: state.description,
         default_instructions: state.default_instructions,
-        transitions: transitions
+        transitions: transitions,
       };
     }
 
@@ -104,12 +124,17 @@ export class YamlParser {
   /**
    * Validate transitions array structure
    */
-  private validateTransitions(transitionsArray: any, stateName: string): YamlTransition[] {
+  private validateTransitions(
+    transitionsArray: unknown,
+    stateName: string
+  ): YamlTransition[] {
     if (!Array.isArray(transitionsArray)) {
-      throw this.createValidationError(`Transitions for state "${stateName}" must be an array`);
+      throw this.createValidationError(
+        `Transitions for state "${stateName}" must be an array`
+      );
     }
 
-    return transitionsArray.map((transition: any, index: number) => {
+    return transitionsArray.map((transition: unknown, index: number) => {
       if (!transition || typeof transition !== 'object') {
         throw this.createValidationError(
           `Transition ${index} in state "${stateName}" must be an object`
@@ -117,9 +142,24 @@ export class YamlParser {
       }
 
       // Validate required transition fields
-      this.validateRequiredField(transition, 'trigger', 'string', `Transition ${index} in state "${stateName}"`);
-      this.validateRequiredField(transition, 'to', 'string', `Transition ${index} in state "${stateName}"`);
-      this.validateRequiredField(transition, 'transition_reason', 'string', `Transition ${index} in state "${stateName}"`);
+      this.validateRequiredField(
+        transition,
+        'trigger',
+        'string',
+        `Transition ${index} in state "${stateName}"`
+      );
+      this.validateRequiredField(
+        transition,
+        'to',
+        'string',
+        `Transition ${index} in state "${stateName}"`
+      );
+      this.validateRequiredField(
+        transition,
+        'transition_reason',
+        'string',
+        `Transition ${index} in state "${stateName}"`
+      );
 
       return {
         trigger: transition.trigger,
@@ -127,7 +167,7 @@ export class YamlParser {
         instructions: transition.instructions,
         additional_instructions: transition.additional_instructions,
         transition_reason: transition.transition_reason,
-        review_perspectives: transition.review_perspectives
+        review_perspectives: transition.review_perspectives,
       };
     });
   }
@@ -153,13 +193,15 @@ export class YamlParser {
    * Validate that a required field exists and has the correct type
    */
   private validateRequiredField(
-    obj: any, 
-    fieldName: string, 
-    expectedType: string, 
+    obj: unknown,
+    fieldName: string,
+    expectedType: string,
     context: string = 'Workflow'
   ): void {
     if (!(fieldName in obj)) {
-      throw this.createValidationError(`${context}: Missing required field "${fieldName}"`);
+      throw this.createValidationError(
+        `${context}: Missing required field "${fieldName}"`
+      );
     }
 
     const actualType = typeof obj[fieldName];
@@ -176,7 +218,7 @@ export class YamlParser {
   private createValidationError(message: string): AppError {
     return {
       type: 'validation',
-      message: `Validation error: ${message}`
+      message: `Validation error: ${message}`,
     } as AppError;
   }
 
@@ -186,7 +228,7 @@ export class YamlParser {
   private createParsingError(message: string): AppError {
     return {
       type: 'parsing',
-      message: message
+      message: message,
     } as AppError;
   }
 }

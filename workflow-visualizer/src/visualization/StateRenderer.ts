@@ -4,7 +4,11 @@
  */
 
 import * as d3 from 'd3';
-import { DiagramNode, DiagramStyle, InteractionEvent } from '../types/visualization-types';
+import {
+  DiagramNode,
+  DiagramStyle,
+  InteractionEvent,
+} from '../types/visualization-types';
 
 export class StateRenderer {
   private style: DiagramStyle;
@@ -24,20 +28,23 @@ export class StateRenderer {
     console.log(`Rendering ${nodes.length} state nodes`);
 
     // Bind data to state node groups
-    const nodeGroups = container.selectAll<SVGGElement, DiagramNode>('.state-node')
+    const nodeGroups = container
+      .selectAll<SVGGElement, DiagramNode>('.state-node')
       .data(nodes, d => d.id);
 
     // Remove old nodes
     nodeGroups.exit().remove();
 
     // Create new node groups
-    const nodeEnter = nodeGroups.enter()
+    const nodeEnter = nodeGroups
+      .enter()
       .append('g')
       .attr('class', 'state-node')
       .attr('data-id', d => d.id);
 
     // Add circles for states
-    nodeEnter.append('circle')
+    nodeEnter
+      .append('circle')
       .attr('cx', d => d.x || 0)
       .attr('cy', d => d.y || 0)
       .attr('r', d => this.getNodeRadius(d))
@@ -46,7 +53,8 @@ export class StateRenderer {
       .style('stroke-width', this.style.node.strokeWidth);
 
     // Add labels for states
-    nodeEnter.append('text')
+    nodeEnter
+      .append('text')
       .attr('class', 'state-label')
       .attr('x', d => d.x || 0)
       .attr('y', d => d.y || 0)
@@ -62,16 +70,17 @@ export class StateRenderer {
     const nodeUpdate = nodeEnter.merge(nodeGroups);
 
     // Update positions
-    nodeUpdate
-      .attr('transform', d => `translate(${d.x || 0}, ${d.y || 0})`);
+    nodeUpdate.attr('transform', d => `translate(${d.x || 0}, ${d.y || 0})`);
 
     // Update circle styles
-    nodeUpdate.select('circle')
+    nodeUpdate
+      .select('circle')
       .style('fill', d => this.getNodeFill(d))
       .style('stroke', d => this.getNodeStroke(d));
 
     // Update label styles
-    nodeUpdate.select('.state-label')
+    nodeUpdate
+      .select('.state-label')
       .style('fill', d => this.getLabelFill(d))
       .style('font-weight', d => this.getLabelWeight(d));
 
@@ -95,7 +104,7 @@ export class StateRenderer {
           elementType: 'node',
           elementId: d.id,
           data: d,
-          originalEvent: event
+          originalEvent: event,
         });
       })
       .on('mouseenter', (event: MouseEvent, d: DiagramNode) => {
@@ -104,7 +113,7 @@ export class StateRenderer {
           elementType: 'node',
           elementId: d.id,
           data: d,
-          originalEvent: event
+          originalEvent: event,
         });
       })
       .on('mouseleave', (event: MouseEvent, d: DiagramNode) => {
@@ -113,7 +122,7 @@ export class StateRenderer {
           elementType: 'node',
           elementId: d.id,
           data: d,
-          originalEvent: event
+          originalEvent: event,
         });
       });
   }
@@ -130,7 +139,7 @@ export class StateRenderer {
    */
   private getNodeFill(node: DiagramNode): string {
     const element = d3.select(`[data-id="${node.id}"]`);
-    
+
     // Check if element exists and has classList
     if (element.empty() || !element.node()) {
       if (node.isInitial) {
@@ -138,19 +147,19 @@ export class StateRenderer {
       }
       return this.style.node.fill;
     }
-    
+
     if (element.classed('highlighted')) {
       return '#d97706'; // warning color
     }
-    
+
     if (element.classed('selected')) {
       return this.style.node.selectedFill;
     }
-    
+
     if (node.isInitial) {
       return this.style.node.initialFill;
     }
-    
+
     return this.style.node.fill;
   }
 
@@ -159,7 +168,7 @@ export class StateRenderer {
    */
   private getNodeStroke(node: DiagramNode): string {
     const element = d3.select(`[data-id="${node.id}"]`);
-    
+
     // Check if element exists and has classList
     if (element.empty() || !element.node()) {
       if (node.isInitial) {
@@ -167,19 +176,19 @@ export class StateRenderer {
       }
       return this.style.node.stroke;
     }
-    
+
     if (element.classed('highlighted')) {
       return '#d97706'; // warning color
     }
-    
+
     if (element.classed('selected')) {
       return this.style.node.selectedStroke;
     }
-    
+
     if (node.isInitial) {
       return this.style.node.initialFill;
     }
-    
+
     return this.style.node.stroke;
   }
 
@@ -188,7 +197,7 @@ export class StateRenderer {
    */
   private getLabelFill(node: DiagramNode): string {
     const element = d3.select(`[data-id="${node.id}"]`);
-    
+
     // Check if element exists and has classList
     if (element.empty() || !element.node()) {
       if (node.isInitial) {
@@ -196,11 +205,15 @@ export class StateRenderer {
       }
       return this.style.text.fill;
     }
-    
-    if (element.classed('highlighted') || element.classed('selected') || node.isInitial) {
+
+    if (
+      element.classed('highlighted') ||
+      element.classed('selected') ||
+      node.isInitial
+    ) {
       return '#ffffff';
     }
-    
+
     return this.style.text.fill;
   }
 
@@ -209,7 +222,7 @@ export class StateRenderer {
    */
   private getLabelWeight(node: DiagramNode): string {
     const element = d3.select(`[data-id="${node.id}"]`);
-    
+
     // Check if element exists and has classList
     if (element.empty() || !element.node()) {
       if (node.isInitial) {
@@ -217,11 +230,15 @@ export class StateRenderer {
       }
       return '500';
     }
-    
-    if (element.classed('highlighted') || element.classed('selected') || node.isInitial) {
+
+    if (
+      element.classed('highlighted') ||
+      element.classed('selected') ||
+      node.isInitial
+    ) {
       return '600';
     }
-    
+
     return '500';
   }
 
@@ -233,7 +250,7 @@ export class StateRenderer {
     if (label.length > 12) {
       return label.substring(0, 10) + '...';
     }
-    
+
     return label;
   }
 
@@ -243,7 +260,7 @@ export class StateRenderer {
   public updateSelection(selectedNodeId: string | null): void {
     // Clear all selections
     d3.selectAll('.state-node').classed('selected', false);
-    
+
     // Set new selection
     if (selectedNodeId) {
       d3.select(`[data-id="${selectedNodeId}"]`).classed('selected', true);
@@ -256,36 +273,42 @@ export class StateRenderer {
   public updateHighlights(highlightedNodeIds: string[]): void {
     // Clear all highlights
     d3.selectAll('.state-node').classed('highlighted', false);
-    
+
     // Set new highlights
-    highlightedNodeIds.forEach(nodeId => {
+    for (const nodeId of highlightedNodeIds) {
       d3.select(`[data-id="${nodeId}"]`).classed('highlighted', true);
-    });
+    }
   }
 
   /**
    * Get node at position (for hit testing)
    */
-  public getNodeAtPosition(x: number, y: number, nodes: DiagramNode[]): DiagramNode | null {
+  public getNodeAtPosition(
+    x: number,
+    y: number,
+    nodes: DiagramNode[]
+  ): DiagramNode | null {
     for (const node of nodes) {
       if (node.x !== undefined && node.y !== undefined) {
         const distance = Math.sqrt(
           Math.pow(x - node.x, 2) + Math.pow(y - node.y, 2)
         );
-        
+
         if (distance <= this.getNodeRadius(node)) {
           return node;
         }
       }
     }
-    
+
     return null;
   }
 
   /**
    * Animate node entrance
    */
-  public animateEntrance(nodeGroups: d3.Selection<SVGGElement, DiagramNode, SVGGElement, unknown>): void {
+  public animateEntrance(
+    nodeGroups: d3.Selection<SVGGElement, DiagramNode, SVGGElement, unknown>
+  ): void {
     nodeGroups
       .style('opacity', 0)
       .transition()
@@ -298,7 +321,9 @@ export class StateRenderer {
   /**
    * Animate node position updates
    */
-  public animatePositions(nodeGroups: d3.Selection<SVGGElement, DiagramNode, SVGGElement, unknown>): void {
+  public animatePositions(
+    nodeGroups: d3.Selection<SVGGElement, DiagramNode, SVGGElement, unknown>
+  ): void {
     nodeGroups
       .transition()
       .duration(300)

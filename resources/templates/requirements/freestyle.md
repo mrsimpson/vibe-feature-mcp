@@ -1,4 +1,4 @@
-<!-- 
+<!--
 INSTRUCTIONS FOR REQUIREMENTS (FREESTYLE):
 - Document user needs and system requirements in any format that works for your project
 - Consider using user stories, use cases, or functional specifications
@@ -10,25 +10,33 @@ INSTRUCTIONS FOR REQUIREMENTS (FREESTYLE):
 # Requirements Document
 
 ## Functional Requirements
+
 <!-- What the system should do -->
 
 ### [Requirement Category]
+
 <!-- Group related requirements together -->
 
 ## Non-Functional Requirements
+
 <!-- Performance, security, usability, etc. -->
 
 ### Performance
+
 <!-- Response times, throughput, scalability requirements -->
 
 ### Security
+
 <!-- Authentication, authorization, data protection requirements -->
 
 ### Usability
+
 <!-- User experience, accessibility requirements -->
 
 ## Business Rules
+
 <!-- Constraints and rules that govern system behavior -->
 
 ## Assumptions and Dependencies
+
 <!-- External dependencies and assumptions made -->

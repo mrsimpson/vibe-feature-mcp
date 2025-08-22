@@ -3,7 +3,11 @@
  */
 
 // Import existing types from the main project
-import type { YamlStateMachine, YamlState, YamlTransition } from '../../../src/state-machine-types';
+import type {
+  YamlStateMachine,
+  YamlState,
+  YamlTransition,
+} from '../../../src/state-machine-types';
 
 // Re-export for convenience
 export type { YamlStateMachine, YamlState, YamlTransition };
@@ -14,7 +18,7 @@ export type { YamlStateMachine, YamlState, YamlTransition };
 export interface InteractionEvent {
   elementType: 'node' | 'edge' | 'transition';
   elementId?: string;
-  data?: any;
+  data?: YamlState | TransitionData;
   originalEvent?: Event;
 }
 
@@ -27,7 +31,7 @@ export interface AppState {
   highlightedPath: string[] | null;
   isLoading: boolean;
   error: string | null;
-  parentState: { id: string; data: any } | null;
+  parentState: { id: string; data: YamlState } | null;
 }
 
 /**

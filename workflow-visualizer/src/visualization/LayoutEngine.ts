@@ -4,7 +4,11 @@
  */
 
 import * as d3 from 'd3';
-import { DiagramNode, DiagramLink, DiagramConfig } from '../types/visualization-types';
+import {
+  DiagramNode,
+  DiagramLink,
+  DiagramConfig,
+} from '../types/visualization-types';
 
 export class LayoutEngine {
   private config: DiagramConfig;
@@ -18,7 +22,9 @@ export class LayoutEngine {
    * Calculate layout for nodes and links using force simulation
    */
   public calculateLayout(nodes: DiagramNode[], links: DiagramLink[]): void {
-    console.log(`Calculating layout for ${nodes.length} nodes and ${links.length} links`);
+    console.log(
+      `Calculating layout for ${nodes.length} nodes and ${links.length} links`
+    );
 
     // Stop existing simulation
     if (this.simulation) {
@@ -26,22 +32,27 @@ export class LayoutEngine {
     }
 
     // Create force simulation
-    this.simulation = d3.forceSimulation<DiagramNode>(nodes)
-      .force('link', d3.forceLink<DiagramNode, DiagramLink>(links)
-        .id(d => d.id)
-        .distance(this.config.linkDistance)
-        .strength(0.5)
+    this.simulation = d3
+      .forceSimulation<DiagramNode>(nodes)
+      .force(
+        'link',
+        d3
+          .forceLink<DiagramNode, DiagramLink>(links)
+          .id(d => d.id)
+          .distance(this.config.linkDistance)
+          .strength(0.5)
       )
-      .force('charge', d3.forceManyBody()
-        .strength(this.config.chargeStrength)
+      .force('charge', d3.forceManyBody().strength(this.config.chargeStrength))
+      .force(
+        'center',
+        d3.forceCenter(this.config.width / 2, this.config.height / 2)
       )
-      .force('center', d3.forceCenter(
-        this.config.width / 2,
-        this.config.height / 2
-      ))
-      .force('collision', d3.forceCollide()
-        .radius(this.config.nodeRadius + 10)
-        .strength(0.7)
+      .force(
+        'collision',
+        d3
+          .forceCollide()
+          .radius(this.config.nodeRadius + 10)
+          .strength(0.7)
       );
 
     // Handle self-loops with special positioning
@@ -58,13 +69,13 @@ export class LayoutEngine {
    * Handle self-loop transitions with special positioning
    */
   private handleSelfLoops(links: DiagramLink[]): void {
-    links.forEach(link => {
+    for (const link of links) {
       if (link.isSelfLoop) {
         // Self-loops don't participate in the force simulation
         // They will be positioned relative to their source node
         link.source = link.target;
       }
-    });
+    }
   }
 
   /**
@@ -72,7 +83,7 @@ export class LayoutEngine {
    */
   private positionInitialState(nodes: DiagramNode[]): void {
     const initialNode = nodes.find(node => node.isInitial);
-    
+
     if (initialNode) {
       // Fix initial node position towards the left side
       initialNode.fx = this.config.width * 0.2;
@@ -106,99 +117,127 @@ export class LayoutEngine {
     const nodes = this.simulation.nodes();
     const padding = this.config.nodeRadius + 20;
 
-    nodes.forEach(node => {
+    for (const node of nodes) {
       if (node.x !== undefined && node.y !== undefined) {
-        node.x = Math.max(padding, Math.min(this.config.width - padding, node.x));
-        node.y = Math.max(padding, Math.min(this.config.height - padding, node.y));
+        node.x = Math.max(
+          padding,
+          Math.min(this.config.width - padding, node.x)
+        );
+        node.y = Math.max(
+          padding,
+          Math.min(this.config.height - padding, node.y)
+        );
       }
-    });
+    }
   }
 
   /**
    * Calculate positions for hierarchical layout
    */
-  public calculateHierarchicalLayout(nodes: DiagramNode[], links: DiagramLink[]): void {
+  public calculateHierarchicalLayout(
+    nodes: DiagramNode[],
+    links: DiagramLink[]
+  ): void {
     console.log('Calculating hierarchical layout');
 
     // Create a simple hierarchical layout based on state transitions
     const levels = this.calculateStateLevels(nodes, links);
     const maxLevel = Math.max(...Object.values(levels));
 
-    const levelHeight = (this.config.height - this.config.padding.top - this.config.padding.bottom) / (maxLevel + 1);
+    const levelHeight =
+      (this.config.height -
+        this.config.padding.top -
+        this.config.padding.bottom) /
+      (maxLevel + 1);
     const levelCounts: Record<number, number> = {};
 
     // Count nodes per level
-    Object.values(levels).forEach(level => {
+    for (const level of Object.values(levels)) {
       levelCounts[level] = (levelCounts[level] || 0) + 1;
-    });
+    }
 
     // Position nodes
     const levelPositions: Record<number, number> = {};
-    
-    nodes.forEach(node => {
+
+    for (const node of nodes) {
       const level = levels[node.id];
       const nodesInLevel = levelCounts[level];
-      const levelWidth = this.config.width - this.config.padding.left - this.config.padding.right;
-      
+      const levelWidth =
+        this.config.width -
+        this.config.padding.left -
+        this.config.padding.right;
+
       if (!levelPositions[level]) {
         levelPositions[level] = 0;
       }
-      
-      node.x = this.config.padding.left + (levelWidth / (nodesInLevel + 1)) * (levelPositions[level] + 1);
+
+      node.x =
+        this.config.padding.left +
+        (levelWidth / (nodesInLevel + 1)) * (levelPositions[level] + 1);
       node.y = this.config.padding.top + levelHeight * (level + 0.5);
-      
+
       levelPositions[level]++;
-    });
+    }
   }
 
   /**
    * Calculate the level (depth) of each state in the workflow
    */
-  private calculateStateLevels(nodes: DiagramNode[], links: DiagramLink[]): Record<string, number> {
+  private calculateStateLevels(
+    nodes: DiagramNode[],
+    links: DiagramLink[]
+  ): Record<string, number> {
     const levels: Record<string, number> = {};
     const visited = new Set<string>();
-    
+
     // Find initial state
     const initialNode = nodes.find(node => node.isInitial);
     if (!initialNode) {
       // If no initial state, assign level 0 to all nodes
-      nodes.forEach(node => {
+      for (const node of nodes) {
         levels[node.id] = 0;
-      });
+      }
       return levels;
     }
 
     // BFS to assign levels
-    const queue: Array<{ nodeId: string; level: number }> = [{ nodeId: initialNode.id, level: 0 }];
-    
+    const queue: Array<{ nodeId: string; level: number }> = [
+      { nodeId: initialNode.id, level: 0 },
+    ];
+
     while (queue.length > 0) {
-      const { nodeId, level } = queue.shift()!;
-      
+      const item = queue.shift();
+      if (!item) continue;
+
+      const { nodeId, level } = item;
+
       if (visited.has(nodeId)) continue;
-      
+
       visited.add(nodeId);
       levels[nodeId] = level;
-      
+
       // Find outgoing transitions
-      const outgoingLinks = links.filter(link => 
-        (typeof link.source === 'string' ? link.source : link.source.id) === nodeId &&
-        !link.isSelfLoop
+      const outgoingLinks = links.filter(
+        link =>
+          (typeof link.source === 'string' ? link.source : link.source.id) ===
+            nodeId && !link.isSelfLoop
       );
-      
-      outgoingLinks.forEach(link => {
-        const targetId = typeof link.target === 'string' ? link.target : link.target.id;
+
+      for (const link of outgoingLinks) {
+        const targetId =
+          typeof link.target === 'string' ? link.target : link.target.id;
         if (!visited.has(targetId)) {
           queue.push({ nodeId: targetId, level: level + 1 });
         }
-      });
+      }
     }
 
     // Assign level 0 to any unvisited nodes
-    nodes.forEach(node => {
+    for (const node of nodes) {
       if (!(node.id in levels)) {
         levels[node.id] = 0;
       }
-    });
+    }
 
     return levels;
   }
@@ -213,11 +252,11 @@ export class LayoutEngine {
     const centerY = this.config.height / 2;
     const radius = Math.min(this.config.width, this.config.height) * 0.3;
 
-    nodes.forEach((node, index) => {
+    for (const [index, node] of nodes.entries()) {
       const angle = (2 * Math.PI * index) / nodes.length;
       node.x = centerX + radius * Math.cos(angle);
       node.y = centerY + radius * Math.sin(angle);
-    });
+    }
   }
 
   /**
@@ -225,14 +264,13 @@ export class LayoutEngine {
    */
   public updateConfig(config: DiagramConfig): void {
     this.config = config;
-    
+
     if (this.simulation) {
       // Update force simulation with new dimensions
-      this.simulation
-        .force('center', d3.forceCenter(
-          this.config.width / 2,
-          this.config.height / 2
-        ));
+      this.simulation.force(
+        'center',
+        d3.forceCenter(this.config.width / 2, this.config.height / 2)
+      );
     }
   }
 
@@ -264,7 +302,10 @@ export class LayoutEngine {
   /**
    * Get optimal layout algorithm for the given workflow
    */
-  public getOptimalLayout(nodeCount: number, linkCount: number): 'force' | 'hierarchical' | 'circular' {
+  public getOptimalLayout(
+    nodeCount: number,
+    linkCount: number
+  ): 'force' | 'hierarchical' | 'circular' {
     if (nodeCount <= 4) {
       return 'circular';
     } else if (nodeCount <= 8 && linkCount / nodeCount < 2) {
@@ -279,9 +320,9 @@ export class LayoutEngine {
    */
   public applyOptimalLayout(nodes: DiagramNode[], links: DiagramLink[]): void {
     const layoutType = this.getOptimalLayout(nodes.length, links.length);
-    
+
     console.log(`Applying ${layoutType} layout for ${nodes.length} nodes`);
-    
+
     switch (layoutType) {
       case 'circular':
         this.calculateCircularLayout(nodes);

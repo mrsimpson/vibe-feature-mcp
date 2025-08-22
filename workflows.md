@@ -7,7 +7,7 @@ Interactive visualization tool for exploring responsible-vibe workflow state mac
 ## Features
 
 - **Interactive State Machine Diagrams**: Visual representation of workflow states and transitions
-- **Side Panel Details**: Comprehensive information about selected states and transitions  
+- **Side Panel Details**: Comprehensive information about selected states and transitions
 - **Path Highlighting**: Visual feedback when clicking transitions to show flow
 - **Dual Workflow Loading**: Built-in workflows + custom YAML file upload
 

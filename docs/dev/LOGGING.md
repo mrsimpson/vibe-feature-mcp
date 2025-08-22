@@ -17,7 +17,7 @@ The server supports four log levels with configurable output:
 
 - **DEBUG**: Detailed tracing and execution flow information
 - **INFO**: Success operations and important milestones (default)
-- **WARN**: Expected errors and recoverable issues  
+- **WARN**: Expected errors and recoverable issues
 - **ERROR**: Caught but unexpected errors
 
 ## Configuration
@@ -86,7 +86,7 @@ const logger = createLogger('MyComponent');
 logger.info('Operation completed', {
   conversationId: 'abc123',
   phase: 'requirements',
-  operation: 'phase_transition'
+  operation: 'phase_transition',
 });
 ```
 
@@ -98,7 +98,7 @@ try {
 } catch (error) {
   logger.error('Operation failed', error as Error, {
     operation: 'database_query',
-    conversationId: 'abc123'
+    conversationId: 'abc123',
   });
 }
 ```
@@ -121,6 +121,7 @@ When using the MCP server, clients will receive enhanced log notifications for:
 4. **Debug information**: Detailed tracing (only at DEBUG level)
 
 Example client notification:
+
 ```json
 {
   "method": "notifications/message",
@@ -135,16 +136,19 @@ Example client notification:
 ## Architecture Benefits
 
 ### Centralized Logging
+
 - All logging logic is contained in `logger.ts`
 - No duplication between server components
 - Single point of configuration and enhancement
 
 ### Enhanced User Experience
+
 - Phase transitions are formatted for readability
 - Important events get visual indicators (🚀)
 - Context information is preserved but formatted appropriately
 
 ### MCP Compliance
+
 - All local logs go to stderr as required
 - Client notifications use proper MCP protocol
 - Graceful fallback when MCP transport is unavailable
@@ -158,6 +162,7 @@ LOG_LEVEL=DEBUG npx tsx src/index.ts
 ```
 
 Debug logging includes:
+
 - Detailed execution flow
 - State machine operations
 - Database queries

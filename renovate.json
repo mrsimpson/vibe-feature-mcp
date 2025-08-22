@@ -1,8 +1,6 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": [
-    "config:recommended"
-  ],
+  "extends": ["config:recommended"],
   "description": "Frictionless Renovate configuration with automerge when CI passes",
   "platformAutomerge": true,
   "automerge": true,
@@ -77,7 +75,5 @@
     "schedule": ["before 4am on monday"],
     "addLabels": ["lockfile-maintenance"]
   },
-  "suppressNotifications": [
-    "prIgnoreNotification"
-  ]
+  "suppressNotifications": ["prIgnoreNotification"]
 }

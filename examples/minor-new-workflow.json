@@ -2645,10 +2645,7 @@
       }
     ]
   ],
-  "valid_history_range": [
-    0,
-    50
-  ],
+  "valid_history_range": [0, 50],
   "transcript": [
     "> I want you to help me implement another workflow. That's a minor feature",
     "I'll help you implement a new workflow for the responsible-vibe-mcp server. Let me first check the current development status and then we can work on adding this minor feature.\n[Tool uses: responsible_vibe_mcp___resume_workflow]",
@@ -2719,9 +2716,7 @@
           "description": "Search for code within the GitHub repository: \"modelcontextprotocol/modelcontextprotocol\" using the GitHub Search API (exact match). Returns matching files for you to query further if relevant.",
           "input_schema": {
             "json": {
-              "required": [
-                "query"
-              ],
+              "required": ["query"],
               "properties": {
                 "page": {
                   "type": "number",
@@ -2745,9 +2740,7 @@
           "description": "Semantically search within the fetched documentation from GitHub repository: modelcontextprotocol/modelcontextprotocol. Useful for specific queries.",
           "input_schema": {
             "json": {
-              "required": [
-                "query"
-              ],
+              "required": ["query"],
               "properties": {
                 "query": {
                   "type": "string",
@@ -2774,9 +2767,7 @@
                   "description": "The URL of the document or page to fetch"
                 }
               },
-              "required": [
-                "url"
-              ],
+              "required": ["url"],
               "$schema": "http://json-schema.org/draft-07/schema#",
               "additionalProperties": false
             }
@@ -2833,9 +2824,7 @@
               },
               "additionalProperties": false,
               "$schema": "http://json-schema.org/draft-07/schema#",
-              "required": [
-                "target_phase"
-              ],
+              "required": ["target_phase"],
               "type": "object"
             }
           }
@@ -2849,9 +2838,7 @@
             "json": {
               "additionalProperties": false,
               "$schema": "http://json-schema.org/draft-07/schema#",
-              "required": [
-                "confirm"
-              ],
+              "required": ["confirm"],
               "type": "object",
               "properties": {
                 "reason": {
@@ -2884,10 +2871,7 @@
                   "type": "array",
                   "description": "Recent conversation messages that provide context for the current development state",
                   "items": {
-                    "required": [
-                      "role",
-                      "content"
-                    ],
+                    "required": ["role", "content"],
                     "additionalProperties": false,
                     "type": "object",
                     "properties": {
@@ -2896,10 +2880,7 @@
                         "type": "string"
                       },
                       "role": {
-                        "enum": [
-                          "user",
-                          "assistant"
-                        ],
+                        "enum": ["user", "assistant"],
                         "type": "string",
                         "description": "Who sent the message (user or assistant)"
                       }
@@ -2955,9 +2936,7 @@
           "description": "Generic tool to fetch content from any absolute URL, respecting robots.txt rules. Use this to retrieve referenced urls (absolute urls) that were mentioned in previously fetched documentation.",
           "input_schema": {
             "json": {
-              "required": [
-                "url"
-              ],
+              "required": ["url"],
               "properties": {
                 "url": {
                   "type": "string",
@@ -2977,9 +2956,7 @@
           "description": "Search for code within the GitHub repository: \"modelcontextprotocol/typescript-sdk\" using the GitHub Search API (exact match). Returns matching files for you to query further if relevant.",
           "input_schema": {
             "json": {
-              "required": [
-                "query"
-              ],
+              "required": ["query"],
               "type": "object",
               "additionalProperties": false,
               "properties": {
@@ -3012,9 +2989,7 @@
               },
               "additionalProperties": false,
               "$schema": "http://json-schema.org/draft-07/schema#",
-              "required": [
-                "query"
-              ]
+              "required": ["query"]
             }
           }
         }
@@ -3046,9 +3021,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "query"
-              ],
+              "required": ["query"],
               "type": "object"
             }
           }
@@ -3062,9 +3035,7 @@
             "json": {
               "additionalProperties": false,
               "$schema": "http://json-schema.org/draft-07/schema#",
-              "required": [
-                "url"
-              ],
+              "required": ["url"],
               "type": "object",
               "properties": {
                 "url": {
@@ -3096,9 +3067,7 @@
               "additionalProperties": false,
               "$schema": "http://json-schema.org/draft-07/schema#",
               "type": "object",
-              "required": [
-                "query"
-              ],
+              "required": ["query"],
               "properties": {
                 "query": {
                   "description": "The search query to find relevant code files",
@@ -3124,12 +3093,7 @@
               "properties": {
                 "command": {
                   "type": "string",
-                  "enum": [
-                    "create",
-                    "str_replace",
-                    "insert",
-                    "append"
-                  ],
+                  "enum": ["create", "str_replace", "insert", "append"],
                   "description": "The commands to run. Allowed options are: `create`, `str_replace`, `insert`, `append`."
                 },
                 "file_text": {
@@ -3153,10 +3117,7 @@
                   "description": "Required parameter of `str_replace` command containing the new string. Required parameter of `insert` command containing the string to insert. Required parameter of `append` command containing the content to append to the file."
                 }
               },
-              "required": [
-                "command",
-                "path"
-              ],
+              "required": ["command", "path"],
               "type": "object"
             }
           }
@@ -3168,10 +3129,7 @@
           "description": "Tool for reading files (for example, `cat -n`),  directories (for example, `ls -la`) and images. If user has supplied paths that appear to be leading to images, you should use this tool right away using Image mode. The behavior of this tool is determined by the `mode` parameter. The available modes are:\n- line: Show lines in a file, given by an optional `start_line` and optional `end_line`.\n- directory: List directory contents. Content is returned in the \"long format\" of ls (that is, `ls -la`).\n- search: Search for a pattern in a file. The pattern is a string. The matching is case insensitive.\n\nExample Usage:\n1. Read all lines from a file: command=\"line\", path=\"/path/to/file.txt\"\n2. Read the last 5 lines from a file: command=\"line\", path=\"/path/to/file.txt\", start_line=-5\n3. List the files in the home directory: command=\"line\", path=\"~\"\n4. Recursively list files in a directory to a max depth of 2: command=\"line\", path=\"/path/to/directory\", depth=2\n5. Search for all instances of \"test\" in a file: command=\"search\", path=\"/path/to/file.txt\", pattern=\"test\"\n",
           "input_schema": {
             "json": {
-              "required": [
-                "path",
-                "mode"
-              ],
+              "required": ["path", "mode"],
               "type": "object",
               "properties": {
                 "image_paths": {
@@ -3197,12 +3155,7 @@
                 "mode": {
                   "description": "The mode to run in: `Line`, `Directory`, `Search`. `Line` and `Search` are only for text files, and `Directory` is only for directories. `Image` is for image files, in this mode `image_paths` is required.",
                   "type": "string",
-                  "enum": [
-                    "Line",
-                    "Directory",
-                    "Search",
-                    "Image"
-                  ]
+                  "enum": ["Line", "Directory", "Search", "Image"]
                 },
                 "end_line": {
                   "description": "Ending line number (optional, for Line mode). A negative index represents a line number starting from the end of the file.",
@@ -3249,9 +3202,7 @@
                   "description": "The title of the GitHub issue."
                 }
               },
-              "required": [
-                "title"
-              ]
+              "required": ["title"]
             }
           }
         }
@@ -3288,12 +3239,7 @@
                   "description": "The name of the AWS service. If you want to query s3, you should use s3api if possible."
                 }
               },
-              "required": [
-                "region",
-                "service_name",
-                "operation_name",
-                "label"
-              ],
+              "required": ["region", "service_name", "operation_name", "label"],
               "type": "object"
             }
           }
@@ -3328,9 +3274,7 @@
                   "description": "Bash command to execute"
                 }
               },
-              "required": [
-                "command"
-              ],
+              "required": ["command"],
               "type": "object"
             }
           }
@@ -3341,11 +3285,7 @@
   "context_manager": {
     "max_context_files_size": 150000,
     "global_config": {
-      "paths": [
-        ".amazonq/rules/**/*.md",
-        "README.md",
-        "AmazonQ.md"
-      ],
+      "paths": [".amazonq/rules/**/*.md", "README.md", "AmazonQ.md"],
       "hooks": {}
     },
     "current_profile": "vibe",

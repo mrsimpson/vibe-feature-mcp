@@ -40,6 +40,7 @@ LLM: calls whats_next() again
 **This MCP server requires a specific system prompt to function properly.** The LLM must be configured with the correct system prompt to know how to interact with the tools.
 
 **Get the system prompt:**
+
 ```bash
 npx responsible-vibe-mcp --system-prompt
 ```
@@ -58,7 +59,7 @@ Use the automatic configuration generator to set up your AI coding agent:
 # For Amazon Q CLI
 npx responsible-vibe-mcp --generate-config amazonq-cli
 
-# For Claude Code  
+# For Claude Code
 npx responsible-vibe-mcp --generate-config claude
 
 # For Gemini CLI
@@ -136,7 +137,7 @@ Then configure it to connect to `npx responsible-vibe-mcp`.
 The server provides tools that the LLM calls automatically based on the system prompt instructions:
 
 - **LLM calls `whats_next()`** after each user interaction to get phase-specific guidance
-- **LLM calls `proceed_to_phase()`** when ready to transition between development phases  
+- **LLM calls `proceed_to_phase()`** when ready to transition between development phases
 - **LLM calls `start_development()`** to begin with a chosen workflow
 - **Server responds** with contextual instructions telling the LLM exactly what to do next
 
@@ -148,7 +149,7 @@ The user interacts normally with the LLM - the tool calls happen automatically i
 - **Project Documentation System**: Intelligent artifact management with dynamic template discovery and workflow integration
 - **Review System**: Optional quality gates with configurable review perspectives before phase transitions
 - **Workflow Visualizer**: Interactive web interface for exploring workflow state machines
-- **Git Integration**: Optional automatic commits with intelligent defaults  
+- **Git Integration**: Optional automatic commits with intelligent defaults
 - **State Persistence**: Conversation state survives server restarts
 - **Multi-Project Support**: Handle multiple concurrent project conversations
 - **Branch Awareness**: Separate development contexts for different git branches
@@ -158,18 +159,21 @@ The user interacts normally with the LLM - the tool calls happen automatically i
 The comprehensive artifacts management system provides persistent project memory through two key components:
 
 **Project Documentation Artifacts:**
+
 - **Architecture, Requirements, and Design Documents**: Structured documentation using templates (Arc42, EARS, Comprehensive) or linked existing files
 - **Workflow Variable Integration**: Documents are referenced in workflows as `$ARCHITECTURE_DOC`, `$REQUIREMENTS_DOC`, `$DESIGN_DOC`
 - **Dynamic Content Injection**: LLM receives contextual documentation during each development phase
 - **Flexible Setup**: Create from templates, link existing files, or disable with "none" option
 
 **Development Plan Files as Process Memory:**
+
 - **Central Process Tracking**: Markdown files tracking tasks, decisions, and project evolution
 - **Cross-Session Continuity**: Maintains project context across conversations and server restarts
 - **Decision Documentation**: Records architectural choices and implementation rationale
 - **Fallback Documentation**: Used when specific document types are disabled
 
 **Memory Persistence Features:**
+
 - **Artifact Linking**: Connect existing project files (README.md, docs/) to the memory system
 - **Template-Based Structure**: Standardized documentation formats for consistent organization
 - **Workflow Integration**: Documents contextually referenced using variables in workflow instructions
@@ -177,6 +181,7 @@ The comprehensive artifacts management system provides persistent project memory
 - **Multi-Project Memory**: Handle multiple concurrent projects with isolated memory spaces
 
 **Benefits for Development:**
+
 - **Context Preservation**: Never lose project context between conversations
 - **Informed Decision Making**: LLM always has access to relevant project documentation
 - **Documentation-Driven Development**: Workflows enforce reference to project specifications
@@ -199,11 +204,12 @@ The project documentation system provides intelligent artifact management with:
 The system now supports linking existing documentation files instead of only creating new structured documents:
 
 **Mixed Usage Examples:**
+
 ```bash
 # Link existing README.md as requirements, create new architecture doc
 setup_project_docs({
   architecture: "arc42",
-  requirements: "README.md", 
+  requirements: "README.md",
   design: "docs/design.md"
 })
 
@@ -230,6 +236,7 @@ setup_project_docs({
 ```
 
 **Supported File Patterns:**
+
 - `README.md`, `ARCHITECTURE.md`, `DESIGN.md`, `REQUIREMENTS.md`
 - Files in `docs/` folder: `docs/architecture.md`, `docs/requirements.md`
 - Absolute and relative file paths
@@ -237,6 +244,7 @@ setup_project_docs({
 - **"none" template**: Creates placeholder that instructs LLM to use plan file instead
 
 **How It Works:**
+
 1. **Template OR File Path OR "none"**: Each parameter accepts template names, file paths, or "none"
 2. **Automatic Detection**: System detects existing documentation files and suggests them
 3. **Symlink Creation**: Creates symbolic links in `.vibe/docs/` pointing to existing files
@@ -248,6 +256,7 @@ setup_project_docs({
 The review system provides optional quality gates before phase transitions, ensuring thorough evaluation of work before proceeding to the next development phase.
 
 **Key Features:**
+
 - **Configurable Reviews**: Enable/disable reviews per conversation using `require_reviews` parameter
 - **Role-Based Perspectives**: Reviews from relevant expert perspectives (architect, security expert, UX expert, etc.)
 - **Workflow Integration**: Review perspectives defined in workflow YAML files
@@ -271,16 +280,17 @@ Automatically generate configuration files for different AI coding agents with p
 npx responsible-vibe-mcp --generate-config amazonq-cli
 # Creates: .amazonq/cli-agents/vibe.json
 
-# Generate Claude Code configuration  
+# Generate Claude Code configuration
 npx responsible-vibe-mcp --generate-config claude
 # Creates: CLAUDE.md, .mcp.json, settings.json
 
 # Generate Gemini CLI configuration
-npx responsible-vibe-mcp --generate-config gemini  
+npx responsible-vibe-mcp --generate-config gemini
 # Creates: settings.json, GEMINI.md
 ```
 
 **Features:**
+
 - **Pre-configured MCP Server**: Automatically includes responsible-vibe-mcp server configuration
 - **System Prompt Integration**: Uses the same system prompt as `--system-prompt` command
 - **Default Tool Permissions**: Includes essential tools (`whats_next`, `conduct_review`, `list_workflows`, `get_tool_info`)
@@ -314,43 +324,54 @@ The server provides tools that are automatically called by the LLM (not by users
 The LLM automatically calls these tools based on the system prompt instructions:
 
 #### `start_development`
+
 Begin a new development project with a structured workflow. Must be called before other development tools.
 
 #### `setup_project_docs`
+
 Set up project documentation artifacts using intelligent templates. Creates architecture, requirements, and design documents based on selected templates with dynamic template discovery.
 
 #### `whats_next`
+
 Primary tool that analyzes conversation state and provides LLM instructions.
 
 #### `proceed_to_phase`
+
 Explicitly transition to a new development phase when current phase is complete.
 
 #### `resume_workflow`
+
 Resume development workflow after conversation compression with comprehensive project context.
 
 #### `reset_development`
+
 Reset conversation state and development progress (requires confirmation).
 
 ### Resources
 
 #### `development-plan`
+
 - **URI**: `plan://current`
 - **Description**: Current development plan document (markdown)
 
 #### `conversation-state`
+
 - **URI**: `state://current`
 - **Description**: Current conversation state and phase information
 
 #### `system-prompt`
+
 - **URI**: `system-prompt://`
 - **Description**: Complete system prompt for LLM integration
 
 ### Prompts
 
 #### `phase-guidance`
+
 Provides detailed guidance prompts for specific development phases.
 
 **Arguments:**
+
 - `phase` (string): Development phase name
 - `context` (string): Additional context or specific questions
 
@@ -360,13 +381,13 @@ Provides detailed guidance prompts for specific development phases.
 
 ```javascript
 // Start with a specific workflow
-start_development({ workflow: "your-preferred-workflow" })
+start_development({ workflow: 'your-preferred-workflow' });
 
 // With git commit configuration
 start_development({
-  workflow: "your-workflow",
-  commit_behaviour: "end"
-})
+  workflow: 'your-workflow',
+  commit_behaviour: 'end',
+});
 ```
 
 ### Basic Development Flow
@@ -374,16 +395,16 @@ start_development({
 ```javascript
 // LLM calls after each user interaction
 whats_next({
-  context: "user wants to add authentication",
-  user_input: "implement user login",
-  conversation_summary: "Working on user authentication feature"
-})
+  context: 'user wants to add authentication',
+  user_input: 'implement user login',
+  conversation_summary: 'Working on user authentication feature',
+});
 
 // When phase is complete, transition explicitly
 proceed_to_phase({
-  target_phase: "next-phase",
-  reason: "current phase tasks completed"
-})
+  target_phase: 'next-phase',
+  reason: 'current phase tasks completed',
+});
 ```
 
 ## Documentation

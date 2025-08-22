@@ -1,12 +1,17 @@
 <template>
-  <div id="workflow-visualizer-app" :class="{ 'fullscreen': !showSidebar }">
+  <div id="workflow-visualizer-app" :class="{ fullscreen: !showSidebar }">
     <header class="app-header" v-if="!hideHeader">
       <h1>Workflow Visualizer</h1>
       <div class="workflow-controls">
         <select id="workflow-selector" class="workflow-selector">
           <option value="">Select a workflow...</option>
         </select>
-        <input type="file" id="file-upload" accept=".yaml,.yml" class="file-upload">
+        <input
+          type="file"
+          id="file-upload"
+          accept=".yaml,.yml"
+          class="file-upload"
+        />
         <label for="file-upload" class="file-upload-label">Upload YAML</label>
       </div>
     </header>
@@ -14,10 +19,16 @@
     <main class="app-main" :class="{ 'no-sidebar': !showSidebar }">
       <div class="diagram-container">
         <div id="diagram-canvas" class="diagram-canvas">
-          <div class="loading-message">{{ initialWorkflow ? 'Loading workflow...' : 'Select a workflow to visualize' }}</div>
+          <div class="loading-message">
+            {{
+              initialWorkflow
+                ? 'Loading workflow...'
+                : 'Select a workflow to visualize'
+            }}
+          </div>
         </div>
       </div>
-      
+
       <aside v-if="showSidebar" class="side-panel">
         <div class="side-panel-header">
           <h2>Details</h2>
@@ -40,59 +51,59 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, onUnmounted } from 'vue'
+import { onMounted, onUnmounted } from 'vue';
 
 // Component props
 interface Props {
-  showSidebar?: boolean
-  hideHeader?: boolean
-  initialWorkflow?: string
+  showSidebar?: boolean;
+  hideHeader?: boolean;
+  initialWorkflow?: string;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   showSidebar: true,
   hideHeader: false,
-  initialWorkflow: ''
-})
+  initialWorkflow: '',
+});
 
-let workflowVisualizerApp: any = null
+let workflowVisualizerApp: any = null;
 let appState: any = {
   currentWorkflow: null,
   selectedElement: null,
   highlightedPath: null,
   isLoading: false,
   error: null,
-  parentState: null
-}
+  parentState: null,
+};
 
 // Helper functions for handling interactions
 function handleElementClick(event: any): void {
   if (event.elementType === 'node' && event.data) {
-    selectState(event.elementId, event.data)
+    selectState(event.elementId, event.data);
   } else if (event.elementType === 'transition' && event.data) {
-    selectTransition(event.elementId, event.data)
+    selectTransition(event.elementId, event.data);
   }
 }
 
 function selectState(stateId: string, nodeData: any): void {
-  const workflow = appState.currentWorkflow
-  if (!workflow || !workflow.states[stateId]) return
-  
-  const state = workflow.states[stateId]
-  
+  const workflow = appState.currentWorkflow;
+  if (!workflow || !workflow.states[stateId]) return;
+
+  const state = workflow.states[stateId];
+
   appState.selectedElement = {
     type: 'state',
     id: stateId,
-    data: state
-  }
-  
-  updateSidePanel()
+    data: state,
+  };
+
+  updateSidePanel();
 }
 
 function selectTransition(transitionId: string, linkData: any): void {
-  const workflow = appState.currentWorkflow
-  if (!workflow) return
-  
+  const workflow = appState.currentWorkflow;
+  if (!workflow) return;
+
   if (linkData && linkData.from && linkData.to && linkData.trigger) {
     const transitionData = {
       trigger: linkData.trigger,
@@ -101,74 +112,75 @@ function selectTransition(transitionId: string, linkData: any): void {
       instructions: linkData.instructions || '',
       additional_instructions: linkData.additional_instructions || '',
       transition_reason: linkData.transition_reason || '',
-      review_perspectives: linkData.review_perspectives || []
-    }
-    
+      review_perspectives: linkData.review_perspectives || [],
+    };
+
     appState.selectedElement = {
       type: 'transition',
       id: transitionId,
-      data: transitionData
-    }
-    
-    updateSidePanel()
+      data: transitionData,
+    };
+
+    updateSidePanel();
   }
 }
 
 function clearSelectionAndShowMetadata(): void {
-  appState.selectedElement = null
-  appState.parentState = null
-  updateSidePanel()
+  appState.selectedElement = null;
+  appState.parentState = null;
+  updateSidePanel();
 }
 
 function updateSidePanel(): void {
-  const sidePanelContent = document.querySelector('.side-panel-content')
-  const sidePanelHeader = document.querySelector('.side-panel-header')
-  
-  if (!sidePanelContent || !sidePanelHeader) return // Side panel not visible
-  
+  const sidePanelContent = document.querySelector('.side-panel-content');
+  const sidePanelHeader = document.querySelector('.side-panel-header');
+
+  if (!sidePanelContent || !sidePanelHeader) return; // Side panel not visible
+
   if (!appState.currentWorkflow) {
-    sidePanelHeader.innerHTML = '<h2>Details</h2>'
-    sidePanelContent.innerHTML = '<div class="empty-state">Select a workflow to see details</div>'
-    return
+    sidePanelHeader.innerHTML = '<h2>Details</h2>';
+    sidePanelContent.innerHTML =
+      '<div class="empty-state">Select a workflow to see details</div>';
+    return;
   }
-  
+
   if (appState.selectedElement) {
-    renderSelectedElementDetails()
+    renderSelectedElementDetails();
   } else {
     // Show workflow metadata when no element is selected
-    renderMetadataDetails()
+    renderMetadataDetails();
   }
 }
 
 function renderSelectedElementDetails(): void {
-  const element = appState.selectedElement
-  
+  const element = appState.selectedElement;
+
   if (element.type === 'state') {
-    renderStateDetailsWithHeader(element.id, element.data)
+    renderStateDetailsWithHeader(element.id, element.data);
   } else if (element.type === 'transition') {
-    renderTransitionDetailsWithHeader(element.data)
+    renderTransitionDetailsWithHeader(element.data);
   }
 }
 
 function renderStateDetailsWithHeader(stateId: string, stateData: any): void {
-  const workflow = appState.currentWorkflow
-  const isInitial = stateId === workflow.initial_state
-  const sidePanelHeader = document.querySelector('.side-panel-header')
-  const sidePanelContent = document.querySelector('.side-panel-content')
-  
-  if (!sidePanelHeader || !sidePanelContent) return
-  
+  const workflow = appState.currentWorkflow;
+  const isInitial = stateId === workflow.initial_state;
+  const sidePanelHeader = document.querySelector('.side-panel-header');
+  const sidePanelContent = document.querySelector('.side-panel-content');
+
+  if (!sidePanelHeader || !sidePanelContent) return;
+
   // Update header with back button
   sidePanelHeader.innerHTML = `
     <button class="back-button" title="Back to Overview">←</button>
     <h2>State: ${stateId}</h2>
-  `
-  
-  const backButton = sidePanelHeader.querySelector('.back-button')
+  `;
+
+  const backButton = sidePanelHeader.querySelector('.back-button');
   backButton?.addEventListener('click', () => {
-    clearSelection()
-  })
-  
+    clearSelection();
+  });
+
   // Render state content
   sidePanelContent.innerHTML = `
     <div class="detail-section">
@@ -187,65 +199,71 @@ function renderStateDetailsWithHeader(stateId: string, stateData: any): void {
     <div class="detail-section">
       <h4 class="detail-subtitle">Transitions (${stateData.transitions.length})</h4>
       <ul class="transitions-list">
-        ${stateData.transitions.map((transition: any) => `
+        ${stateData.transitions
+          .map(
+            (transition: any) => `
           <li class="transition-item clickable-transition" data-from="${stateId}" data-to="${transition.to}" data-trigger="${transition.trigger}">
             <div class="transition-trigger">${transition.trigger}</div>
             <div class="transition-target">→ ${transition.to}</div>
             <div class="transition-reason">${transition.transition_reason}</div>
           </li>
-        `).join('')}
+        `
+          )
+          .join('')}
       </ul>
     </div>
-  `
-  
+  `;
+
   // Add click handlers to transitions
-  const transitionItems = sidePanelContent.querySelectorAll('.clickable-transition')
+  const transitionItems = sidePanelContent.querySelectorAll(
+    '.clickable-transition'
+  );
   transitionItems.forEach(item => {
-    item.addEventListener('click', (e) => {
-      e.stopPropagation()
-      const fromState = item.getAttribute('data-from')
-      const toState = item.getAttribute('data-to')
-      const trigger = item.getAttribute('data-trigger')
-      
+    item.addEventListener('click', e => {
+      e.stopPropagation();
+      const fromState = item.getAttribute('data-from');
+      const toState = item.getAttribute('data-to');
+      const trigger = item.getAttribute('data-trigger');
+
       if (fromState && toState && trigger) {
-        const fullTransition = stateData.transitions.find((t: any) => 
-          t.to === toState && t.trigger === trigger
-        )
-        
+        const fullTransition = stateData.transitions.find(
+          (t: any) => t.to === toState && t.trigger === trigger
+        );
+
         if (fullTransition) {
-          appState.parentState = { id: stateId, data: stateData }
-          
+          appState.parentState = { id: stateId, data: stateData };
+
           selectTransition(`${fromState}->${toState}`, {
             from: fromState,
             to: toState,
             trigger: trigger,
             instructions: fullTransition.instructions,
             additional_instructions: fullTransition.additional_instructions,
-            transition_reason: fullTransition.transition_reason
-          })
+            transition_reason: fullTransition.transition_reason,
+          });
         }
       }
-    })
-  })
+    });
+  });
 }
 
 function renderTransitionDetailsWithHeader(transitionData: any): void {
-  const sidePanelHeader = document.querySelector('.side-panel-header')
-  const sidePanelContent = document.querySelector('.side-panel-content')
-  
-  if (!sidePanelHeader || !sidePanelContent) return
-  
+  const sidePanelHeader = document.querySelector('.side-panel-header');
+  const sidePanelContent = document.querySelector('.side-panel-content');
+
+  if (!sidePanelHeader || !sidePanelContent) return;
+
   // Update header with back button
   sidePanelHeader.innerHTML = `
     <button class="back-button" title="Back to State">←</button>
     <h2>Transition: ${transitionData.trigger}</h2>
-  `
-  
-  const backButton = sidePanelHeader.querySelector('.back-button')
+  `;
+
+  const backButton = sidePanelHeader.querySelector('.back-button');
   backButton?.addEventListener('click', () => {
-    goBackToParentState()
-  })
-  
+    goBackToParentState();
+  });
+
   // Render transition content
   sidePanelContent.innerHTML = `
     <div class="detail-section">
@@ -260,46 +278,62 @@ function renderTransitionDetailsWithHeader(transitionData: any): void {
       <p class="detail-content">${transitionData.transition_reason}</p>
     </div>
     
-    ${transitionData.instructions ? `
+    ${
+      transitionData.instructions
+        ? `
       <div class="detail-section">
         <h4 class="detail-subtitle">Instructions</h4>
         <div class="code-block">${transitionData.instructions}</div>
       </div>
-    ` : ''}
+    `
+        : ''
+    }
     
-    ${transitionData.additional_instructions ? `
+    ${
+      transitionData.additional_instructions
+        ? `
       <div class="detail-section">
         <h4 class="detail-subtitle">Additional Instructions</h4>
         <div class="code-block">${transitionData.additional_instructions}</div>
       </div>
-    ` : ''}
+    `
+        : ''
+    }
     
-    ${transitionData.review_perspectives?.length ? `
+    ${
+      transitionData.review_perspectives?.length
+        ? `
       <div class="detail-section">
         <h4 class="detail-subtitle">Review Perspectives (${transitionData.review_perspectives.length})</h4>
-        ${transitionData.review_perspectives.map(review => `
+        ${transitionData.review_perspectives
+          .map(
+            review => `
           <div class="review-perspective">
             <h5 class="review-role">${review.perspective.replace(/_/g, ' ').toUpperCase()}</h5>
             <p class="review-prompt">${review.prompt}</p>
           </div>
-        `).join('')}
+        `
+          )
+          .join('')}
       </div>
-    ` : ''}
-  `
+    `
+        : ''
+    }
+  `;
 }
 
 function renderMetadataDetails(): void {
-  const workflow = appState.currentWorkflow!
-  const metadata = workflow.metadata
-  
-  const sidePanelHeader = document.querySelector('.side-panel-header')
-  const sidePanelContent = document.querySelector('.side-panel-content')
-  
-  if (!sidePanelHeader || !sidePanelContent) return
-  
+  const workflow = appState.currentWorkflow!;
+  const metadata = workflow.metadata;
+
+  const sidePanelHeader = document.querySelector('.side-panel-header');
+  const sidePanelContent = document.querySelector('.side-panel-content');
+
+  if (!sidePanelHeader || !sidePanelContent) return;
+
   // Update header
-  sidePanelHeader.innerHTML = '<h2>Workflow Info</h2>'
-  
+  sidePanelHeader.innerHTML = '<h2>Workflow Info</h2>';
+
   // Render metadata content
   sidePanelContent.innerHTML = `
     <div class="detail-section">
@@ -307,22 +341,34 @@ function renderMetadataDetails(): void {
       <p class="detail-content">${workflow.description}</p>
     </div>
     
-    ${metadata ? `
+    ${
+      metadata
+        ? `
       <div class="detail-section">
         <h4 class="detail-subtitle">Metadata</h4>
-        ${Object.entries(metadata).map(([key, value]) => `
+        ${Object.entries(metadata)
+          .map(
+            ([key, value]) => `
           <div class="metadata-item">
             <strong>${key.replace(/_/g, ' ').toUpperCase()}:</strong>
-            ${Array.isArray(value) ? `
+            ${
+              Array.isArray(value)
+                ? `
               <ul>
                 ${value.map(item => `<li>${item}</li>`).join('')}
               </ul>
-            ` : `<span>${value}</span>`}
+            `
+                : `<span>${value}</span>`
+            }
           </div>
-        `).join('')}
+        `
+          )
+          .join('')}
       </div>
-    ` : ''}
-  `
+    `
+        : ''
+    }
+  `;
 }
 
 function goBackToParentState(): void {
@@ -330,147 +376,174 @@ function goBackToParentState(): void {
     appState.selectedElement = {
       type: 'state',
       id: appState.parentState.id,
-      data: appState.parentState.data
-    }
-    appState.parentState = null
-    updateSidePanel()
+      data: appState.parentState.data,
+    };
+    appState.parentState = null;
+    updateSidePanel();
   } else {
-    clearSelection()
+    clearSelection();
   }
 }
 
 function clearSelection(): void {
-  appState.selectedElement = null
-  appState.parentState = null
-  
-  const sidePanelHeader = document.querySelector('.side-panel-header')
+  appState.selectedElement = null;
+  appState.parentState = null;
+
+  const sidePanelHeader = document.querySelector('.side-panel-header');
   if (sidePanelHeader) {
-    sidePanelHeader.innerHTML = '<h2>Details</h2>'
+    sidePanelHeader.innerHTML = '<h2>Details</h2>';
   }
-  
-  updateSidePanel()
+
+  updateSidePanel();
 }
 
 onMounted(async () => {
   try {
     // Import the workflow visualizer modules
-    const { WorkflowLoader } = await import('@workflow-visualizer/services/WorkflowLoader')
-    const { FileUploadHandler } = await import('@workflow-visualizer/services/FileUploadHandler')
-    const { ErrorHandler } = await import('@workflow-visualizer/utils/ErrorHandler')
-    const { PlantUMLRenderer } = await import('@workflow-visualizer/visualization/PlantUMLRenderer')
-    const { getRequiredElement } = await import('@workflow-visualizer/utils/DomHelpers')
-    
+    const { WorkflowLoader } = await import(
+      '@workflow-visualizer/services/WorkflowLoader'
+    );
+    const { FileUploadHandler } = await import(
+      '@workflow-visualizer/services/FileUploadHandler'
+    );
+    const { ErrorHandler } = await import(
+      '@workflow-visualizer/utils/ErrorHandler'
+    );
+    const { PlantUMLRenderer } = await import(
+      '@workflow-visualizer/visualization/PlantUMLRenderer'
+    );
+    const { getRequiredElement } = await import(
+      '@workflow-visualizer/utils/DomHelpers'
+    );
+
     // Initialize the workflow visualizer (simplified version of main.ts logic)
-    const workflowLoader = new WorkflowLoader()
-    const errorHandler = new ErrorHandler()
-    
+    const workflowLoader = new WorkflowLoader();
+    const errorHandler = new ErrorHandler();
+
     // Get DOM elements (some may not exist if header is hidden)
-    const workflowSelector = document.querySelector<HTMLSelectElement>('#workflow-selector')
-    const fileUploadInput = document.querySelector<HTMLInputElement>('#file-upload')
-    const diagramCanvas = getRequiredElement('#diagram-canvas')
-    const sidePanelContent = document.querySelector('.side-panel-content')
-    const sidePanelHeader = document.querySelector('.side-panel-header')
-    
+    const workflowSelector =
+      document.querySelector<HTMLSelectElement>('#workflow-selector');
+    const fileUploadInput =
+      document.querySelector<HTMLInputElement>('#file-upload');
+    const diagramCanvas = getRequiredElement('#diagram-canvas');
+    const sidePanelContent = document.querySelector('.side-panel-content');
+    const sidePanelHeader = document.querySelector('.side-panel-header');
+
     // Initialize PlantUML renderer
-    const plantUMLRenderer = new PlantUMLRenderer(diagramCanvas)
-    
+    const plantUMLRenderer = new PlantUMLRenderer(diagramCanvas);
+
     // Set up click handler for interactive elements
     plantUMLRenderer.setClickHandler((elementType, elementId, data) => {
       if (elementType === 'state') {
         handleElementClick({
           elementType: 'node',
           elementId: elementId,
-          data: data
-        })
+          data: data,
+        });
       } else if (elementType === 'transition') {
         handleElementClick({
           elementType: 'transition',
           elementId: elementId,
-          data: data
-        })
+          data: data,
+        });
       } else if (elementType === 'clear-selection') {
-        clearSelectionAndShowMetadata()
+        clearSelectionAndShowMetadata();
       }
-    })
-    
+    });
+
     // Initialize file upload handler (only if element exists)
-    let fileUploadHandler = null
+    let fileUploadHandler = null;
     if (fileUploadInput) {
-      fileUploadHandler = new FileUploadHandler(fileUploadInput, workflowLoader)
+      fileUploadHandler = new FileUploadHandler(
+        fileUploadInput,
+        workflowLoader
+      );
     }
-    
+
     // Set up event listeners and populate workflow selector (only if selector exists)
     if (workflowSelector) {
-      workflowSelector.addEventListener('change', async (event) => {
-        const target = event.target as HTMLSelectElement
-        const workflowName = target.value
-        
+      workflowSelector.addEventListener('change', async event => {
+        const target = event.target as HTMLSelectElement;
+        const workflowName = target.value;
+
         if (!workflowName) {
-          diagramCanvas.innerHTML = '<div class="loading-message">Select a workflow to visualize</div>'
-          return
+          diagramCanvas.innerHTML =
+            '<div class="loading-message">Select a workflow to visualize</div>';
+          return;
         }
-        
+
         try {
-          diagramCanvas.innerHTML = '<div class="loading-message">Loading workflow...</div>'
-          const workflow = await workflowLoader.loadBuiltinWorkflow(workflowName)
-          appState.currentWorkflow = workflow
-          appState.selectedElement = null
-          appState.highlightedPath = null
-          await plantUMLRenderer.renderWorkflow(workflow)
-          updateSidePanel()
+          diagramCanvas.innerHTML =
+            '<div class="loading-message">Loading workflow...</div>';
+          const workflow =
+            await workflowLoader.loadBuiltinWorkflow(workflowName);
+          appState.currentWorkflow = workflow;
+          appState.selectedElement = null;
+          appState.highlightedPath = null;
+          await plantUMLRenderer.renderWorkflow(workflow);
+          updateSidePanel();
         } catch (error) {
-          console.error('Failed to load workflow:', error)
-          diagramCanvas.innerHTML = '<div class="loading-message">Failed to load workflow</div>'
+          console.error('Failed to load workflow:', error);
+          diagramCanvas.innerHTML =
+            '<div class="loading-message">Failed to load workflow</div>';
         }
-      })
-      
+      });
+
       // Populate workflow selector
-      const workflows = workflowLoader.getAvailableWorkflows()
+      const workflows = workflowLoader.getAvailableWorkflows();
       workflows.forEach(workflow => {
-        const option = document.createElement('option')
-        option.value = workflow.name
-        option.textContent = `${workflow.displayName} - ${workflow.description}`
-        workflowSelector.appendChild(option)
-      })
+        const option = document.createElement('option');
+        option.value = workflow.name;
+        option.textContent = `${workflow.displayName} - ${workflow.description}`;
+        workflowSelector.appendChild(option);
+      });
     }
-    
+
     // Load initial workflow if specified
     if (props.initialWorkflow) {
       try {
-        const workflow = await workflowLoader.loadBuiltinWorkflow(props.initialWorkflow)
-        appState.currentWorkflow = workflow
-        appState.selectedElement = null
-        appState.highlightedPath = null
-        await plantUMLRenderer.renderWorkflow(workflow)
+        const workflow = await workflowLoader.loadBuiltinWorkflow(
+          props.initialWorkflow
+        );
+        appState.currentWorkflow = workflow;
+        appState.selectedElement = null;
+        appState.highlightedPath = null;
+        await plantUMLRenderer.renderWorkflow(workflow);
         // Only update selector if it exists (when header is visible)
         if (workflowSelector) {
-          workflowSelector.value = props.initialWorkflow
+          workflowSelector.value = props.initialWorkflow;
         }
-        updateSidePanel()
+        updateSidePanel();
       } catch (error) {
-        console.error('Failed to load initial workflow:', error)
-        diagramCanvas.innerHTML = '<div class="loading-message">Failed to load workflow</div>'
+        console.error('Failed to load initial workflow:', error);
+        diagramCanvas.innerHTML =
+          '<div class="loading-message">Failed to load workflow</div>';
       }
     }
-    
-    workflowVisualizerApp = { workflowLoader, plantUMLRenderer, fileUploadHandler, errorHandler }
+
+    workflowVisualizerApp = {
+      workflowLoader,
+      plantUMLRenderer,
+      fileUploadHandler,
+      errorHandler,
+    };
   } catch (error) {
-    console.error('Failed to load WorkflowVisualizerApp:', error)
-    
+    console.error('Failed to load WorkflowVisualizerApp:', error);
+
     // Fallback: show error message
-    const errorContainer = document.getElementById('error-container')
-    const errorText = document.querySelector('.error-text')
+    const errorContainer = document.getElementById('error-container');
+    const errorText = document.querySelector('.error-text');
     if (errorContainer && errorText) {
-      errorText.textContent = 'Failed to load workflow visualizer'
-      errorContainer.classList.remove('hidden')
+      errorText.textContent = 'Failed to load workflow visualizer';
+      errorContainer.classList.remove('hidden');
     }
   }
-})
+});
 
 onUnmounted(() => {
   // Clean up any resources
-  workflowVisualizerApp = null
-})
+  workflowVisualizerApp = null;
+});
 </script>
 
 <style>
@@ -484,7 +557,7 @@ onUnmounted(() => {
   --color-success: #059669;
   --color-warning: #d97706;
   --color-error: #dc2626;
-  
+
   --color-white: #ffffff;
   --color-gray-50: #f8fafc;
   --color-gray-100: #f1f5f9;
@@ -496,23 +569,28 @@ onUnmounted(() => {
   --color-gray-700: #334155;
   --color-gray-800: #1e293b;
   --color-gray-900: #0f172a;
-  
-  --font-family-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  --font-family-mono: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
-  
+
+  --font-family-sans:
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue',
+    Arial, sans-serif;
+  --font-family-mono:
+    'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New',
+    monospace;
+
   --spacing-xs: 0.25rem;
   --spacing-sm: 0.5rem;
   --spacing-md: 1rem;
   --spacing-lg: 1.5rem;
   --spacing-xl: 2rem;
-  
+
   --radius-sm: 0.25rem;
   --radius-md: 0.375rem;
   --radius-lg: 0.5rem;
-  
+
   --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
   --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --shadow-lg:
+    0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
 }
 
 /* Container for the entire visualizer */

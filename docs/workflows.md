@@ -23,5 +23,4 @@ aside: false
 }
 </style>
 
-
 <WorkflowVisualizer :showSidebar="true" />

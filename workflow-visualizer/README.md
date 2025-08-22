@@ -5,18 +5,21 @@ A modern web application for visualizing responsible-vibe workflow state machine
 ## Features
 
 ### 🎯 **Core Functionality**
+
 - **Interactive State Machine Diagrams**: Visual representation of workflow states and transitions
 - **Side Panel Details**: Comprehensive information about selected states and transitions
 - **Path Highlighting**: Visual feedback when clicking transitions to show flow
 - **Dual Workflow Loading**: Built-in workflows + custom YAML file upload
 
 ### 🎨 **Modern UI/UX**
+
 - **Split-Panel Layout**: Diagram on left, details on right
 - **Responsive Design**: Works on desktop, tablet, and mobile
 - **Modern Styling**: Clean typography, consistent spacing, professional appearance
 - **Interactive Elements**: Hover effects, click interactions, smooth animations
 
 ### 🔧 **Technical Features**
+
 - **TypeScript**: Full type safety with existing project types
 - **D3.js Visualization**: Professional state machine rendering with automatic layout
 - **YAML Validation**: Comprehensive parsing and error handling
@@ -26,6 +29,7 @@ A modern web application for visualizing responsible-vibe workflow state machine
 ## Quick Start
 
 ### Prerequisites
+
 - Node.js 18.0.0 or higher
 - npm or yarn
 
@@ -61,7 +65,7 @@ npm run preview
 The visualizer comes with 5 pre-loaded workflows from the responsible-vibe project:
 
 1. **Waterfall** - Classical waterfall development process
-2. **EPCC** - Explore, Plan, Code, Commit workflow  
+2. **EPCC** - Explore, Plan, Code, Commit workflow
 3. **Bug Fix** - Focused workflow for debugging and fixing issues
 4. **Minor Enhancement** - Streamlined workflow for small changes
 5. **Greenfield** - Comprehensive workflow for new projects
@@ -121,23 +125,23 @@ workflow-visualizer/
 The visualizer expects workflows in the following format:
 
 ```yaml
-name: "example"
-description: "Example workflow description"
-initial_state: "start"
+name: 'example'
+description: 'Example workflow description'
+initial_state: 'start'
 
 states:
   start:
-    description: "Starting state description"
-    default_instructions: "Instructions for this state"
+    description: 'Starting state description'
+    default_instructions: 'Instructions for this state'
     transitions:
-      - trigger: "next"
-        to: "end"
-        instructions: "Optional transition instructions"
-        transition_reason: "Why this transition occurs"
-  
+      - trigger: 'next'
+        to: 'end'
+        instructions: 'Optional transition instructions'
+        transition_reason: 'Why this transition occurs'
+
   end:
-    description: "End state description"
-    default_instructions: "Final instructions"
+    description: 'End state description'
+    default_instructions: 'Final instructions'
     transitions: []
 ```
 
@@ -207,16 +211,19 @@ npm test
 ### Common Issues
 
 **YAML Upload Fails**
+
 - Check file format matches the expected structure
 - Ensure all required fields are present
 - Verify file size is under 1MB
 
 **Visualization Not Loading**
+
 - Check browser console for JavaScript errors
 - Ensure modern browser with SVG support
 - Try refreshing the page
 
 **Layout Issues**
+
 - Try the "Fit to View" functionality (if implemented)
 - Check responsive design on different screen sizes
 - Verify CSS is loading correctly
@@ -224,6 +231,7 @@ npm test
 ### Debug Mode
 
 Enable debug logging in browser console:
+
 ```javascript
 localStorage.setItem('debug', 'workflow-visualizer:*');
 ```

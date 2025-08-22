@@ -16,13 +16,15 @@ Project artifacts are structured documents that capture and preserve project kno
 ### Document Types
 
 #### Architecture Documents
+
 - **Purpose**: System design, component relationships, technical decisions
-- **Templates Available**: 
+- **Templates Available**:
   - `arc42`: Comprehensive software architecture documentation with quality requirements, building blocks, deployment views
   - `freestyle`: Minimal architecture documentation for simple projects
 - **Workflow Variable**: `$ARCHITECTURE_DOC`
 
-#### Requirements Documents  
+#### Requirements Documents
+
 - **Purpose**: Feature specifications, user stories, acceptance criteria
 - **Templates Available**:
   - `ears`: Easy Approach to Requirements Syntax - structured format with "The system SHALL [requirement] WHEN [condition]"
@@ -30,6 +32,7 @@ Project artifacts are structured documents that capture and preserve project kno
 - **Workflow Variable**: `$REQUIREMENTS_DOC`
 
 #### Design Documents
+
 - **Purpose**: UI/UX design, API design, implementation details
 - **Templates Available**:
   - `comprehensive`: Detailed design documentation covering UI, API, and implementation specifications
@@ -43,24 +46,24 @@ Use the `setup_project_docs` tool to create or link project documentation:
 ```javascript
 // Create documents from templates
 setup_project_docs({
-  architecture: "arc42",
-  requirements: "ears", 
-  design: "comprehensive"
-})
+  architecture: 'arc42',
+  requirements: 'ears',
+  design: 'comprehensive',
+});
 
 // Link existing documentation files
 setup_project_docs({
-  architecture: "ARCHITECTURE.md",
-  requirements: "README.md",
-  design: "docs/design.md"
-})
+  architecture: 'ARCHITECTURE.md',
+  requirements: 'README.md',
+  design: 'docs/design.md',
+});
 
 // Mixed approach: templates + existing files + disabled docs
 setup_project_docs({
-  architecture: "README.md",  // Link existing file
-  requirements: "ears",       // Use template
-  design: "none"              // Disable with placeholder
-})
+  architecture: 'README.md', // Link existing file
+  requirements: 'ears', // Use template
+  design: 'none', // Disable with placeholder
+});
 ```
 
 The LLM will be instructed to use this tool when it first-time starts a development process and does not find those files.
@@ -70,12 +73,14 @@ The LLM will be instructed to use this tool when it first-time starts a developm
 The system supports linking existing project documentation instead of creating new files:
 
 **Supported File Patterns:**
+
 - Root level: `README.md`, `ARCHITECTURE.md`, `DESIGN.md`, `REQUIREMENTS.md`
 - Docs folder: `docs/architecture.md`, `docs/requirements.md`, `docs/design.md`
 - Absolute and relative file paths
 - Multiple document types can reference the same source file
 
 **How Linking Works:**
+
 1. **Detection**: System automatically detects existing documentation files
 2. **Symlink Creation**: Creates symbolic links in `.vibe/docs/` pointing to existing files
 3. **Standard Integration**: Workflows continue to work with standard document paths
@@ -100,38 +105,45 @@ The development plan file serves as the central process memory, tracking the evo
 
 **Location**: `.vibe/development-plan-{project-name}.md`
 
-**Purpose**: 
+**Purpose**:
+
 - Track completed and current tasks
 - Record architectural and design decisions
 - Maintain project context across conversations
 - Serve as fallback documentation when specific artifacts are disabled
 
 **Example Structure:**
+
 ```markdown
 # Development Plan: User Authentication System
 
 ## Project Overview
+
 Implementing secure user authentication with JWT tokens and role-based access control.
 
 ## Completed Tasks
+
 - [x] Architecture document created using Arc42 template
 - [x] Requirements gathered using EARS format
 - [x] Database schema designed
 - [x] User model implemented
 
 ## Current Tasks
+
 - [ ] Implement JWT token generation
 - [ ] Add password hashing with bcrypt
 - [ ] Create login/logout endpoints
 - [ ] Add role-based middleware
 
 ## Decisions Made
+
 - Using PostgreSQL for user data storage
 - JWT tokens with 24-hour expiration
 - bcrypt for password hashing (cost factor 12)
 - Role-based access control with admin/user roles
 
 ## Next Steps
+
 - Complete authentication endpoints
 - Add input validation
 - Write comprehensive tests
@@ -155,35 +167,36 @@ The power of the memory system lies in how workflows dynamically reference proje
 Workflows reference project documents using standardized variables:
 
 - `$ARCHITECTURE_DOC`: References the architecture document content
-- `$REQUIREMENTS_DOC`: References the requirements document content  
+- `$REQUIREMENTS_DOC`: References the requirements document content
 - `$DESIGN_DOC`: References the design document content
 
 ### How Variables Work in Practice
 
 **Example Workflow Phase:**
+
 ```yaml
-- name: "implementation"
+- name: 'implementation'
   instructions: |
     Implement the feature according to the specifications:
-    
+
     **Architecture Guidelines:**
     Refer to $ARCHITECTURE_DOC for:
     - System architecture and component relationships
     - Technology stack decisions
     - Integration patterns and data flow
-    
+
     **Requirements:**
     Follow $REQUIREMENTS_DOC for:
     - Functional requirements and acceptance criteria
     - User stories and use cases
     - Business rules and constraints
-    
+
     **Design Specifications:**
     Implement according to $DESIGN_DOC for:
     - UI/UX design specifications
     - API design and data models
     - Implementation details and patterns
-    
+
     Ensure your implementation aligns with all documented specifications.
 ```
 
@@ -201,22 +214,24 @@ When the LLM receives workflow instructions, the variables are automatically rep
 This variable system supports development by:
 
 **Phase-Specific Context:**
+
 - **Requirements Phase**: LLM has access to existing architecture decisions via `$ARCHITECTURE_DOC`
 - **Design Phase**: LLM references both `$ARCHITECTURE_DOC` and `$REQUIREMENTS_DOC` for informed design decisions
 - **Implementation Phase**: LLM has complete context from all three document types
 - **Testing Phase**: LLM can verify against requirements and design specifications
 
 **Contextual Decision Making:**
+
 ```yaml
-- name: "design"
+- name: 'design'
   instructions: |
     Create detailed design specifications considering:
-    
+
     **Existing Architecture** (from $ARCHITECTURE_DOC):
     - Follow established architectural patterns
     - Respect component boundaries and interfaces
     - Align with technology stack decisions
-    
+
     **Requirements to Address** (from $REQUIREMENTS_DOC):
     - Ensure all functional requirements are covered
     - Address non-functional requirements
@@ -224,11 +239,12 @@ This variable system supports development by:
 ```
 
 **Consistency Enforcement:**
+
 ```yaml
-- name: "qa"
+- name: 'qa'
   instructions: |
     Review the implementation for consistency with project documentation:
-    
+
     1. **Architecture Compliance**: Verify implementation follows $ARCHITECTURE_DOC
     2. **Requirements Coverage**: Ensure all items in $REQUIREMENTS_DOC are addressed
     3. **Design Adherence**: Check implementation matches $DESIGN_DOC specifications
@@ -240,7 +256,7 @@ When a document type is set to "none", workflows automatically fall back to the 
 
 ```yaml
 # If $REQUIREMENTS_DOC is set to "none"
-- name: "implementation"
+- name: 'implementation'
   instructions: |
     Implement the feature according to:
     - Architecture guidelines in $ARCHITECTURE_DOC
@@ -251,21 +267,25 @@ When a document type is set to "none", workflows automatically fall back to the 
 ### Benefits for Development Process
 
 **Informed Decision Making:**
+
 - LLM always has access to relevant project context
 - Decisions are made with full awareness of existing documentation
 - Reduces inconsistencies between different development phases
 
 **Contextual Guidance:**
+
 - Each workflow phase receives exactly the documentation it needs
 - No need to manually copy/paste documentation into conversations
 - Automatic synchronization between documentation and development activities
 
 **Progressive Context Building:**
+
 - Early phases (requirements) reference minimal context
 - Later phases (implementation, testing) have access to complete project documentation
 - Context grows naturally as the project evolves
 
 **Documentation-Driven Development:**
+
 - Workflows enforce reference to project documentation
 - Encourages keeping documentation up-to-date
 - Creates natural feedback loop between documentation and implementation
@@ -275,50 +295,54 @@ When a document type is set to "none", workflows automatically fall back to the 
 ### Setting Up Project Artifacts
 
 **Template-Based Setup:**
+
 ```javascript
 setup_project_docs({
-  architecture: "arc42",        // Comprehensive architecture template
-  requirements: "ears",         // Structured requirements format
-  design: "comprehensive"       // Detailed design documentation
-})
+  architecture: 'arc42', // Comprehensive architecture template
+  requirements: 'ears', // Structured requirements format
+  design: 'comprehensive', // Detailed design documentation
+});
 ```
 
 **Linking Existing Documentation:**
+
 ```javascript
 setup_project_docs({
-  architecture: "ARCHITECTURE.md",  // Link existing architecture file
-  requirements: "README.md",        // Use README as requirements
-  design: "docs/design.md"          // Link existing design doc
-})
+  architecture: 'ARCHITECTURE.md', // Link existing architecture file
+  requirements: 'README.md', // Use README as requirements
+  design: 'docs/design.md', // Link existing design doc
+});
 ```
 
 **Mixed Approach:**
+
 ```javascript
 setup_project_docs({
-  architecture: "README.md",    // Link existing file
-  requirements: "ears",         // Create from template
-  design: "none"                // Use plan file only
-})
+  architecture: 'README.md', // Link existing file
+  requirements: 'ears', // Create from template
+  design: 'none', // Use plan file only
+});
 ```
 
 ### Workflow Variable Usage
 
 **Example: Implementation Phase with Full Context**
+
 ```yaml
-- name: "implementation"
+- name: 'implementation'
   instructions: |
     Implement the authentication system following these specifications:
-    
+
     **System Architecture** ($ARCHITECTURE_DOC):
     - Follow the layered architecture pattern
     - Use the defined authentication service interface
     - Integrate with the existing database layer
-    
+
     **Functional Requirements** ($REQUIREMENTS_DOC):
     - Implement user registration with email validation
     - Support JWT token-based authentication
     - Include role-based access control
-    
+
     **Design Specifications** ($DESIGN_DOC):
     - Use the defined API endpoints structure
     - Follow the error handling patterns
@@ -344,6 +368,7 @@ The memory system creates this organized file structure:
 ### Documentation Strategy
 
 **Choose the Right Methodology Upfront:**
+
 - **Arc42**: Select for complex systems requiring comprehensive architecture documentation
 - **EARS**: Choose for projects needing formal, structured requirements documentation
 - **Comprehensive**: Use for detailed design specifications with UI/UX and API considerations
@@ -353,11 +378,13 @@ The memory system creates this organized file structure:
 **Important**: There is no upgrade path between template types. The LLM can only replace entire document content, so select the appropriate methodology on first setup.
 
 **LLM Document Maintenance:**
+
 - The LLM is instructed to maintain and update project documents as development progresses
 - Documents evolve automatically based on architectural decisions and implementation changes
 - The system ensures documents stay synchronized with actual development work
 
 **User Review Responsibility:**
+
 - **Review LLM-generated content**: Regularly review documents maintained by the LLM
 - **Validate accuracy**: Ensure architectural decisions and requirements reflect your intentions
 - **Approve major changes**: Review significant updates before they become the basis for further development
@@ -366,12 +393,14 @@ The memory system creates this organized file structure:
 ### Workflow Design
 
 **Design Phases to Reference Appropriate Context:**
+
 - Requirements phase: Minimal context, focus on gathering needs
 - Design phase: Reference architecture and requirements
 - Implementation phase: Full context from all document types
 - Testing phase: Verify against requirements and design specifications
 
 **Use Fallback Strategies:**
+
 - Set non-critical document types to "none" for simpler projects
 - Rely on plan file for lightweight documentation approaches
 - Combine templates and existing files based on project needs
@@ -379,11 +408,13 @@ The memory system creates this organized file structure:
 ### Process Memory Management
 
 **Plan File as Living Document:**
+
 - The LLM continuously updates the plan file as work progresses
 - Contains decision rationale and project evolution history
 - Serves as fallback when specific document types are disabled
 
 **Monitor LLM Updates:**
+
 - Review plan file updates to ensure accuracy
 - Verify that completed tasks are properly marked
 - Check that decisions are recorded with appropriate context

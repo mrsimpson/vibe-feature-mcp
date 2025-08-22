@@ -5,17 +5,23 @@
  * Dynamically discovers all YAML files in the source directory
  */
 
-import { readFile, writeFile, readdir, mkdir } from 'fs/promises';
-import { join, dirname } from 'path';
-import { fileURLToPath } from 'url';
-import { existsSync } from 'fs';
+import { readFile, writeFile, readdir, mkdir } from 'node:fs/promises';
+import { join, dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { existsSync } from 'node:fs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 const sourceDir = join(__dirname, '..', '..', 'resources', 'workflows');
 const targetDir = join(__dirname, '..', 'workflows');
-const bundledWorkflowsFile = join(__dirname, '..', 'src', 'services', 'BundledWorkflows.ts');
+const bundledWorkflowsFile = join(
+  __dirname,
+  '..',
+  'src',
+  'services',
+  'BundledWorkflows.ts'
+);
 
 async function buildWorkflows() {
   try {
@@ -30,9 +36,10 @@ async function buildWorkflows() {
 
     // Read source directory and find all YAML files
     const files = await readdir(sourceDir);
-    const yamlFiles = files.filter(file => 
-      (file.endsWith('.yaml') || file.endsWith('.yml')) && 
-      !file.startsWith('.')  // Ignore hidden files
+    const yamlFiles = files.filter(
+      file =>
+        (file.endsWith('.yaml') || file.endsWith('.yml')) &&
+        !file.startsWith('.') // Ignore hidden files
     );
 
     if (yamlFiles.length === 0) {
@@ -49,19 +56,21 @@ async function buildWorkflows() {
     for (const file of yamlFiles) {
       const sourcePath = join(sourceDir, file);
       const targetPath = join(targetDir, file);
-      
+
       // Copy file to workflows directory for bundling
       const content = await readFile(sourcePath, 'utf8');
       await writeFile(targetPath, content);
-      
+
       // Generate safe variable names (replace non-alphanumeric with underscore)
       const workflowName = file.replace(/\.(yaml|yml)$/, '');
       const safeVarName = workflowName.replace(/[^a-zA-Z0-9]/g, '_');
       const importName = `${safeVarName}Yaml`;
-      
-      workflowImports.push(`import ${importName} from '../../workflows/${file}?raw';`);
+
+      workflowImports.push(
+        `import ${importName} from '../../workflows/${file}?raw';`
+      );
       workflowEntries.push(`  '${workflowName}': ${importName}`);
-      
+
       console.log(`  ✅ ${file} -> ${workflowName}`);
     }
 
@@ -92,7 +101,9 @@ export function getBundledWorkflowNames(): string[] {
 
     await writeFile(bundledWorkflowsFile, bundledWorkflowsContent);
     console.log(`📝 Generated ${bundledWorkflowsFile}`);
-    console.log(`🎉 Workflow bundle build complete! (${yamlFiles.length} workflows)`);
+    console.log(
+      `🎉 Workflow bundle build complete! (${yamlFiles.length} workflows)`
+    );
   } catch (error) {
     console.error('❌ Error building workflows:', error.message);
     process.exit(1);

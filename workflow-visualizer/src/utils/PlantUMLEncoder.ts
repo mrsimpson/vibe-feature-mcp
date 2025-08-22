@@ -13,10 +13,10 @@ export function encodePlantUML(plantUMLCode: string): string {
   try {
     // Convert string to UTF-8 bytes
     const utf8Bytes = new TextEncoder().encode(plantUMLCode);
-    
+
     // Compress using DEFLATE
     const compressed = pako.deflateRaw(utf8Bytes, { level: 9 });
-    
+
     // Convert to PlantUML's custom base64-like encoding
     return encode64(compressed);
   } catch (error) {
@@ -49,13 +49,13 @@ function encode64(data: Uint8Array): string {
 function append3bytes(b1: number, b2: number, b3: number): string {
   const c1 = b1 >> 2;
   const c2 = ((b1 & 0x3) << 4) | (b2 >> 4);
-  const c3 = ((b2 & 0xF) << 2) | (b3 >> 6);
-  const c4 = b3 & 0x3F;
+  const c3 = ((b2 & 0xf) << 2) | (b3 >> 6);
+  const c4 = b3 & 0x3f;
   let r = '';
-  r += encode6bit(c1 & 0x3F);
-  r += encode6bit(c2 & 0x3F);
-  r += encode6bit(c3 & 0x3F);
-  r += encode6bit(c4 & 0x3F);
+  r += encode6bit(c1 & 0x3f);
+  r += encode6bit(c2 & 0x3f);
+  r += encode6bit(c3 & 0x3f);
+  r += encode6bit(c4 & 0x3f);
   return r;
 }
 
@@ -93,7 +93,7 @@ export function encodePlantUMLFallback(plantUMLCode: string): string {
     // Convert to UTF-8 bytes then to base64
     const utf8String = unescape(encodeURIComponent(plantUMLCode));
     const base64 = btoa(utf8String);
-    
+
     // Add ~1 header for PlantUML
     return '~1' + base64;
   } catch (error) {

@@ -227,8 +227,12 @@
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 /* Responsive adjustments */
@@ -236,16 +240,16 @@
   .state-label {
     font-size: 12px;
   }
-  
+
   .transition-label {
     font-size: 10px;
   }
-  
+
   .zoom-controls {
     top: 0.5rem;
     right: 0.5rem;
   }
-  
+
   .zoom-button {
     width: 2rem;
     height: 2rem;

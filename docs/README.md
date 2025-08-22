@@ -39,6 +39,7 @@ LLM: calls whats_next() again
 **This MCP server requires a specific system prompt to function properly.** The LLM must be configured with the correct system prompt to know how to interact with the tools.
 
 **Get the system prompt:**
+
 ```bash
 npx responsible-vibe-mcp --system-prompt
 ```
@@ -114,7 +115,7 @@ Then configure it to connect to `npx responsible-vibe-mcp`.
 The server provides tools that the LLM calls automatically based on the system prompt instructions:
 
 - **LLM calls `whats_next()`** after each user interaction to get phase-specific guidance
-- **LLM calls `proceed_to_phase()`** when ready to transition between development phases  
+- **LLM calls `proceed_to_phase()`** when ready to transition between development phases
 - **LLM calls `start_development()`** to begin with a chosen workflow
 - **Server responds** with contextual instructions telling the LLM exactly what to do next
 
@@ -123,7 +124,7 @@ The user interacts normally with the LLM - the tool calls happen automatically i
 ## Key Features
 
 - **Workflow Visualizer**: Interactive web interface for exploring workflow state machines
-- **Git Integration**: Optional automatic commits with intelligent defaults  
+- **Git Integration**: Optional automatic commits with intelligent defaults
 - **State Persistence**: Conversation state survives server restarts
 - **Multi-Project Support**: Handle multiple concurrent project conversations
 - **Branch Awareness**: Separate development contexts for different git branches
@@ -162,40 +163,50 @@ The server provides tools that are automatically called by the LLM (not by users
 The LLM automatically calls these tools based on the system prompt instructions:
 
 #### `start_development`
+
 Begin a new development project with a structured workflow. Must be called before other development tools.
 
 #### `whats_next`
+
 Primary tool that analyzes conversation state and provides LLM instructions.
 
 #### `proceed_to_phase`
+
 Explicitly transition to a new development phase when current phase is complete.
 
 #### `resume_workflow`
+
 Resume development workflow after conversation compression with comprehensive project context.
 
 #### `reset_development`
+
 Reset conversation state and development progress (requires confirmation).
 
 ### Resources
 
 #### `development-plan`
+
 - **URI**: `plan://current`
 - **Description**: Current development plan document (markdown)
 
 #### `conversation-state`
+
 - **URI**: `state://current`
 - **Description**: Current conversation state and phase information
 
 #### `system-prompt`
+
 - **URI**: `system-prompt://`
 - **Description**: Complete system prompt for LLM integration
 
 ### Prompts
 
 #### `phase-guidance`
+
 Provides detailed guidance prompts for specific development phases.
 
 **Arguments:**
+
 - `phase` (string): Development phase name
 - `context` (string): Additional context or specific questions
 
@@ -205,13 +216,13 @@ Provides detailed guidance prompts for specific development phases.
 
 ```javascript
 // Start with a specific workflow
-start_development({ workflow: "your-preferred-workflow" })
+start_development({ workflow: 'your-preferred-workflow' });
 
 // With git commit configuration
 start_development({
-  workflow: "your-workflow",
-  commit_behaviour: "end"
-})
+  workflow: 'your-workflow',
+  commit_behaviour: 'end',
+});
 ```
 
 ### Basic Development Flow
@@ -219,16 +230,16 @@ start_development({
 ```javascript
 // LLM calls after each user interaction
 whats_next({
-  context: "user wants to add authentication",
-  user_input: "implement user login",
-  conversation_summary: "Working on user authentication feature"
-})
+  context: 'user wants to add authentication',
+  user_input: 'implement user login',
+  conversation_summary: 'Working on user authentication feature',
+});
 
 // When phase is complete, transition explicitly
 proceed_to_phase({
-  target_phase: "next-phase",
-  reason: "current phase tasks completed"
-})
+  target_phase: 'next-phase',
+  reason: 'current phase tasks completed',
+});
 ```
 
 ## Documentation

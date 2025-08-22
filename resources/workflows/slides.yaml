@@ -1,27 +1,27 @@
 name: slides
-description: "A comprehensive workflow for creating presentations - tool-agnostic approach that works with Slidev, PowerPoint, Google Slides, or any presentation platform"
+description: 'A comprehensive workflow for creating presentations - tool-agnostic approach that works with Slidev, PowerPoint, Google Slides, or any presentation platform'
 initial_state: ideate
 
 # Enhanced metadata for better discoverability
 metadata:
-  complexity: "medium"
+  complexity: 'medium'
   bestFor:
-    - "Presentation creation"
-    - "Slide deck development"
-    - "Conference talks"
-    - "Training materials"
+    - 'Presentation creation'
+    - 'Slide deck development'
+    - 'Conference talks'
+    - 'Training materials'
   useCases:
-    - "Creating a technical presentation"
-    - "Building training slides"
-    - "Preparing a conference talk"
+    - 'Creating a technical presentation'
+    - 'Building training slides'
+    - 'Preparing a conference talk'
   examples:
-    - "Create a product demo presentation"
-    - "Build onboarding slides"
-    - "Develop a technical workshop"
+    - 'Create a product demo presentation'
+    - 'Build onboarding slides'
+    - 'Develop a technical workshop'
 
 states:
   ideate:
-    description: "Brainstorm presentation concept and define strategic foundation"
+    description: 'Brainstorm presentation concept and define strategic foundation'
     default_instructions: |
       You are in the ideation phase for presentation development. This is where you define the foundation of your presentation.
 
@@ -40,20 +40,20 @@ states:
         to: structure
         additional_instructions: |
           Ideation complete! ✅ You have a clear presentation concept, defined audience, and established goals.
-          
+
           Update the plan file with structural planning tasks and mark completed ideation work.
-        transition_reason: "Presentation concept and goals clearly defined, ready for content structuring"
+        transition_reason: 'Presentation concept and goals clearly defined, ready for content structuring'
 
       - trigger: abandon_presentation
         to: ideate
         instructions: |
           Presentation development abandoned. Clean up any ideation work and prepare for new presentation topics.
           The plan file will remain for future reference if needed.
-        additional_instructions: "Presentation development abandoned. Prepare for new presentation topics."
-        transition_reason: "User decided to abandon current presentation development"
+        additional_instructions: 'Presentation development abandoned. Prepare for new presentation topics.'
+        transition_reason: 'User decided to abandon current presentation development'
 
   structure:
-    description: "Organize content flow and logical progression"
+    description: 'Organize content flow and logical progression'
     default_instructions: |
       Working on presentation structure phase. Focus on organizing your content logically and effectively.
 
@@ -73,25 +73,25 @@ states:
         to: draft
         additional_instructions: |
           Structure complete! ✅ You have a well-organized outline and clear content flow.
-          
+
           Update the plan file with drafting tasks and mark completed structural work.
-        transition_reason: "Content structure and flow established, ready for content creation"
+        transition_reason: 'Content structure and flow established, ready for content creation'
 
       - trigger: need_more_ideation
         to: ideate
-        additional_instructions: "Structural work revealed gaps in the initial concept or goals. Focus on clarifying these fundamental aspects."
-        transition_reason: "Structure work revealed need for more ideation or concept refinement"
+        additional_instructions: 'Structural work revealed gaps in the initial concept or goals. Focus on clarifying these fundamental aspects.'
+        transition_reason: 'Structure work revealed need for more ideation or concept refinement'
 
       - trigger: abandon_presentation
         to: ideate
         instructions: |
           Presentation development abandoned during structuring. Clean up structural work and return to ideation.
           The plan file and any completed work will remain for future reference.
-        additional_instructions: "Presentation abandoned during structure phase. Clean up and prepare for new topics."
-        transition_reason: "User decided to abandon presentation during structure phase"
+        additional_instructions: 'Presentation abandoned during structure phase. Clean up and prepare for new topics.'
+        transition_reason: 'User decided to abandon presentation during structure phase'
 
   draft:
-    description: "Create content, speaker notes, and visual planning"
+    description: 'Create content, speaker notes, and visual planning'
     default_instructions: |
       Working on content drafting phase. This is where you create the actual presentation content and materials.
 
@@ -112,25 +112,25 @@ states:
         to: style
         additional_instructions: |
           Draft complete! ✅ You have solid content, speaker notes, and visual planning.
-          
+
           Update the plan file with styling tasks and mark completed drafting work.
-        transition_reason: "Content and speaker notes complete, ready for visual design and styling"
+        transition_reason: 'Content and speaker notes complete, ready for visual design and styling'
 
       - trigger: need_more_structure
         to: structure
-        additional_instructions: "Drafting revealed issues with content organization or flow. Focus on refining the structural foundation."
-        transition_reason: "Content creation revealed need for better structure or organization"
+        additional_instructions: 'Drafting revealed issues with content organization or flow. Focus on refining the structural foundation.'
+        transition_reason: 'Content creation revealed need for better structure or organization'
 
       - trigger: abandon_presentation
         to: ideate
         instructions: |
           Presentation development abandoned during drafting. Clean up content work and return to ideation.
           The plan file and any completed work will remain for future reference.
-        additional_instructions: "Presentation abandoned during draft phase. Clean up and prepare for new topics."
-        transition_reason: "User decided to abandon presentation during draft phase"
+        additional_instructions: 'Presentation abandoned during draft phase. Clean up and prepare for new topics.'
+        transition_reason: 'User decided to abandon presentation during draft phase'
 
   style:
-    description: "Apply design, create visuals, and enhance presentation aesthetics"
+    description: 'Apply design, create visuals, and enhance presentation aesthetics'
     default_instructions: |
       Working on styling and visual design phase. This is where you bring visual appeal and consistency to your presentation.
 
@@ -152,25 +152,25 @@ states:
         to: review
         additional_instructions: |
           Styling complete! ✅ You have a visually appealing presentation with consistent design.
-          
+
           Update the plan file with review tasks and mark completed styling work.
-        transition_reason: "Visual design and styling complete, ready for content and delivery review"
+        transition_reason: 'Visual design and styling complete, ready for content and delivery review'
 
       - trigger: need_more_content
         to: draft
-        additional_instructions: "Styling work revealed gaps in content or speaker notes. Focus on completing the content foundation."
-        transition_reason: "Visual design revealed need for additional content or speaker note refinement"
+        additional_instructions: 'Styling work revealed gaps in content or speaker notes. Focus on completing the content foundation.'
+        transition_reason: 'Visual design revealed need for additional content or speaker note refinement'
 
       - trigger: abandon_presentation
         to: ideate
         instructions: |
           Presentation development abandoned during styling. Clean up design work and return to ideation.
           The plan file and any completed work will remain for future reference.
-        additional_instructions: "Presentation abandoned during style phase. Clean up and prepare for new topics."
-        transition_reason: "User decided to abandon presentation during style phase"
+        additional_instructions: 'Presentation abandoned during style phase. Clean up and prepare for new topics.'
+        transition_reason: 'User decided to abandon presentation during style phase'
 
   review:
-    description: "Validate content quality and presentation effectiveness"
+    description: 'Validate content quality and presentation effectiveness'
     default_instructions: |
       Working on review and validation phase. This is where you ensure your presentation is ready for delivery.
 
@@ -192,30 +192,30 @@ states:
         to: deliver
         additional_instructions: |
           Review complete! ✅ Your presentation has been validated and refined for delivery.
-          
+
           Update the plan file with delivery preparation tasks and mark completed review work.
-        transition_reason: "Presentation reviewed and validated, ready for final delivery preparation"
+        transition_reason: 'Presentation reviewed and validated, ready for final delivery preparation'
 
       - trigger: need_style_changes
         to: style
-        additional_instructions: "Review revealed visual or design issues that need attention. Focus on addressing these styling concerns."
-        transition_reason: "Review process identified visual or design issues requiring style phase work"
+        additional_instructions: 'Review revealed visual or design issues that need attention. Focus on addressing these styling concerns.'
+        transition_reason: 'Review process identified visual or design issues requiring style phase work'
 
       - trigger: need_content_changes
         to: draft
-        additional_instructions: "Review revealed content gaps or issues that need addressing. Focus on refining the content and speaker notes."
-        transition_reason: "Review process identified content issues requiring draft phase work"
+        additional_instructions: 'Review revealed content gaps or issues that need addressing. Focus on refining the content and speaker notes.'
+        transition_reason: 'Review process identified content issues requiring draft phase work'
 
       - trigger: abandon_presentation
         to: ideate
         instructions: |
           Presentation development abandoned during review. Clean up review work and return to ideation.
           The plan file and any completed work will remain for future reference.
-        additional_instructions: "Presentation abandoned during review phase. Clean up and prepare for new topics."
-        transition_reason: "User decided to abandon presentation during review phase"
+        additional_instructions: 'Presentation abandoned during review phase. Clean up and prepare for new topics.'
+        transition_reason: 'User decided to abandon presentation during review phase'
 
   deliver:
-    description: "Prepare final presentation for delivery"
+    description: 'Prepare final presentation for delivery'
     default_instructions: |
       Working on delivery preparation phase. This is the final phase to ensure your presentation is ready for successful delivery.
 
@@ -237,19 +237,19 @@ states:
         to: ideate
         additional_instructions: |
           Presentation delivery complete! ✅ Your presentation has been successfully delivered.
-          
+
           Mark all delivery tasks as complete in the plan file and prepare for new work.
-        transition_reason: "Presentation delivery completed successfully, ready for new projects"
+        transition_reason: 'Presentation delivery completed successfully, ready for new projects'
 
       - trigger: need_final_review
         to: review
-        additional_instructions: "Final preparation revealed issues requiring additional review. Focus on addressing these concerns before delivery."
-        transition_reason: "Delivery preparation identified issues requiring additional review"
+        additional_instructions: 'Final preparation revealed issues requiring additional review. Focus on addressing these concerns before delivery.'
+        transition_reason: 'Delivery preparation identified issues requiring additional review'
 
       - trigger: abandon_presentation
         to: ideate
         instructions: |
           Presentation development abandoned before delivery. Clean up delivery preparation and return to ideation.
           The plan file and completed work will remain for future reference.
-        additional_instructions: "Presentation abandoned before delivery. Clean up and prepare for new topics."
-        transition_reason: "User decided to abandon presentation before delivery"
+        additional_instructions: 'Presentation abandoned before delivery. Clean up and prepare for new topics.'
+        transition_reason: 'User decided to abandon presentation before delivery'

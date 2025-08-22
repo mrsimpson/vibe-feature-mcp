@@ -1,5 +1,4 @@
 import { defineConfig } from 'vite';
-import { resolve } from 'path';
 
 export default defineConfig({
   root: '.',
@@ -8,20 +7,20 @@ export default defineConfig({
     open: true,
     fs: {
       // Allow serving files from parent directory (for development workflow files)
-      allow: ['..', '../..']
-    }
+      allow: ['..', '../..'],
+    },
   },
   build: {
     outDir: 'dist',
-    sourcemap: true
+    sourcemap: true,
   },
   resolve: {
     alias: {
-      '@': '/src'
-    }
+      '@': '/src',
+    },
   },
   // Configure static file serving
   publicDir: 'public',
   // Enable raw imports for YAML files
-  assetsInclude: ['**/*.yaml', '**/*.yml']
+  assetsInclude: ['**/*.yaml', '**/*.yml'],
 });

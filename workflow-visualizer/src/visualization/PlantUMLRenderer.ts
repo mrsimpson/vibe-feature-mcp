@@ -1,9 +1,16 @@
 import { YamlStateMachine, YamlState } from '../types/ui-types';
-import { encodePlantUML, encodePlantUMLFallback } from '../utils/PlantUMLEncoder';
+import {
+  encodePlantUML,
+  encodePlantUMLFallback,
+} from '../utils/PlantUMLEncoder';
 
 export class PlantUMLRenderer {
   private container: HTMLElement;
-  private onElementClick?: (elementType: 'state' | 'transition' | 'clear-selection', elementId: string, data?: any) => void;
+  private onElementClick?: (
+    elementType: 'state' | 'transition' | 'clear-selection',
+    elementId: string,
+    data?: unknown
+  ) => void;
 
   constructor(container: HTMLElement) {
     this.container = container;
@@ -12,7 +19,13 @@ export class PlantUMLRenderer {
   /**
    * Set click handler for interactive elements
    */
-  public setClickHandler(handler: (elementType: 'state' | 'transition' | 'clear-selection', elementId: string, data?: any) => void): void {
+  public setClickHandler(
+    handler: (
+      elementType: 'state' | 'transition' | 'clear-selection',
+      elementId: string,
+      data?: unknown
+    ) => void
+  ): void {
     this.onElementClick = handler;
   }
 
@@ -62,7 +75,9 @@ export class PlantUMLRenderer {
     `;
 
     // Add click handler for workflow title
-    const titleElement = title.querySelector('.workflow-title-clickable') as HTMLElement;
+    const titleElement = title.querySelector(
+      '.workflow-title-clickable'
+    ) as HTMLElement;
     if (titleElement) {
       titleElement.addEventListener('click', () => {
         if (this.onElementClick) {
@@ -122,42 +137,52 @@ export class PlantUMLRenderer {
     lines.push('');
 
     // Add states with descriptions
-    Object.entries(workflow.states).forEach(([stateName, stateConfig]: [string, YamlState]) => {
+    for (const [stateName, stateConfig] of Object.entries(workflow.states) as [
+      string,
+      YamlState,
+    ][]) {
       if (stateConfig.description) {
         lines.push(`${stateName} : ${stateConfig.description}`);
       }
-    });
+    }
     lines.push('');
 
     // Add transitions
-    Object.entries(workflow.states).forEach(([stateName, stateConfig]: [string, YamlState]) => {
+    for (const [stateName, stateConfig] of Object.entries(workflow.states) as [
+      string,
+      YamlState,
+    ][]) {
       if (stateConfig.transitions) {
-        stateConfig.transitions.forEach(transition => {
+        for (const transition of stateConfig.transitions) {
           const label = transition.trigger.replace(/_/g, ' ');
 
           // Check for review perspectives and add review icon
-          const hasReviews = transition.review_perspectives && transition.review_perspectives.length > 0;
+          const hasReviews =
+            transition.review_perspectives &&
+            transition.review_perspectives.length > 0;
           // Add review indicator
           let reviewIcon = '';
           if (hasReviews) {
-            reviewIcon = ' 🛡️'
+            reviewIcon = ' 🛡️';
           }
 
           const finalLabel = `${label}${reviewIcon}`;
           lines.push(`${stateName} --> ${transition.to} : ${finalLabel}`);
-        });
+        }
       }
-    });
+    }
 
     // Add final states if any
-    const finalStates = Object.keys(workflow.states).filter(state =>
-      !workflow.states[state].transitions || workflow.states[state].transitions.length === 0
+    const finalStates = Object.keys(workflow.states).filter(
+      state =>
+        !workflow.states[state].transitions ||
+        workflow.states[state].transitions.length === 0
     );
     if (finalStates.length > 0) {
       lines.push('');
-      finalStates.forEach(state => {
+      for (const state of finalStates) {
         lines.push(`${state} --> [*]`);
-      });
+      }
     }
 
     lines.push('');
@@ -192,7 +217,11 @@ export class PlantUMLRenderer {
   /**
    * Load SVG directly and make it interactive
    */
-  private async loadInteractiveSVG(svgUrl: string, container: HTMLElement, workflow: YamlStateMachine): Promise<void> {
+  private async loadInteractiveSVG(
+    svgUrl: string,
+    container: HTMLElement,
+    workflow: YamlStateMachine
+  ): Promise<void> {
     try {
       const response = await fetch(svgUrl);
 
@@ -222,7 +251,6 @@ export class PlantUMLRenderer {
       }
 
       container.appendChild(svgContainer);
-
     } catch (error) {
       console.error('Failed to load interactive SVG:', error);
       this.showError('Failed to load interactive diagram. Using fallback.');
@@ -233,12 +261,15 @@ export class PlantUMLRenderer {
   /**
    * Make SVG elements interactive by adding click handlers
    */
-  private makeSVGInteractive(svgElement: SVGSVGElement, workflow: YamlStateMachine): void {
+  private makeSVGInteractive(
+    svgElement: SVGSVGElement,
+    workflow: YamlStateMachine
+  ): void {
     // Find all group elements with state IDs
     const stateGroups = svgElement.querySelectorAll('g[id]');
     const states = Object.keys(workflow.states);
 
-    stateGroups.forEach(group => {
+    for (const group of stateGroups) {
       const groupId = group.getAttribute('id');
       if (groupId && states.includes(groupId)) {
         // This group represents a state
@@ -271,19 +302,18 @@ export class PlantUMLRenderer {
         });
 
         // Add click handler
-        group.addEventListener('click', (e) => {
+        group.addEventListener('click', e => {
           e.stopPropagation();
           if (this.onElementClick) {
             this.onElementClick('state', stateName, workflow.states[stateName]);
           }
         });
-
       }
-    });
+    }
 
     // Also make transition links clickable using link_<source>_<target> pattern
     const linkGroups = svgElement.querySelectorAll('g.link[id^="link_"]');
-    linkGroups.forEach(linkGroup => {
+    for (const linkGroup of linkGroups) {
       const linkId = linkGroup.getAttribute('id');
       if (linkId && linkId.startsWith('link_')) {
         // Parse link ID to get source and target
@@ -328,30 +358,37 @@ export class PlantUMLRenderer {
             });
 
             // Add click handler
-            linkGroup.addEventListener('click', (e) => {
+            linkGroup.addEventListener('click', e => {
               e.stopPropagation();
 
               // Find the transition data
               const sourceState = workflow.states[fromState];
               if (sourceState && sourceState.transitions) {
-                const transition = sourceState.transitions.find(t => t.to === toState);
+                const transition = sourceState.transitions.find(
+                  t => t.to === toState
+                );
                 if (transition && this.onElementClick) {
-                  this.onElementClick('transition', `${fromState}->${toState}`, {
-                    from: fromState,
-                    to: toState,
-                    trigger: transition.trigger,
-                    instructions: transition.instructions,
-                    additional_instructions: transition.additional_instructions,
-                    transition_reason: transition.transition_reason,
-                    review_perspectives: transition.review_perspectives || []
-                  });
+                  this.onElementClick(
+                    'transition',
+                    `${fromState}->${toState}`,
+                    {
+                      from: fromState,
+                      to: toState,
+                      trigger: transition.trigger,
+                      instructions: transition.instructions,
+                      additional_instructions:
+                        transition.additional_instructions,
+                      transition_reason: transition.transition_reason,
+                      review_perspectives: transition.review_perspectives || [],
+                    }
+                  );
                 }
               }
             });
           }
         }
       }
-    });
+    }
   }
 
   /**
