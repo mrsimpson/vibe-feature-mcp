@@ -72,15 +72,21 @@ export class SetupProjectDocsHandler extends BaseToolHandler<
           linked: [],
           skipped: [],
           paths: this.projectDocsManager.getDocumentPaths(projectPath),
-          message: processedArgs.error!,
+          message: processedArgs.error || 'Unknown error during validation',
         };
       }
 
       // Create/link project documents
+      if (!processedArgs.templateOptions || !processedArgs.filePaths) {
+        throw new Error(
+          'Invalid processed args: missing templateOptions or filePaths'
+        );
+      }
+
       const result = await this.projectDocsManager.createOrLinkProjectDocs(
         projectPath,
-        processedArgs.templateOptions!,
-        processedArgs.filePaths!
+        processedArgs.templateOptions,
+        processedArgs.filePaths
       );
 
       // Get document paths for response
@@ -168,8 +174,8 @@ export class SetupProjectDocsHandler extends BaseToolHandler<
 
     if (archValidation.isTemplate) {
       templateOptions.architecture = args.architecture;
-    } else if (archValidation.isFilePath) {
-      filePaths.architecture = archValidation.resolvedPath!;
+    } else if (archValidation.isFilePath && archValidation.resolvedPath) {
+      filePaths.architecture = archValidation.resolvedPath;
     } else {
       errors.push(`Architecture: ${archValidation.error}`);
     }
@@ -183,8 +189,8 @@ export class SetupProjectDocsHandler extends BaseToolHandler<
 
     if (reqValidation.isTemplate) {
       templateOptions.requirements = args.requirements;
-    } else if (reqValidation.isFilePath) {
-      filePaths.requirements = reqValidation.resolvedPath!;
+    } else if (reqValidation.isFilePath && reqValidation.resolvedPath) {
+      filePaths.requirements = reqValidation.resolvedPath;
     } else {
       errors.push(`Requirements: ${reqValidation.error}`);
     }
@@ -198,8 +204,8 @@ export class SetupProjectDocsHandler extends BaseToolHandler<
 
     if (designValidation.isTemplate) {
       templateOptions.design = args.design;
-    } else if (designValidation.isFilePath) {
-      filePaths.design = designValidation.resolvedPath!;
+    } else if (designValidation.isFilePath && designValidation.resolvedPath) {
+      filePaths.design = designValidation.resolvedPath;
     } else {
       errors.push(`Design: ${designValidation.error}`);
     }

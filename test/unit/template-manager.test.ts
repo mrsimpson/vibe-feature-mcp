@@ -182,12 +182,11 @@ describe('TemplateManager', () => {
       expect(result.content).toContain('## Introduction and Goals');
       expect(result.additionalFiles).toBeDefined();
       expect(result.additionalFiles).toHaveLength(1);
-      expect(result.additionalFiles![0].relativePath).toBe(
-        'images/test-image.png'
-      );
-      expect(result.additionalFiles![0].content).toEqual(
-        Buffer.from('fake-image-data')
-      );
+
+      // Safe to access [0] after length check
+      const firstFile = result.additionalFiles?.[0];
+      expect(firstFile?.relativePath).toBe('images/test-image.png');
+      expect(firstFile?.content).toEqual(Buffer.from('fake-image-data'));
     });
 
     it('should throw error for non-existent template', async () => {

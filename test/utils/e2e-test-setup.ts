@@ -42,7 +42,11 @@ export class TestSuiteIsolation {
       this.cleanupCallbacks.set(suiteName, []);
     }
 
-    return this.suiteDirectories.get(suiteName)!;
+    const directory = this.suiteDirectories.get(suiteName);
+    if (!directory) {
+      throw new Error(`Suite directory not found for ${suiteName}`);
+    }
+    return directory;
   }
 
   /**

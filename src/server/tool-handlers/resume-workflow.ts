@@ -107,9 +107,10 @@ export class ResumeWorkflowHandler extends ConversationRequiredToolHandler<
     );
 
     // Analyze plan file content for key information
-    const planAnalysis = planInfo.exists
-      ? this.analyzePlanFile(planInfo.content!)
-      : undefined;
+    const planAnalysis =
+      planInfo.exists && planInfo.content
+        ? this.analyzePlanFile(planInfo.content)
+        : undefined;
 
     // Get current state machine information
     const stateMachineInfo = await this.getStateMachineInfo(
