@@ -17,8 +17,6 @@ import { createToolRegistry } from './tool-handlers/index.js';
 import { createResourceRegistry } from './resource-handlers/index.js';
 import { createResponseRenderer } from './response-renderer.js';
 import type {
-  WhatsNextArgs,
-  WhatsNextResult,
   ProceedToPhaseArgs,
   ProceedToPhaseResult,
   StartDevelopmentArgs,

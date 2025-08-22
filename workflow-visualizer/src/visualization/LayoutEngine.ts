@@ -206,7 +206,10 @@ export class LayoutEngine {
     ];
 
     while (queue.length > 0) {
-      const { nodeId, level } = queue.shift()!;
+      const item = queue.shift();
+      if (!item) continue;
+
+      const { nodeId, level } = item;
 
       if (visited.has(nodeId)) continue;
 

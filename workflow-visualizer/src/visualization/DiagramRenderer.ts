@@ -246,7 +246,9 @@ export class DiagramRenderer {
       .scale(scale)
       .translate(-boundsX, -boundsY);
 
-    this.svg.transition().duration(750).call(this.zoom!.transform, transform);
+    if (this.zoom) {
+      this.svg.transition().duration(750).call(this.zoom.transform, transform);
+    }
   }
 
   /**
@@ -260,7 +262,9 @@ export class DiagramRenderer {
 
     // Add highlights to specified elements
     for (const id of elementIds) {
-      this.g!.selectAll(`[data-id="${id}"]`).classed('highlighted', true);
+      if (this.g) {
+        this.g.selectAll(`[data-id="${id}"]`).classed('highlighted', true);
+      }
     }
   }
 
