@@ -188,7 +188,7 @@ describe('Workflow Validation', () => {
         const stateMachine = workflowManager.getWorkflow(workflow.name);
 
         Object.entries(stateMachine!.states).forEach(
-          ([stateName, stateConfig]: [string, YamlState]) => {
+          ([_stateName, stateConfig]: [string, YamlState]) => {
             if (stateConfig.transitions) {
               stateConfig.transitions.forEach((transition: YamlTransition) => {
                 if (transition.to) {
@@ -207,7 +207,7 @@ describe('Workflow Validation', () => {
         const stateMachine = workflowManager.getWorkflow(workflow.name);
 
         Object.entries(stateMachine!.states).forEach(
-          ([stateName, stateConfig]: [string, YamlState]) => {
+          ([_stateName, stateConfig]: [string, YamlState]) => {
             if (stateConfig.transitions) {
               stateConfig.transitions.forEach((transition: YamlTransition) => {
                 // Each transition should have a trigger
@@ -240,7 +240,7 @@ describe('Workflow Validation', () => {
         const stateMachine = workflowManager.getWorkflow(workflow.name);
 
         Object.entries(stateMachine!.states).forEach(
-          ([stateName, stateConfig]: [string, YamlState]) => {
+          ([_stateName, stateConfig]: [string, YamlState]) => {
             expect(stateConfig.description).toBeDefined();
             expect(typeof stateConfig.description).toBe('string');
             expect(stateConfig.description.length).toBeGreaterThan(10); // Meaningful description
@@ -254,7 +254,7 @@ describe('Workflow Validation', () => {
         const stateMachine = workflowManager.getWorkflow(workflow.name);
 
         Object.entries(stateMachine!.states).forEach(
-          ([stateName, stateConfig]: [string, YamlState]) => {
+          ([_stateName, stateConfig]: [string, YamlState]) => {
             expect(stateConfig.default_instructions).toBeDefined();
             expect(typeof stateConfig.default_instructions).toBe('string');
             expect(stateConfig.default_instructions.length).toBeGreaterThan(20); // Substantial instructions

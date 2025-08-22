@@ -48,7 +48,7 @@ const logger = createLogger('ServerConfig');
 /**
  * Generate template descriptions for MCP tool schema
  */
-function generateTemplateDescription(
+function _generateTemplateDescription(
   templates: string[],
   type: string
 ): string {

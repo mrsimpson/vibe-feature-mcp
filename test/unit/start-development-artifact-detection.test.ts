@@ -27,9 +27,11 @@ vi.mock('../../src/git-manager.js', () => ({
 
 describe('StartDevelopmentHandler - Dynamic Artifact Detection', () => {
   let handler: StartDevelopmentHandler;
-  let mockProjectDocsManager: any;
+  let mockProjectDocsManager: ReturnType<
+    typeof MockContextFactory.createProjectDocsManagerMock
+  >;
   let testProjectPath: string;
-  let mockContext: any;
+  let mockContext: ReturnType<typeof MockContextFactory.createBasicContext>;
 
   beforeEach(() => {
     testProjectPath = '/test/project';

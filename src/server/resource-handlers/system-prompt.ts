@@ -25,7 +25,7 @@ const logger = createLogger('SystemPromptResourceHandler');
 export class SystemPromptResourceHandler implements ResourceHandler {
   async handle(
     uri: URL,
-    context: ServerContext
+    _context: ServerContext
   ): Promise<HandlerResult<ResourceContent>> {
     logger.debug('Processing system prompt resource request', {
       uri: uri.href,

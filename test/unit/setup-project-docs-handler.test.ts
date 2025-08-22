@@ -44,7 +44,7 @@ describe('SetupProjectDocsHandler', () => {
         requirements: ['ears', 'freestyle'],
         design: ['comprehensive', 'freestyle'],
       }),
-    } as any;
+    } as Partial<TemplateManager>;
 
     // Mock ProjectDocsManager
     mockProjectDocsManager = {

@@ -9,7 +9,6 @@ import { z } from 'zod';
 import { BaseToolHandler } from './base-tool-handler.js';
 import { ServerContext } from '../types.js';
 import { createLogger } from '../../logger.js';
-import type { YamlStateMachine } from '../../state-machine-types.js';
 
 const logger = createLogger('GetToolInfoHandler');
 

@@ -16,7 +16,7 @@ const PROJECT_ROOT = process.cwd();
 const BATCH_SIZE = 10; // Process files in batches
 
 // File patterns to process
-const INCLUDE_PATTERNS = [
+const _INCLUDE_PATTERNS = [
   'src/**/*.ts',
   'test/**/*.ts',
   'workflow-visualizer/src/**/*.ts',
@@ -170,7 +170,7 @@ function runTests() {
     execSync('npm run test:run', { stdio: 'pipe' });
     console.log('✓ Tests passed');
     return true;
-  } catch (error) {
+  } catch {
     console.error('✗ Tests failed');
     return false;
   }
@@ -185,7 +185,7 @@ function runBuild() {
     execSync('npm run build', { stdio: 'pipe' });
     console.log('✓ Build passed');
     return true;
-  } catch (error) {
+  } catch {
     console.error('✗ Build failed');
     return false;
   }
@@ -247,7 +247,7 @@ function main() {
   console.log('\n🔍 Running final lint check...');
   try {
     execSync('npm run lint', { stdio: 'inherit' });
-  } catch (error) {
+  } catch {
     console.log(
       'Some linting issues remain - this is expected for complex cases'
     );
