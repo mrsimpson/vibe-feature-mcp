@@ -9,6 +9,7 @@ import { WorkflowLoader } from './WorkflowLoader';
 export class FileUploadHandler {
   private readonly workflowLoader: WorkflowLoader;
   private readonly fileInput: HTMLInputElement;
+  private readonly boundHandleFileSelection: (event: Event) => void;
 
   constructor(
     fileInputElement: HTMLInputElement,
@@ -16,6 +17,7 @@ export class FileUploadHandler {
   ) {
     this.workflowLoader = workflowLoader;
     this.fileInput = fileInputElement;
+    this.boundHandleFileSelection = this.handleFileSelection.bind(this);
     this.setupEventListeners();
   }
 
@@ -23,10 +25,7 @@ export class FileUploadHandler {
    * Set up event listeners for file upload
    */
   private setupEventListeners(): void {
-    this.fileInput.addEventListener(
-      'change',
-      this.handleFileSelection.bind(this)
-    );
+    this.fileInput.addEventListener('change', this.boundHandleFileSelection);
   }
 
   /**
@@ -162,9 +161,6 @@ export class FileUploadHandler {
    * Destroy the handler and clean up event listeners
    */
   public destroy(): void {
-    this.fileInput.removeEventListener(
-      'change',
-      this.handleFileSelection.bind(this)
-    );
+    this.fileInput.removeEventListener('change', this.boundHandleFileSelection);
   }
 }

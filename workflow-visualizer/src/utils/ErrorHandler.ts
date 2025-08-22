@@ -10,11 +10,13 @@ export class ErrorHandler {
   private readonly errorText: HTMLElement;
   private readonly errorClose: HTMLElement;
   private currentTimeout: number | null = null;
+  private readonly boundHideError: (event: Event) => void;
 
   constructor() {
     this.errorContainer = this.getRequiredElement('#error-container');
     this.errorText = this.getRequiredElement('.error-text');
     this.errorClose = this.getRequiredElement('.error-close');
+    this.boundHideError = this.hideError.bind(this);
 
     this.setupEventListeners();
   }
@@ -23,7 +25,7 @@ export class ErrorHandler {
    * Set up event listeners for error handling
    */
   private setupEventListeners(): void {
-    this.errorClose.addEventListener('click', this.hideError.bind(this));
+    this.errorClose.addEventListener('click', this.boundHideError);
 
     // Hide error when clicking outside
     this.errorContainer.addEventListener('click', (event: Event) => {
@@ -158,7 +160,7 @@ export class ErrorHandler {
    * Clean up event listeners
    */
   public destroy(): void {
-    this.errorClose.removeEventListener('click', this.hideError.bind(this));
+    this.errorClose.removeEventListener('click', this.boundHideError);
 
     if (this.currentTimeout) {
       clearTimeout(this.currentTimeout);

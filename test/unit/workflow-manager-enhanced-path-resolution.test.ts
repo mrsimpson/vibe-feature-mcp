@@ -335,7 +335,7 @@ states:
       expect(workflowNames).toContain('epcc');
 
       // Verify each workflow has required properties
-      workflows.forEach(workflow => {
+      for (const workflow of workflows) {
         expect(workflow.name).toBeDefined();
         expect(workflow.displayName).toBeDefined();
         expect(workflow.description).toBeDefined();
@@ -343,7 +343,7 @@ states:
         expect(workflow.phases).toBeDefined();
         expect(Array.isArray(workflow.phases)).toBe(true);
         expect(workflow.phases.length).toBeGreaterThan(0);
-      });
+      }
     });
 
     it('should load specific workflows with correct structure', () => {
