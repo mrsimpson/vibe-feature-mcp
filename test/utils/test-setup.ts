@@ -5,13 +5,15 @@
  */
 
 import { join } from 'node:path';
+import type { Client } from '@modelcontextprotocol/sdk/client/index.js';
+import type { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
 
 /**
  * Server test context
  */
 export interface ServerTestContext {
-  client: any;
-  transport: any;
+  client: Client;
+  transport: StdioClientTransport;
   cleanup: () => Promise<void>;
 }
 

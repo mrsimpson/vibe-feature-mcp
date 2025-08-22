@@ -7,6 +7,7 @@
 
 import { createLogger } from '../../logger.js';
 import { ToolHandler, ServerContext, HandlerResult } from '../types.js';
+import type { ConversationContext } from '../../types.js';
 import {
   safeExecute,
   logHandlerExecution,
@@ -17,7 +18,7 @@ import {
  * Abstract base class for tool handlers
  * Provides common functionality and enforces consistent patterns
  */
-export abstract class BaseToolHandler<TArgs = any, TResult = any>
+export abstract class BaseToolHandler<TArgs = unknown, TResult = unknown>
   implements ToolHandler<TArgs, TResult>
 {
   protected readonly logger: ReturnType<typeof createLogger>;
@@ -89,8 +90,8 @@ export abstract class BaseToolHandler<TArgs = any, TResult = any>
     context: ServerContext,
     conversationId: string,
     toolName: string,
-    args: any,
-    response: any,
+    args: unknown,
+    response: unknown,
     phase: string
   ): Promise<void> {
     if (context.interactionLogger) {
@@ -110,8 +111,8 @@ export abstract class BaseToolHandler<TArgs = any, TResult = any>
  * Automatically handles the conversation-not-found case
  */
 export abstract class ConversationRequiredToolHandler<
-  TArgs = any,
-  TResult = any,
+  TArgs = unknown,
+  TResult = unknown,
 > extends BaseToolHandler<TArgs, TResult> {
   protected async executeHandler(
     args: TArgs,
@@ -135,6 +136,6 @@ export abstract class ConversationRequiredToolHandler<
   protected abstract executeWithConversation(
     args: TArgs,
     context: ServerContext,
-    conversationContext: any
+    conversationContext: ConversationContext
   ): Promise<TResult>;
 }

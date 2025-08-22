@@ -381,7 +381,11 @@ export class ProjectDocsManager {
       });
     } catch (error) {
       // File doesn't exist, which is fine
-      if ((error as any).code !== 'ENOENT') {
+      if (
+        error instanceof Error &&
+        'code' in error &&
+        error.code !== 'ENOENT'
+      ) {
         logger.debug('Failed to remove existing document', {
           documentPath,
           error: error instanceof Error ? error.message : 'Unknown error',

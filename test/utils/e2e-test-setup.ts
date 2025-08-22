@@ -113,7 +113,7 @@ export class DirectServerInterface {
   /**
    * Call a tool on the server directly
    */
-  async callTool(name: string, arguments_: any): Promise<any> {
+  async callTool<T = unknown>(name: string, arguments_: unknown): Promise<T> {
     try {
       // Call the server's tool handlers directly based on tool name
       switch (name) {
@@ -141,7 +141,7 @@ export class DirectServerInterface {
   /**
    * Read a resource from the server directly
    */
-  async readResource(uri: string): Promise<any> {
+  async readResource<T = unknown>(uri: string): Promise<T> {
     // Call the server's resource handlers directly based on URI
     switch (uri) {
       case 'state://current':
@@ -161,7 +161,7 @@ export class DirectServerInterface {
   /**
    * Get conversation state directly
    */
-  private async getConversationState(): Promise<any> {
+  private async getConversationState(): Promise<unknown> {
     const conversationManager = this.server.getConversationManager();
     const conversationContext =
       await conversationManager.getConversationContext();
@@ -187,7 +187,7 @@ export class DirectServerInterface {
   /**
    * Get development plan directly
    */
-  private async getDevelopmentPlan(): Promise<any> {
+  private async getDevelopmentPlan(): Promise<unknown> {
     const conversationManager = this.server.getConversationManager();
     const planManager = this.server.getPlanManager();
 
@@ -217,7 +217,7 @@ export class DirectServerInterface {
   /**
    * Get system prompt resource directly
    */
-  async getSystemPrompt(): Promise<any> {
+  async getSystemPrompt(): Promise<unknown> {
     // Use the system prompt handler directly with the default workflow
     const { SystemPromptResourceHandler } = await import(
       '../../src/server/resource-handlers/system-prompt.js'
@@ -263,7 +263,7 @@ export class DirectServerInterface {
   /**
    * Get a prompt (if we add prompt support later)
    */
-  async getPrompt(name: string, arguments_: any = {}): Promise<any> {
+  async getPrompt(name: string, arguments_: any = {}): Promise<unknown> {
     // For now, just return a placeholder
     return {
       description: `Prompt for ${name}`,
@@ -322,7 +322,7 @@ export function createDirectServerInterface(
 /**
  * Helper to safely parse JSON responses, handling both success and error cases
  */
-export function parseToolResponse(result: any): any {
+export function parseToolResponse(result: unknown): any {
   // If result is already an object (direct server call), return as-is
   if (typeof result === 'object' && result !== null) {
     return result;
@@ -343,7 +343,7 @@ export function parseToolResponse(result: any): any {
 /**
  * Assert that a tool call was successful and return the response
  */
-export function assertToolSuccess(result: any): any {
+export function assertToolSuccess(result: unknown): any {
   // Parse result if it's a string
   const parsed = typeof result === 'string' ? JSON.parse(result) : result;
 
@@ -367,7 +367,7 @@ export async function initializeDevelopment(
   client: DirectServerInterface,
   workflow: string = 'waterfall',
   commitBehaviour: 'step' | 'phase' | 'end' | 'none' = 'none'
-): Promise<any> {
+): Promise<unknown> {
   const result = await client.callTool('start_development', {
     workflow,
     commit_behaviour: commitBehaviour,

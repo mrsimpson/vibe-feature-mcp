@@ -163,9 +163,9 @@ export async function initializeServerComponents(
     mcpServer,
     database,
     context,
-    toolRegistry: null as any, // Will be set by caller
-    resourceRegistry: null as any, // Will be set by caller
-    responseRenderer: null as any, // Will be set by caller
+    toolRegistry: null as unknown as ToolRegistry, // Will be set by caller
+    resourceRegistry: null as unknown as ResourceRegistry, // Will be set by caller
+    responseRenderer: null as unknown as ResponseRenderer, // Will be set by caller
   };
 }
 

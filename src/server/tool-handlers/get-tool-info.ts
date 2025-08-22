@@ -9,6 +9,7 @@ import { z } from 'zod';
 import { BaseToolHandler } from './base-tool-handler.js';
 import { ServerContext } from '../types.js';
 import { createLogger } from '../../logger.js';
+import type { YamlStateMachine } from '../../state-machine-types.js';
 
 const logger = createLogger('GetToolInfoHandler');
 
@@ -256,9 +257,15 @@ export class GetToolInfoHandler extends BaseToolHandler<
   /**
    * Extract phase names from a workflow configuration
    */
-  private extractWorkflowPhases(workflow: any): string[] | undefined {
-    if (workflow.states && typeof workflow.states === 'object') {
-      return Object.keys(workflow.states);
+  private extractWorkflowPhases(workflowInfo: unknown): string[] | undefined {
+    if (
+      workflowInfo &&
+      typeof workflowInfo === 'object' &&
+      'states' in workflowInfo &&
+      workflowInfo.states &&
+      typeof workflowInfo.states === 'object'
+    ) {
+      return Object.keys(workflowInfo.states);
     }
     return undefined;
   }

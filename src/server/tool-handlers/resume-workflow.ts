@@ -322,7 +322,7 @@ export class ResumeWorkflowHandler extends ConversationRequiredToolHandler<
 
         // Add current phase specific guidance
         recommendations.immediate_actions.push(
-          `Focus on: ${(phaseDefinition as any).description}`
+          `Focus on: ${(phaseDefinition as YamlState).description}`
         );
       } else {
         // Fallback if phase not found in state machine
