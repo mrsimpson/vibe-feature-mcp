@@ -103,7 +103,9 @@ export class DiagramRenderer {
 
     // Clear any existing loading messages or content
     const loadingMessages = this.container.querySelectorAll('.loading-message');
-    loadingMessages.forEach(msg => msg.remove());
+    for (const msg of loadingMessages) {
+      msg.remove();
+    }
 
     this.currentWorkflow = workflow;
 
@@ -257,9 +259,9 @@ export class DiagramRenderer {
     this.g.selectAll('.highlighted').classed('highlighted', false);
 
     // Add highlights to specified elements
-    elementIds.forEach(id => {
+    for (const id of elementIds) {
       this.g!.selectAll(`[data-id="${id}"]`).classed('highlighted', true);
-    });
+    }
   }
 
   /**

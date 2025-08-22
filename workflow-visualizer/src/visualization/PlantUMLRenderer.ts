@@ -137,38 +137,40 @@ export class PlantUMLRenderer {
     lines.push('');
 
     // Add states with descriptions
-    Object.entries(workflow.states).forEach(
-      ([stateName, stateConfig]: [string, YamlState]) => {
-        if (stateConfig.description) {
-          lines.push(`${stateName} : ${stateConfig.description}`);
-        }
+    for (const [stateName, stateConfig] of Object.entries(workflow.states) as [
+      string,
+      YamlState,
+    ][]) {
+      if (stateConfig.description) {
+        lines.push(`${stateName} : ${stateConfig.description}`);
       }
-    );
+    }
     lines.push('');
 
     // Add transitions
-    Object.entries(workflow.states).forEach(
-      ([stateName, stateConfig]: [string, YamlState]) => {
-        if (stateConfig.transitions) {
-          stateConfig.transitions.forEach(transition => {
-            const label = transition.trigger.replace(/_/g, ' ');
+    for (const [stateName, stateConfig] of Object.entries(workflow.states) as [
+      string,
+      YamlState,
+    ][]) {
+      if (stateConfig.transitions) {
+        for (const transition of stateConfig.transitions) {
+          const label = transition.trigger.replace(/_/g, ' ');
 
-            // Check for review perspectives and add review icon
-            const hasReviews =
-              transition.review_perspectives &&
-              transition.review_perspectives.length > 0;
-            // Add review indicator
-            let reviewIcon = '';
-            if (hasReviews) {
-              reviewIcon = ' 🛡️';
-            }
+          // Check for review perspectives and add review icon
+          const hasReviews =
+            transition.review_perspectives &&
+            transition.review_perspectives.length > 0;
+          // Add review indicator
+          let reviewIcon = '';
+          if (hasReviews) {
+            reviewIcon = ' 🛡️';
+          }
 
-            const finalLabel = `${label}${reviewIcon}`;
-            lines.push(`${stateName} --> ${transition.to} : ${finalLabel}`);
-          });
+          const finalLabel = `${label}${reviewIcon}`;
+          lines.push(`${stateName} --> ${transition.to} : ${finalLabel}`);
         }
       }
-    );
+    }
 
     // Add final states if any
     const finalStates = Object.keys(workflow.states).filter(
@@ -178,9 +180,9 @@ export class PlantUMLRenderer {
     );
     if (finalStates.length > 0) {
       lines.push('');
-      finalStates.forEach(state => {
+      for (const state of finalStates) {
         lines.push(`${state} --> [*]`);
-      });
+      }
     }
 
     lines.push('');
@@ -267,7 +269,7 @@ export class PlantUMLRenderer {
     const stateGroups = svgElement.querySelectorAll('g[id]');
     const states = Object.keys(workflow.states);
 
-    stateGroups.forEach(group => {
+    for (const group of stateGroups) {
       const groupId = group.getAttribute('id');
       if (groupId && states.includes(groupId)) {
         // This group represents a state
@@ -307,11 +309,11 @@ export class PlantUMLRenderer {
           }
         });
       }
-    });
+    }
 
     // Also make transition links clickable using link_<source>_<target> pattern
     const linkGroups = svgElement.querySelectorAll('g.link[id^="link_"]');
-    linkGroups.forEach(linkGroup => {
+    for (const linkGroup of linkGroups) {
       const linkId = linkGroup.getAttribute('id');
       if (linkId && linkId.startsWith('link_')) {
         // Parse link ID to get source and target
@@ -386,7 +388,7 @@ export class PlantUMLRenderer {
           }
         }
       }
-    });
+    }
   }
 
   /**

@@ -395,9 +395,9 @@ export class TransitionRenderer {
     d3.selectAll('.transition-link').classed('highlighted', false);
 
     // Set new highlights
-    highlightedLinkIds.forEach(linkId => {
+    for (const linkId of highlightedLinkIds) {
       d3.select(`[data-id="${linkId}"]`).classed('highlighted', true);
-    });
+    }
   }
 
   /**

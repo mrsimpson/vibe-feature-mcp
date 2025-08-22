@@ -69,13 +69,13 @@ export class LayoutEngine {
    * Handle self-loop transitions with special positioning
    */
   private handleSelfLoops(links: DiagramLink[]): void {
-    links.forEach(link => {
+    for (const link of links) {
       if (link.isSelfLoop) {
         // Self-loops don't participate in the force simulation
         // They will be positioned relative to their source node
         link.source = link.target;
       }
-    });
+    }
   }
 
   /**
@@ -117,7 +117,7 @@ export class LayoutEngine {
     const nodes = this.simulation.nodes();
     const padding = this.config.nodeRadius + 20;
 
-    nodes.forEach(node => {
+    for (const node of nodes) {
       if (node.x !== undefined && node.y !== undefined) {
         node.x = Math.max(
           padding,
@@ -128,7 +128,7 @@ export class LayoutEngine {
           Math.min(this.config.height - padding, node.y)
         );
       }
-    });
+    }
   }
 
   /**
@@ -152,14 +152,14 @@ export class LayoutEngine {
     const levelCounts: Record<number, number> = {};
 
     // Count nodes per level
-    Object.values(levels).forEach(level => {
+    for (const level of Object.values(levels)) {
       levelCounts[level] = (levelCounts[level] || 0) + 1;
-    });
+    }
 
     // Position nodes
     const levelPositions: Record<number, number> = {};
 
-    nodes.forEach(node => {
+    for (const node of nodes) {
       const level = levels[node.id];
       const nodesInLevel = levelCounts[level];
       const levelWidth =
@@ -177,7 +177,7 @@ export class LayoutEngine {
       node.y = this.config.padding.top + levelHeight * (level + 0.5);
 
       levelPositions[level]++;
-    });
+    }
   }
 
   /**
@@ -194,9 +194,9 @@ export class LayoutEngine {
     const initialNode = nodes.find(node => node.isInitial);
     if (!initialNode) {
       // If no initial state, assign level 0 to all nodes
-      nodes.forEach(node => {
+      for (const node of nodes) {
         levels[node.id] = 0;
-      });
+      }
       return levels;
     }
 
@@ -220,21 +220,21 @@ export class LayoutEngine {
             nodeId && !link.isSelfLoop
       );
 
-      outgoingLinks.forEach(link => {
+      for (const link of outgoingLinks) {
         const targetId =
           typeof link.target === 'string' ? link.target : link.target.id;
         if (!visited.has(targetId)) {
           queue.push({ nodeId: targetId, level: level + 1 });
         }
-      });
+      }
     }
 
     // Assign level 0 to any unvisited nodes
-    nodes.forEach(node => {
+    for (const node of nodes) {
       if (!(node.id in levels)) {
         levels[node.id] = 0;
       }
-    });
+    }
 
     return levels;
   }
@@ -249,11 +249,11 @@ export class LayoutEngine {
     const centerY = this.config.height / 2;
     const radius = Math.min(this.config.width, this.config.height) * 0.3;
 
-    nodes.forEach((node, index) => {
+    for (const [index, node] of nodes.entries()) {
       const angle = (2 * Math.PI * index) / nodes.length;
       node.x = centerX + radius * Math.cos(angle);
       node.y = centerY + radius * Math.sin(angle);
-    });
+    }
   }
 
   /**

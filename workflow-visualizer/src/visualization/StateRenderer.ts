@@ -275,9 +275,9 @@ export class StateRenderer {
     d3.selectAll('.state-node').classed('highlighted', false);
 
     // Set new highlights
-    highlightedNodeIds.forEach(nodeId => {
+    for (const nodeId of highlightedNodeIds) {
       d3.select(`[data-id="${nodeId}"]`).classed('highlighted', true);
-    });
+    }
   }
 
   /**
