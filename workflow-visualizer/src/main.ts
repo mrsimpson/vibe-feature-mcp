@@ -200,7 +200,7 @@ class WorkflowVisualizerApp {
   /**
    * Handle file upload errors
    */
-  private handleUploadError(error: any): void {
+  private handleUploadError(error: Error): void {
     console.error('File upload error:', error);
     this.errorHandler.showError(error);
   }
@@ -224,7 +224,7 @@ class WorkflowVisualizerApp {
   /**
    * Select a state node
    */
-  private selectState(stateId: string, _nodeData: any): void {
+  private selectState(stateId: string, _nodeData: unknown): void {
     const workflow = this.appState.currentWorkflow;
     if (!workflow || !workflow.states[stateId]) return;
 
@@ -243,7 +243,7 @@ class WorkflowVisualizerApp {
   /**
    * Select a transition link
    */
-  private selectTransition(transitionId: string, linkData: any): void {
+  private selectTransition(transitionId: string, linkData: unknown): void {
     const workflow = this.appState.currentWorkflow;
     if (!workflow) return;
 

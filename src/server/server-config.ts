@@ -594,7 +594,7 @@ export function registerMcpResources(
         'The active development plan document (markdown) that tracks project progress, tasks, and decisions. This file serves as long-term memory for the development process and should be continuously updated by the LLM.',
       mimeType: 'text/markdown',
     },
-    async (uri: any) => {
+    async (uri: URL) => {
       const handler = resourceRegistry.resolve(uri.href);
       if (!handler) {
         const errorResult = responseRenderer.renderResourceResponse({
@@ -624,7 +624,7 @@ export function registerMcpResources(
         'Current conversation state and phase information (JSON) including conversation ID, project context, current development phase, and plan file location. Use this to understand the current state of the development workflow.',
       mimeType: 'application/json',
     },
-    async (uri: any) => {
+    async (uri: URL) => {
       const handler = resourceRegistry.resolve(uri.href);
       if (!handler) {
         const errorResult = responseRenderer.renderResourceResponse({
@@ -661,7 +661,7 @@ export function registerMcpResources(
         'Complete system prompt for LLM integration with responsible-vibe-mcp. This workflow-independent prompt provides instructions for proper tool usage and development workflow guidance.',
       mimeType: 'text/plain',
     },
-    async (uri: any) => {
+    async (uri: URL) => {
       const handler = resourceRegistry.resolve(uri.href);
       if (!handler) {
         const errorResult = responseRenderer.renderResourceResponse({

@@ -174,9 +174,7 @@ export class ProceedToPhaseHandler extends ConversationRequiredToolHandler<
       throw new Error(`Invalid current phase: ${currentPhase}`);
     }
 
-    const transition = currentState.transitions.find(
-      (t: any) => t.to === targetPhase
-    );
+    const transition = currentState.transitions.find(t => t.to === targetPhase);
     if (!transition) {
       throw new Error(
         `No transition found from ${currentPhase} to ${targetPhase}`

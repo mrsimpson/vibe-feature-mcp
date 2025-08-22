@@ -9,7 +9,7 @@ export class PlantUMLRenderer {
   private onElementClick?: (
     elementType: 'state' | 'transition' | 'clear-selection',
     elementId: string,
-    data?: any
+    data?: unknown
   ) => void;
 
   constructor(container: HTMLElement) {
@@ -23,7 +23,7 @@ export class PlantUMLRenderer {
     handler: (
       elementType: 'state' | 'transition' | 'clear-selection',
       elementId: string,
-      data?: any
+      data?: unknown
     ) => void
   ): void {
     this.onElementClick = handler;

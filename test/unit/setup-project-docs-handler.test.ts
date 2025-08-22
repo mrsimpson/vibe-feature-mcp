@@ -52,7 +52,7 @@ describe('SetupProjectDocsHandler', () => {
       createProjectDocs: vi.fn(),
       getDocumentPaths: vi.fn(),
       templateManager: mockTemplateManager,
-    } as any;
+    } as Partial<ProjectDocsManager>;
 
     // Create handler and inject mock
     handler = new SetupProjectDocsHandler();

@@ -188,7 +188,7 @@ export function generateWorkflowDescription(
 /**
  * Log handler execution for debugging
  */
-export function logHandlerExecution(handlerName: string, args: any): void {
+export function logHandlerExecution(handlerName: string, args: unknown): void {
   logger.debug(`Executing ${handlerName} handler`, {
     handlerName,
     argsKeys: Object.keys(args || {}),
@@ -200,7 +200,7 @@ export function logHandlerExecution(handlerName: string, args: any): void {
  */
 export function logHandlerCompletion(
   handlerName: string,
-  result: HandlerResult<any>
+  result: HandlerResult<unknown>
 ): void {
   logger.debug(`Completed ${handlerName} handler`, {
     handlerName,

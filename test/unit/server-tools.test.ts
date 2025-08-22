@@ -74,15 +74,13 @@ vi.mock('../../src/workflow-manager', () => {
         initial_state: 'idle',
         states: { idle: { description: 'Idle state', transitions: [] } },
       }),
-      getAvailableWorkflows: vi
-        .fn()
-        .mockReturnValue([
-          {
-            name: 'waterfall',
-            displayName: 'Waterfall',
-            description: 'Classic waterfall workflow',
-          },
-        ]),
+      getAvailableWorkflows: vi.fn().mockReturnValue([
+        {
+          name: 'waterfall',
+          displayName: 'Waterfall',
+          description: 'Classic waterfall workflow',
+        },
+      ]),
     })),
   };
 });
@@ -219,7 +217,7 @@ describe('Server Tools', () => {
       plan_status: { exists: false, analysis: null },
     }),
 
-    handleStartDevelopment: async (args: any) => {
+    handleStartDevelopment: async (args: { workflow?: string }) => {
       if (!args.workflow) {
         throw new Error('workflow parameter is required');
       }

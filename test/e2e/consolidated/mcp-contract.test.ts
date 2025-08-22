@@ -156,7 +156,7 @@ describe('MCP Contract Validation', () => {
       expect(schema.properties).toBeDefined();
 
       // Should accept optional parameters like user_input, context, etc.
-      const properties = schema.properties as Record<string, any>;
+      const properties = schema.properties as Record<string, unknown>;
       expect(properties.user_input).toBeDefined();
       expect(properties.context).toBeDefined();
       expect(properties.conversation_summary).toBeDefined();
@@ -177,7 +177,7 @@ describe('MCP Contract Validation', () => {
       expect(schema.type).toBe('object');
       expect(schema.properties).toBeDefined();
 
-      const properties = schema.properties as Record<string, any>;
+      const properties = schema.properties as Record<string, unknown>;
       expect(properties.target_phase).toBeDefined();
       expect(properties.reason).toBeDefined();
 

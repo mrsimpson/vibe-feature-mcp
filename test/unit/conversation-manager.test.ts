@@ -4,6 +4,7 @@
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { ConversationManager } from '../../src/conversation-manager';
+import { Database } from '../../src/database';
 
 // Mock database
 const mockGetConversationState = vi.fn();
@@ -100,7 +101,7 @@ describe('ConversationManager', () => {
 
     // Create conversation manager with the mock database
     conversationManager = new ConversationManager(
-      mockDb as any,
+      mockDb as Partial<Database>,
       '/test/project/path'
     );
   });
