@@ -14,7 +14,10 @@ import { resolve } from 'node:path';
 import { GitCommitConfig } from '../../types.js';
 import { GitManager } from '../../git-manager.js';
 import type { YamlStateMachine } from '../../state-machine-types.js';
-import { ProjectDocsManager } from '../../project-docs-manager.js';
+import {
+  ProjectDocsManager,
+  ProjectDocsInfo,
+} from '../../project-docs-manager.js';
 
 /**
  * Arguments for the start_development tool
@@ -323,7 +326,7 @@ export class StartDevelopmentHandler extends BaseToolHandler<
    * Analyze workflow content to detect document variable references
    */
   private analyzeWorkflowDocumentReferences(
-    stateMachine: any,
+    stateMachine: YamlStateMachine,
     projectPath: string
   ): string[] {
     // Get available document variables from ProjectDocsManager
@@ -356,7 +359,7 @@ export class StartDevelopmentHandler extends BaseToolHandler<
    */
   private getMissingReferencedDocuments(
     referencedVariables: string[],
-    docsInfo: any,
+    docsInfo: ProjectDocsInfo,
     projectPath: string
   ): string[] {
     const missingDocs: string[] = [];
@@ -376,8 +379,11 @@ export class StartDevelopmentHandler extends BaseToolHandler<
 
     for (const variable of referencedVariables) {
       const docType = variableToDocMap[variable];
-      if (docType && docsInfo[docType] && !docsInfo[docType].exists) {
-        missingDocs.push(`${docType}.md`);
+      if (docType && docType in docsInfo) {
+        const docInfo = docsInfo[docType as keyof ProjectDocsInfo];
+        if (docInfo && !docInfo.exists) {
+          missingDocs.push(`${docType}.md`);
+        }
       }
     }
 
@@ -390,7 +396,7 @@ export class StartDevelopmentHandler extends BaseToolHandler<
   private async generateArtifactSetupGuidance(
     missingDocs: string[],
     workflowName: string,
-    docsInfo: any,
+    docsInfo: ProjectDocsInfo,
     referencedVariables: string[]
   ): Promise<string> {
     const missingList = missingDocs.map(doc => `- ${doc}`).join('\n');

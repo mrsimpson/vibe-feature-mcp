@@ -175,7 +175,7 @@ export function setSafeInnerHTML(element: HTMLElement, html: string): void {
 /**
  * Debounce a function call
  */
-export function debounce<T extends (...args: any[]) => any>(
+export function debounce<T extends (...args: unknown[]) => unknown>(
   func: T,
   delay: number
 ): (...args: Parameters<T>) => void {

@@ -12,7 +12,11 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { WorkflowInfo, WorkflowManager } from '../src/workflow-manager.js';
 import { readdirSync } from 'node:fs';
 import { join } from 'node:path';
-import { YamlStateMachine } from '../src/state-machine-types.js';
+import {
+  YamlStateMachine,
+  YamlState,
+  YamlTransition,
+} from '../src/state-machine-types.js';
 
 describe('Workflow Validation', () => {
   const workflowsDir = join(__dirname, '..', 'resources', 'workflows');
@@ -151,7 +155,7 @@ describe('Workflow Validation', () => {
 
         const stateConfig = stateMachine.states[currentState];
         if (stateConfig.transitions) {
-          stateConfig.transitions.forEach((transition: any) => {
+          stateConfig.transitions.forEach((transition: YamlTransition) => {
             if (transition.to && !reachableStates.has(transition.to)) {
               reachableStates.add(transition.to);
               queue.push(transition.to);
@@ -184,9 +188,9 @@ describe('Workflow Validation', () => {
         const stateMachine = workflowManager.getWorkflow(workflow.name);
 
         Object.entries(stateMachine!.states).forEach(
-          ([stateName, stateConfig]: [string, any]) => {
+          ([stateName, stateConfig]: [string, YamlState]) => {
             if (stateConfig.transitions) {
-              stateConfig.transitions.forEach((transition: any) => {
+              stateConfig.transitions.forEach((transition: YamlTransition) => {
                 if (transition.to) {
                   // Target state must exist
                   expect(stateMachine!.states[transition.to]).toBeDefined();
@@ -203,9 +207,9 @@ describe('Workflow Validation', () => {
         const stateMachine = workflowManager.getWorkflow(workflow.name);
 
         Object.entries(stateMachine!.states).forEach(
-          ([stateName, stateConfig]: [string, any]) => {
+          ([stateName, stateConfig]: [string, YamlState]) => {
             if (stateConfig.transitions) {
-              stateConfig.transitions.forEach((transition: any) => {
+              stateConfig.transitions.forEach((transition: YamlTransition) => {
                 // Each transition should have a trigger
                 expect(transition.trigger).toBeDefined();
                 expect(typeof transition.trigger).toBe('string');
@@ -236,7 +240,7 @@ describe('Workflow Validation', () => {
         const stateMachine = workflowManager.getWorkflow(workflow.name);
 
         Object.entries(stateMachine!.states).forEach(
-          ([stateName, stateConfig]: [string, any]) => {
+          ([stateName, stateConfig]: [string, YamlState]) => {
             expect(stateConfig.description).toBeDefined();
             expect(typeof stateConfig.description).toBe('string');
             expect(stateConfig.description.length).toBeGreaterThan(10); // Meaningful description
@@ -250,7 +254,7 @@ describe('Workflow Validation', () => {
         const stateMachine = workflowManager.getWorkflow(workflow.name);
 
         Object.entries(stateMachine!.states).forEach(
-          ([stateName, stateConfig]: [string, any]) => {
+          ([stateName, stateConfig]: [string, YamlState]) => {
             expect(stateConfig.default_instructions).toBeDefined();
             expect(typeof stateConfig.default_instructions).toBe('string');
             expect(stateConfig.default_instructions.length).toBeGreaterThan(20); // Substantial instructions

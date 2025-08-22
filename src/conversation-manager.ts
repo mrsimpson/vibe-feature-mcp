@@ -353,13 +353,11 @@ export class ConversationManager {
    */
   async hasInteractions(conversationId: string): Promise<boolean> {
     try {
-      // Use the private getRow method through a public interface
-      const result = await (this.database as any).getRow(
-        'SELECT COUNT(*) as count FROM interaction_logs WHERE conversation_id = ?',
-        [conversationId]
-      );
+      // Get all interactions for this conversation
+      const interactions =
+        await this.database.getInteractionsByConversationId(conversationId);
+      const count = interactions.length;
 
-      const count = result?.count || 0;
       logger.debug('Checked interaction count for conversation', {
         conversationId,
         count,

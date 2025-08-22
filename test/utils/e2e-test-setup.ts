@@ -291,7 +291,10 @@ export async function setupE2ETest(
   options: {
     tempProject: TempProject;
     serverConfig?: Partial<ServerConfig>;
-  } = {} as any
+  } = {} as {
+    tempProject: TempProject;
+    serverConfig?: Partial<ServerConfig>;
+  }
 ): Promise<E2ETestContext> {
   const { tempProject, serverConfig = {} } = options;
 
@@ -326,7 +329,7 @@ export function createDirectServerInterface(
 /**
  * Helper to safely parse JSON responses, handling both success and error cases
  */
-export function parseToolResponse(result: unknown): any {
+export function parseToolResponse(result: unknown): unknown {
   // If result is already an object (direct server call), return as-is
   if (typeof result === 'object' && result !== null) {
     return result;
