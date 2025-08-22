@@ -2,7 +2,7 @@ name: Release and Publish
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
 
 permissions:
   contents: write
@@ -12,104 +12,109 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout
-      uses: actions/checkout@v4
-      with:
-        fetch-depth: 0      
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '20'
-        cache: 'npm'
-        
-    - name: Install dependencies
-      run: npm ci
-      
-    - name: Build project (CI - skip visualizer for tests)
-      run: npm run build:ci
-      
-    - name: Run tests
-      run: npm run test:run
-      env:
-        INCLUDE_NOISY_TESTS: true
-        LOG_LEVEL: ERROR
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Check formatting
+        run: npm run format:check
+
+      - name: Run linting
+        run: npm run lint
+
+      - name: Build project (CI - skip visualizer for tests)
+        run: npm run build:ci
+
+      - name: Run tests
+        run: npm run test:run
+        env:
+          INCLUDE_NOISY_TESTS: true
+          LOG_LEVEL: ERROR
 
   release:
     needs: test
     runs-on: ubuntu-latest
     steps:
+      - name: Generate GitHub App Token
+        id: generate_token
+        uses: tibdex/github-app-token@v1
+        with:
+          app_id: ${{ vars.VERSION_BUMPER_APPID }}
+          private_key: ${{ secrets.VERSION_BUMPER_SECRET }}
 
-    - name: Generate GitHub App Token
-      id: generate_token
-      uses: tibdex/github-app-token@v1
-      with:
-        app_id: ${{ vars.VERSION_BUMPER_APPID }}
-        private_key: ${{ secrets.VERSION_BUMPER_SECRET }}
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ steps.generate_token.outputs.token }}
 
-    - name: Checkout
-      uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
-        token: ${{ steps.generate_token.outputs.token }}
-        
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '20'
-        cache: 'npm'
-        registry-url: 'https://registry.npmjs.org'
-        
-    - name: Install dependencies
-      run: npm ci
-        
-    - name: Install Rollup platform dependencies
-      run: |
-        npm install @rollup/rollup-linux-x64-gnu --save-dev --no-optional || true
-        
-    - name: Build project
-      run: npm run build
-      
-    - name: Build workflow visualizer
-      run: |
-        cd workflow-visualizer
-        npm ci
-        npm run build
-      
-    - name: Bump version and create tag
-      id: version
-      uses: mathieudutour/github-tag-action@v6.2
-      with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        default_bump: patch
-        tag_prefix: v
-        
-    - name: Update package.json version
-      if: steps.version.outputs.new_tag
-      run: |
-        NEW_VERSION=${{ steps.version.outputs.new_version }}
-        npm version $NEW_VERSION --no-git-tag-version
-        git config --local user.email "action@github.com"
-        git config --local user.name "GitHub Action"
-        git add package.json package-lock.json
-        git commit -m "chore: bump version to $NEW_VERSION [skip ci]" || exit 0
-        git push
-      env:
-        GITHUB_TOKEN: ${{ steps.generate_token.outputs.token }}
-        
-    - name: Create GitHub Release
-      if: steps.version.outputs.new_tag
-      uses: softprops/action-gh-release@v1
-      with:
-        tag_name: ${{ steps.version.outputs.new_tag }}
-        name: Release ${{ steps.version.outputs.new_tag }}
-        body: ${{ steps.version.outputs.changelog }}
-        draft: false
-        prerelease: false
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        
-    - name: Publish to npm
-      if: steps.version.outputs.new_tag
-      run: npm publish --access public
-      env:
-        NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Rollup platform dependencies
+        run: |
+          npm install @rollup/rollup-linux-x64-gnu --save-dev --no-optional || true
+
+      - name: Build project
+        run: npm run build
+
+      - name: Build workflow visualizer
+        run: |
+          cd workflow-visualizer
+          npm ci
+          npm run build
+
+      - name: Bump version and create tag
+        id: version
+        uses: mathieudutour/github-tag-action@v6.1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          default_bump: patch
+          tag_prefix: v
+
+      - name: Update package.json version
+        if: steps.version.outputs.new_tag
+        run: |
+          NEW_VERSION=${{ steps.version.outputs.new_version }}
+          npm version $NEW_VERSION --no-git-tag-version
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add package.json package-lock.json
+          git commit -m "chore: bump version to $NEW_VERSION [skip ci]" || exit 0
+          git push
+        env:
+          GITHUB_TOKEN: ${{ steps.generate_token.outputs.token }}
+
+      - name: Create GitHub Release
+        if: steps.version.outputs.new_tag
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ steps.version.outputs.new_tag }}
+          name: Release ${{ steps.version.outputs.new_tag }}
+          body: ${{ steps.version.outputs.changelog }}
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Publish to npm
+        if: steps.version.outputs.new_tag
+        run: npm publish --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
