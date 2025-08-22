@@ -2,10 +2,10 @@
 
 /**
  * Vibe Feature MCP Server Entry Point
- * 
+ *
  * Starts the MCP server with stdio transport for process-based usage.
  * The core server logic is in server.ts for better testability.
- * 
+ *
  * Also handles CLI flags for documentation and setup assistance.
  */
 
@@ -14,9 +14,9 @@ import { ResponsibleVibeMCPServer } from './server.js';
 import { createLogger } from './logger.js';
 import { generateSystemPrompt } from './system-prompt-generator.js';
 import { StateMachineLoader } from './state-machine-loader.js';
-import { readFile } from 'fs/promises';
-import { join, dirname } from 'path';
-import { fileURLToPath } from 'url';
+import { readFile } from 'node:fs/promises';
+import { join, dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { startVisualizationTool } from './cli/visualization-launcher.js';
 import { generateConfig } from './config-generator.js';
 
@@ -31,33 +31,35 @@ export const __dirname = dirname(__filename);
  */
 function parseCliArgs(): { shouldStartServer: boolean } {
   const args = process.argv.slice(2);
-  
+
   // Handle help flag
   if (args.includes('--help') || args.includes('-h')) {
     showHelp();
     return { shouldStartServer: false };
   }
-  
+
   // Handle version flag
   if (args.includes('--version') || args.includes('-v')) {
     showVersion();
     return { shouldStartServer: false };
   }
-  
+
   // Handle system prompt flag
   if (args.includes('--system-prompt')) {
     showSystemPrompt();
     return { shouldStartServer: false };
   }
-  
+
   // Handle visualization flag
   if (args.includes('--visualize') || args.includes('--viz')) {
     startVisualizationTool();
     return { shouldStartServer: false };
   }
-  
+
   // Handle generate config flag
-  const generateConfigIndex = args.findIndex(arg => arg === '--generate-config');
+  const generateConfigIndex = args.findIndex(
+    arg => arg === '--generate-config'
+  );
   if (generateConfigIndex !== -1) {
     const agent = args[generateConfigIndex + 1];
     if (!agent) {
@@ -69,7 +71,7 @@ function parseCliArgs(): { shouldStartServer: boolean } {
     handleGenerateConfig(agent);
     return { shouldStartServer: false };
   }
-  
+
   // No special flags, start server normally
   return { shouldStartServer: true };
 }
@@ -82,9 +84,9 @@ async function handleGenerateConfig(agent: string): Promise<void> {
     // Suppress info logs during CLI operations
     const originalLogLevel = process.env.LOG_LEVEL;
     process.env.LOG_LEVEL = 'ERROR';
-    
+
     await generateConfig(agent, process.cwd());
-    
+
     // Restore original log level
     if (originalLogLevel !== undefined) {
       process.env.LOG_LEVEL = originalLogLevel;
@@ -179,7 +181,7 @@ async function showVersion(): Promise<void> {
     const packageJsonPath = join(__dirname, '..', 'package.json');
     const packageJson = JSON.parse(await readFile(packageJsonPath, 'utf-8'));
     console.log(`responsible-vibe-mcp v${packageJson.version}`);
-  } catch (error) {
+  } catch (_error) {
     console.log('responsible-vibe-mcp (version unknown)');
   }
 }
@@ -192,12 +194,11 @@ function showSystemPrompt(): void {
     // Load the default state machine for prompt generation
     const loader = new StateMachineLoader();
     const stateMachine = loader.loadStateMachine(process.cwd());
-    
+
     // Generate the system prompt
     const systemPrompt = generateSystemPrompt(stateMachine);
-    
+
     console.log(systemPrompt);
-    
   } catch (error) {
     console.error('Error generating system prompt:', error);
     process.exit(1);
@@ -210,51 +211,50 @@ function showSystemPrompt(): void {
 async function main() {
   // Parse CLI arguments first
   const { shouldStartServer } = parseCliArgs();
-  
+
   // If special flags were handled, exit gracefully
   if (!shouldStartServer) {
     return;
   }
-  
+
   // Normal MCP server startup
   try {
     const projectPath = process.env.PROJECT_PATH;
-    
-    logger.info('Starting Vibe Feature MCP Server', { 
+
+    logger.info('Starting Vibe Feature MCP Server', {
       projectPath: projectPath || 'default (process.cwd())',
       nodeVersion: process.version,
-      platform: process.platform
+      platform: process.platform,
     });
-    
+
     // Create server instance with project path configuration
     const server = new ResponsibleVibeMCPServer({
-      projectPath: projectPath
+      projectPath: projectPath,
     });
-    
+
     // Initialize server
     await server.initialize();
-    
+
     // Create stdio transport
     const transport = new StdioServerTransport();
-    
+
     // Connect server to transport
     await server.getMcpServer().connect(transport);
-    
+
     logger.info('Vibe Feature MCP Server started successfully');
-    
+
     // Handle graceful shutdown
     process.on('SIGINT', async () => {
       logger.info('Shutting down Vibe Feature MCP Server...');
       await server.cleanup();
       process.exit(0);
     });
-    
+
     process.on('SIGTERM', async () => {
       logger.info('Shutting down Vibe Feature MCP Server...');
       await server.cleanup();
       process.exit(0);
     });
-    
   } catch (error) {
     logger.error('Failed to start server', error as Error);
     process.exit(1);
@@ -263,12 +263,13 @@ async function main() {
 
 // Start the server if this file is run directly
 // More robust check that works with npx and direct execution
-const isMainModule = import.meta.url === `file://${process.argv[1]}` || 
-                     process.argv[1]?.endsWith('responsible-vibe-mcp') ||
-                     process.argv[1]?.endsWith('index.js');
+const isMainModule =
+  import.meta.url === `file://${process.argv[1]}` ||
+  process.argv[1]?.endsWith('responsible-vibe-mcp') ||
+  process.argv[1]?.endsWith('index.js');
 
 if (isMainModule) {
-  main().catch((error) => {
+  main().catch(error => {
     logger.error('Unhandled error in main', error);
     process.exit(1);
   });

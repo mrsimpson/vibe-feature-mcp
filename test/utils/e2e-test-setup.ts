@@ -1,6 +1,6 @@
 /**
  * End-to-End Test Setup Utilities
- * 
+ *
  * Provides utilities for testing the MCP server end-to-end without
  * spawning separate processes or using transport layers. Tests the
  * server's public interface directly for true consumer perspective testing.
@@ -9,9 +9,11 @@
 import { vi } from 'vitest';
 import { ResponsibleVibeMCPServer, ServerConfig } from '../../src/server.js';
 import { TempProject } from './temp-files.js';
-import { join } from 'path';
-import { tmpdir } from 'os';
-import { mkdirSync, rmSync, existsSync } from 'fs';
+import { join } from 'node:path';
+import { tmpdir } from 'node:os';
+import { mkdirSync, rmSync, existsSync } from 'node:fs';
+import type { ServerContext } from '../../src/server/types.js';
+import { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
 
 // Disable fs mocking for E2E tests
 vi.unmock('fs');
@@ -33,15 +35,19 @@ export class TestSuiteIsolation {
       // Create unique directory for this suite
       const suiteId = `${suiteName.replace(/[^a-zA-Z0-9]/g, '-')}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
       const suiteDir = join(tmpdir(), 'responsible-vibe-e2e-suites', suiteId);
-      
+
       // Ensure directory exists
       mkdirSync(suiteDir, { recursive: true });
-      
+
       this.suiteDirectories.set(suiteName, suiteDir);
       this.cleanupCallbacks.set(suiteName, []);
     }
-    
-    return this.suiteDirectories.get(suiteName)!;
+
+    const directory = this.suiteDirectories.get(suiteName);
+    if (!directory) {
+      throw new Error(`Suite directory not found for ${suiteName}`);
+    }
+    return directory;
   }
 
   /**
@@ -108,24 +114,24 @@ export interface E2ETestContext {
  * without going through MCP transport layer
  */
 export class DirectServerInterface {
-  constructor(private server: ResponsibleVibeMCPServer) { }
+  constructor(private server: ResponsibleVibeMCPServer) {}
 
   /**
    * Call a tool on the server directly
    */
-  async callTool(name: string, arguments_: any): Promise<any> {
+  async callTool<T = unknown>(name: string, arguments_: unknown): Promise<T> {
     try {
       // Call the server's tool handlers directly based on tool name
       switch (name) {
         case 'whats_next':
           return await this.server.handleWhatsNext(arguments_);
-        
+
         case 'proceed_to_phase':
           return await this.server.handleProceedToPhase(arguments_);
-        
+
         case 'start_development':
           return await this.server.handleStartDevelopment(arguments_);
-        
+
         default:
           throw new Error(`Unknown tool: ${name}`);
       }
@@ -133,7 +139,7 @@ export class DirectServerInterface {
       // Return errors as objects instead of throwing them
       // This matches the expected behavior in tests
       return {
-        error: error instanceof Error ? error.message : String(error)
+        error: error instanceof Error ? error.message : String(error),
       };
     }
   }
@@ -141,18 +147,18 @@ export class DirectServerInterface {
   /**
    * Read a resource from the server directly
    */
-  async readResource(uri: string): Promise<any> {
+  async readResource<T = unknown>(uri: string): Promise<T> {
     // Call the server's resource handlers directly based on URI
     switch (uri) {
       case 'state://current':
         return await this.getConversationState();
-      
+
       case 'plan://current':
         return await this.getDevelopmentPlan();
-      
+
       case 'system-prompt://':
         return await this.getSystemPrompt();
-      
+
       default:
         throw new Error(`Unknown resource URI: ${uri}`);
     }
@@ -161,70 +167,83 @@ export class DirectServerInterface {
   /**
    * Get conversation state directly
    */
-  private async getConversationState(): Promise<any> {
+  private async getConversationState(): Promise<unknown> {
     const conversationManager = this.server.getConversationManager();
-    const conversationContext = await conversationManager.getConversationContext();
-    
+    const conversationContext =
+      await conversationManager.getConversationContext();
+
     const stateData = {
       conversationId: conversationContext.conversationId,
       currentPhase: conversationContext.currentPhase,
       projectPath: conversationContext.projectPath,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     };
-    
+
     return {
-      contents: [{
-        uri: 'state://current',
-        mimeType: 'application/json',
-        text: JSON.stringify(stateData, null, 2)
-      }]
+      contents: [
+        {
+          uri: 'state://current',
+          mimeType: 'application/json',
+          text: JSON.stringify(stateData, null, 2),
+        },
+      ],
     };
   }
 
   /**
    * Get development plan directly
    */
-  private async getDevelopmentPlan(): Promise<any> {
+  private async getDevelopmentPlan(): Promise<unknown> {
     const conversationManager = this.server.getConversationManager();
     const planManager = this.server.getPlanManager();
-    
-    const conversationContext = await conversationManager.getConversationContext();
+
+    const conversationContext =
+      await conversationManager.getConversationContext();
     const planFilePath = conversationContext.planFilePath;
-    
+
     let planContent: string;
     try {
       planContent = await planManager.getPlanFileContent(planFilePath);
-    } catch (error) {
+    } catch {
       // If plan file doesn't exist yet, return a default message
       planContent = `# Development Plan\n\nPlan file will be created when development begins.\n\nConversation ID: ${conversationContext.conversationId}`;
     }
-    
+
     return {
-      contents: [{
-        uri: 'plan://current',
-        mimeType: 'text/markdown',
-        text: planContent
-      }]
+      contents: [
+        {
+          uri: 'plan://current',
+          mimeType: 'text/markdown',
+          text: planContent,
+        },
+      ],
     };
   }
 
   /**
    * Get system prompt resource directly
    */
-  async getSystemPrompt(): Promise<any> {
+  async getSystemPrompt(): Promise<unknown> {
     // Use the system prompt handler directly with the default workflow
-    const { SystemPromptResourceHandler } = await import('../../src/server/resource-handlers/system-prompt.js');
+    const { SystemPromptResourceHandler } = await import(
+      '../../src/server/resource-handlers/system-prompt.js'
+    );
     const handler = new SystemPromptResourceHandler();
-    
+
     // Create a minimal context - system prompt doesn't need full server context
-    const result = await handler.handle(new URL('system-prompt://'), {} as any);
-    
+    const result = await handler.handle(
+      new URL('system-prompt://'),
+      {} as ServerContext
+    );
+
     return {
-      contents: [{
-        uri: 'system-prompt://',
-        mimeType: result.mimeType,
-        text: result.text
-      }]
+      contents: [
+        {
+          uri: 'system-prompt://',
+          mimeType: result.mimeType,
+          text: result.text,
+        },
+      ],
     };
   }
 
@@ -233,10 +252,7 @@ export class DirectServerInterface {
    */
   async listTools(): Promise<{ tools: { name: string }[] }> {
     return {
-      tools: [
-        { name: 'whats_next' },
-        { name: 'proceed_to_phase' }
-      ]
+      tools: [{ name: 'whats_next' }, { name: 'proceed_to_phase' }],
     };
   }
 
@@ -248,25 +264,27 @@ export class DirectServerInterface {
       resources: [
         { uri: 'state://current' },
         { uri: 'plan://current' },
-        { uri: 'system-prompt://' }
-      ]
+        { uri: 'system-prompt://' },
+      ],
     };
   }
 
   /**
    * Get a prompt (if we add prompt support later)
    */
-  async getPrompt(name: string, arguments_: any = {}): Promise<any> {
+  async getPrompt(name: string, arguments_: unknown = {}): Promise<unknown> {
     // For now, just return a placeholder
     return {
       description: `Prompt for ${name}`,
-      messages: [{
-        role: 'user',
-        content: {
-          type: 'text',
-          text: `Prompt: ${name} with args: ${JSON.stringify(arguments_)}`
-        }
-      }]
+      messages: [
+        {
+          role: 'user',
+          content: {
+            type: 'text',
+            text: `Prompt: ${name} with args: ${JSON.stringify(arguments_)}`,
+          },
+        },
+      ],
     };
   }
 }
@@ -274,17 +292,22 @@ export class DirectServerInterface {
 /**
  * Setup end-to-end test environment with real MCP server
  */
-export async function setupE2ETest(options: {
-  tempProject: TempProject;
-  serverConfig?: Partial<ServerConfig>;
-} = {} as any): Promise<E2ETestContext> {
+export async function setupE2ETest(
+  options: {
+    tempProject: TempProject;
+    serverConfig?: Partial<ServerConfig>;
+  } = {} as {
+    tempProject: TempProject;
+    serverConfig?: Partial<ServerConfig>;
+  }
+): Promise<E2ETestContext> {
   const { tempProject, serverConfig = {} } = options;
 
   // Create server with test configuration
   const server = new ResponsibleVibeMCPServer({
     projectPath: tempProject.projectPath,
     enableLogging: false, // Disable logging in tests
-    ...serverConfig
+    ...serverConfig,
   });
 
   // Initialize server
@@ -295,69 +318,71 @@ export async function setupE2ETest(options: {
     tempProject,
     cleanup: async () => {
       await server.cleanup();
-    }
+    },
   };
 }
 
 /**
  * Create direct server interface for testing
  */
-export function createDirectServerInterface(server: ResponsibleVibeMCPServer): DirectServerInterface {
+export function createDirectServerInterface(
+  server: ResponsibleVibeMCPServer
+): DirectServerInterface {
   return new DirectServerInterface(server);
 }
 
 /**
  * Helper to safely parse JSON responses, handling both success and error cases
  */
-export function parseToolResponse(result: any): any {
+export function parseToolResponse(result: unknown): unknown {
   // If result is already an object (direct server call), return as-is
   if (typeof result === 'object' && result !== null) {
     return result;
   }
-  
+
   // If it's a string, try to parse as JSON
   if (typeof result === 'string') {
     try {
       return JSON.parse(result);
-    } catch (error) {
+    } catch {
       return { error: result };
     }
   }
-  
+
   return result;
 }
 
 /**
  * Assert that a tool call was successful and return the response
  */
-export function assertToolSuccess(result: any): any {
+export function assertToolSuccess(result: unknown): CallToolResult {
   // Parse result if it's a string
   const parsed = typeof result === 'string' ? JSON.parse(result) : result;
-  
+
   if (parsed.error) {
     throw new Error(`Tool call failed: ${parsed.error}`);
   }
-  
+
   return parsed;
 }
 
 /**
  * Initialize development for tests by calling start_development with a workflow
  * This must be called before any other tools in tests due to the new requirement
- * 
+ *
  * @param client - The DirectServerInterface instance
  * @param workflow - The workflow to use (defaults to 'waterfall')
  * @param commitBehaviour - The commit behavior to use (defaults to 'none' for tests)
  * @returns The response from start_development
  */
 export async function initializeDevelopment(
-  client: DirectServerInterface, 
+  client: DirectServerInterface,
   workflow: string = 'waterfall',
   commitBehaviour: 'step' | 'phase' | 'end' | 'none' = 'none'
-): Promise<any> {
-  const result = await client.callTool('start_development', { 
+): Promise<unknown> {
+  const result = await client.callTool('start_development', {
     workflow,
-    commit_behaviour: commitBehaviour
+    commit_behaviour: commitBehaviour,
   });
   return assertToolSuccess(result);
 }
@@ -381,7 +406,7 @@ export async function createE2EScenario(options: {
     client,
     server: context.server,
     tempProject: context.tempProject,
-    cleanup: context.cleanup
+    cleanup: context.cleanup,
   };
 }
 
@@ -400,13 +425,13 @@ export async function createSuiteIsolatedE2EScenario(options: {
   cleanup: () => Promise<void>;
 }> {
   const { suiteName, tempProjectFactory, serverConfig = {} } = options;
-  
+
   // Get suite-isolated directory
   const suiteDir = TestSuiteIsolation.getSuiteDirectory(suiteName);
-  
+
   // Create temp project in the suite directory
   const tempProject = tempProjectFactory(suiteDir);
-  
+
   // Register temp project cleanup with the suite
   TestSuiteIsolation.registerCleanup(suiteName, () => {
     tempProject.cleanup();
@@ -419,6 +444,6 @@ export async function createSuiteIsolatedE2EScenario(options: {
     client,
     server: context.server,
     tempProject: context.tempProject,
-    cleanup: context.cleanup
+    cleanup: context.cleanup,
   };
 }

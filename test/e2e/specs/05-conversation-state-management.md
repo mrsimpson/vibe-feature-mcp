@@ -7,6 +7,7 @@ I want my conversation state to be preserved and managed correctly
 So that I can continue development work seamlessly across server restarts and different projects
 
 ### Background:
+
 - Conversation state is persisted in SQLite database
 - Each conversation is identified by project path + git branch combination
 - State includes current phase, plan file path, and metadata
@@ -24,6 +25,7 @@ So that I can continue development work seamlessly across server restarts and di
 **And** a plan file path should be generated and stored
 
 ### Expected Behavior:
+
 - Unique conversation ID should be generated (hash of project + branch)
 - Database record should be created with all required fields
 - Initial phase should be set appropriately based on context
@@ -43,6 +45,7 @@ So that I can continue development work seamlessly across server restarts and di
 **And** conversation should continue from previous state
 
 ### Expected Behavior:
+
 - Database connection should be re-established on server restart
 - Existing conversation states should be accessible immediately
 - No data loss should occur during server restarts
@@ -59,6 +62,7 @@ So that I can continue development work seamlessly across server restarts and di
 **And** project-specific plan files should be maintained separately
 
 ### Expected Behavior:
+
 - Project path detection should work correctly for different directories
 - Conversation states should be completely isolated by project
 - Database queries should filter by project path correctly
@@ -75,6 +79,7 @@ So that I can continue development work seamlessly across server restarts and di
 **And** plan files should be branch-aware when appropriate
 
 ### Expected Behavior:
+
 - Git branch detection should work reliably
 - Conversation IDs should include branch information
 - Branch switching should load appropriate conversation state
@@ -91,6 +96,7 @@ So that I can continue development work seamlessly across server restarts and di
 **And** timestamps should be updated appropriately
 
 ### Expected Behavior:
+
 - Database updates should be atomic and immediate
 - State changes should be reflected in subsequent tool calls
 - Updated timestamps should track state modifications
@@ -107,6 +113,7 @@ So that I can continue development work seamlessly across server restarts and di
 **And** the path should be relative to the project directory
 
 ### Expected Behavior:
+
 - Plan file paths should be generated consistently
 - File creation should happen automatically when needed
 - Paths should be project-relative for portability
@@ -123,6 +130,7 @@ So that I can continue development work seamlessly across server restarts and di
 **And** active conversations should not be affected
 
 ### Expected Behavior:
+
 - Database should not grow unbounded over time
 - Cleanup mechanisms should preserve active conversations
 - Old conversation data should be removable when appropriate
@@ -139,6 +147,7 @@ So that I can continue development work seamlessly across server restarts and di
 **And** provide meaningful error messages to users
 
 ### Expected Behavior:
+
 - Database corruption should be detected and handled
 - Recovery mechanisms should be attempted when possible
 - Server should not crash on database issues
@@ -155,6 +164,7 @@ So that I can continue development work seamlessly across server restarts and di
 **And** default values should be used for missing fields
 
 ### Expected Behavior:
+
 - State validation should occur on retrieval
 - Invalid data should not cause server crashes
 - Graceful degradation should handle corrupted state

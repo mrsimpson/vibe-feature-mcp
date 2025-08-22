@@ -1,11 +1,10 @@
-import { execSync } from 'child_process';
-import { existsSync } from 'fs';
+import { execSync } from 'node:child_process';
+import { existsSync } from 'node:fs';
 import { createLogger } from './logger.js';
 
 const logger = createLogger('GitManager');
 
 export class GitManager {
-  
   /**
    * Check if a directory is a git repository
    */
@@ -19,20 +18,24 @@ export class GitManager {
   static getCurrentBranch(projectPath: string): string {
     try {
       if (!this.isGitRepository(projectPath)) {
-        logger.debug('Not a git repository, using "default" as branch name', { projectPath });
+        logger.debug('Not a git repository, using "default" as branch name', {
+          projectPath,
+        });
         return 'default';
       }
-      
+
       const branch = execSync('git rev-parse --abbrev-ref HEAD', {
         cwd: projectPath,
         encoding: 'utf-8',
-        stdio: ['ignore', 'pipe', 'ignore']
+        stdio: ['ignore', 'pipe', 'ignore'],
       }).trim();
-      
+
       logger.debug('Detected git branch', { projectPath, branch });
       return branch;
-    } catch (error) {
-      logger.debug('Failed to get git branch, using "default" as branch name', { projectPath });
+    } catch (_error) {
+      logger.debug('Failed to get git branch, using "default" as branch name', {
+        projectPath,
+      });
       return 'default';
     }
   }
@@ -49,7 +52,7 @@ export class GitManager {
       const hash = execSync('git rev-parse HEAD', {
         cwd: projectPath,
         encoding: 'utf-8',
-        stdio: ['ignore', 'pipe', 'ignore']
+        stdio: ['ignore', 'pipe', 'ignore'],
       }).trim();
 
       return hash;

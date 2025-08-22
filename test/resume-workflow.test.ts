@@ -1,8 +1,8 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { ResponsibleVibeMCPServer } from '../src/server.js';
-import { tmpdir } from 'os';
-import { join } from 'path';
-import { mkdtemp, rm, writeFile, mkdir } from 'fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { mkdtemp, rm, writeFile, mkdir } from 'node:fs/promises';
 import { ServerTestHelper, MockDocsHelper } from './utils/test-helpers.js';
 
 describe('resume_workflow tool', () => {
@@ -13,9 +13,9 @@ describe('resume_workflow tool', () => {
     // Create temporary directory for testing
     tempDir = await mkdtemp(join(tmpdir(), 'responsible-vibe-test-'));
     MockDocsHelper.addToProject(tempDir);
-    
+
     server = await ServerTestHelper.createServer(tempDir);
-    
+
     // Initialize development with waterfall workflow before testing
     await server.handleStartDevelopment({ workflow: 'waterfall' });
   });
@@ -27,7 +27,7 @@ describe('resume_workflow tool', () => {
 
   it('should return comprehensive workflow resumption information', async () => {
     const result = await server.handleResumeWorkflow({});
-    
+
     expect(result).toBeTypeOf('object');
     expect(result.workflow_status).toBeDefined();
     expect(result.plan_status).toBeDefined();
@@ -39,7 +39,7 @@ describe('resume_workflow tool', () => {
 
   it('should include workflow status information', async () => {
     const result = await server.handleResumeWorkflow({});
-    
+
     const workflowStatus = result.workflow_status;
     expect(workflowStatus.conversation_id).toBeTypeOf('string');
     expect(workflowStatus.current_phase).toBeTypeOf('string');
@@ -50,7 +50,7 @@ describe('resume_workflow tool', () => {
 
   it('should include plan status information', async () => {
     const result = await server.handleResumeWorkflow({});
-    
+
     const planStatus = result.plan_status;
     expect(planStatus.exists).toBeTypeOf('boolean');
     expect(planStatus.path).toBeTypeOf('string');
@@ -59,30 +59,32 @@ describe('resume_workflow tool', () => {
 
   it('should include system prompt by default', async () => {
     const result = await server.handleResumeWorkflow({});
-    
+
     expect(result.system_prompt).toBeTypeOf('string');
     expect(result.system_prompt.length).toBeGreaterThan(1000);
     expect(result.system_prompt).toContain('responsible-vibe-mcp');
   });
 
   it('should exclude system prompt when requested', async () => {
-    const result = await server.handleResumeWorkflow({ include_system_prompt: false });
-    
+    const result = await server.handleResumeWorkflow({
+      include_system_prompt: false,
+    });
+
     expect(result.system_prompt).toBeNull();
   });
 
   it('should provide phase-specific recommendations', async () => {
     const result = await server.handleResumeWorkflow({});
-    
+
     const recommendations = result.recommendations;
     expect(recommendations.immediate_actions).toBeInstanceOf(Array);
     expect(recommendations.immediate_actions.length).toBeGreaterThan(0);
     expect(recommendations.phase_guidance).toBeTypeOf('string');
     expect(recommendations.potential_issues).toBeInstanceOf(Array);
-    
+
     // Should always recommend calling whats_next
-    const hasWhatsNext = recommendations.immediate_actions.some((action: string) => 
-      action.includes('whats_next')
+    const hasWhatsNext = recommendations.immediate_actions.some(
+      (action: string) => action.includes('whats_next')
     );
     expect(hasWhatsNext).toBe(true);
   });
@@ -110,17 +112,17 @@ describe('resume_workflow tool', () => {
     await writeFile(join(planDir, 'development-plan-default.md'), planContent);
 
     const result = await server.handleResumeWorkflow({});
-    
+
     const planStatus = result.plan_status;
     expect(planStatus.exists).toBe(true);
     expect(planStatus.analysis).toBeDefined();
-    
+
     const analysis = planStatus.analysis;
     expect(analysis.active_tasks).toContain('Active task 1');
     expect(analysis.active_tasks).toContain('Active task 2');
     expect(analysis.completed_tasks).toContain('Completed task 1');
     expect(analysis.completed_tasks).toContain('Completed task 2');
-    
+
     // Phase should come from database, not plan file
     expect(result.workflow_status.current_phase).toBeDefined();
     expect(result.workflow_status.current_phase).toBeTypeOf('string');
@@ -128,27 +130,32 @@ describe('resume_workflow tool', () => {
 
   it('should handle missing plan file gracefully', async () => {
     // Create a custom test that mocks the plan manager to report no plan file
-    const originalPlanManager = (server as any).components?.context?.planManager;
-    
+    const originalPlanManager = (server as unknown).components?.context
+      ?.planManager;
+
     try {
       // Replace plan manager with a mock that reports no plan file
-      if ((server as any).components?.context) {
-        (server as any).components.context.planManager = {
-          getPlanFileInfo: async () => ({ exists: false, path: '/fake/path.md' }),
+      if ((server as unknown).components?.context) {
+        (server as unknown).components.context.planManager = {
+          getPlanFileInfo: async () => ({
+            exists: false,
+            path: '/fake/path.md',
+          }),
           ensurePlanFile: async () => {},
-          setStateMachine: () => {}
+          setStateMachine: () => {},
         };
       }
-      
+
       const result = await server.handleResumeWorkflow({});
-      
+
       const planStatus = result.plan_status;
       expect(planStatus.exists).toBe(false);
       expect(planStatus.analysis).toBeNull();
     } finally {
       // Restore original plan manager
-      if ((server as any).components?.context && originalPlanManager) {
-        (server as any).components.context.planManager = originalPlanManager;
+      if ((server as unknown).components?.context && originalPlanManager) {
+        (server as unknown).components.context.planManager =
+          originalPlanManager;
       }
     }
   });
@@ -157,7 +164,7 @@ describe('resume_workflow tool', () => {
     // This test would ideally set up different phases and verify recommendations
     // For now, just verify the structure is correct
     const result = await server.handleResumeWorkflow({});
-    
+
     const recommendations = result.recommendations;
     expect(recommendations.immediate_actions).toBeInstanceOf(Array);
     expect(recommendations.phase_guidance).toBeTypeOf('string');
@@ -167,13 +174,17 @@ describe('resume_workflow tool', () => {
   it('should handle errors gracefully', async () => {
     // This test ensures the method doesn't throw for any reasonable input
     await expect(server.handleResumeWorkflow({})).resolves.toBeDefined();
-    await expect(server.handleResumeWorkflow({ include_system_prompt: true })).resolves.toBeDefined();
-    await expect(server.handleResumeWorkflow({ include_system_prompt: false })).resolves.toBeDefined();
+    await expect(
+      server.handleResumeWorkflow({ include_system_prompt: true })
+    ).resolves.toBeDefined();
+    await expect(
+      server.handleResumeWorkflow({ include_system_prompt: false })
+    ).resolves.toBeDefined();
   });
 
   it('should include metadata in response', async () => {
     const result = await server.handleResumeWorkflow({});
-    
+
     expect(result.generated_at).toBeTypeOf('string');
     expect(result.tool_version).toBeTypeOf('string');
     expect(new Date(result.generated_at)).toBeInstanceOf(Date);

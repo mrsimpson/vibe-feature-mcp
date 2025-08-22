@@ -7,6 +7,7 @@ I want to call the `proceed_to_phase` tool to explicitly transition between deve
 So that I can control the development workflow progression when phases are complete
 
 ### Background:
+
 - `proceed_to_phase` allows explicit phase transitions
 - It accepts target_phase (required) and reason (optional) parameters
 - It should validate phase transitions and update conversation state
@@ -25,6 +26,7 @@ So that I can control the development workflow progression when phases are compl
 **And** the transition reason should be recorded
 
 ### Expected Behavior:
+
 - Database should be updated with new phase and timestamp
 - Instructions should be generated for the target phase
 - Plan file path should remain consistent
@@ -43,6 +45,7 @@ So that I can control the development workflow progression when phases are compl
 **And** the reason should indicate direct transition
 
 ### Expected Behavior:
+
 - Non-sequential transitions should be permitted
 - Instructions should be appropriate for target phase regardless of previous phase
 - Database should record the direct transition
@@ -60,6 +63,7 @@ So that I can control the development workflow progression when phases are compl
 **And** the conversation state should reflect project completion
 
 ### Expected Behavior:
+
 - Conversation should transition to "complete" phase
 - Completion-specific instructions should be generated
 - Database should be updated with completion timestamp
@@ -76,6 +80,7 @@ So that I can control the development workflow progression when phases are compl
 **And** a meaningful error message should be provided
 
 ### Expected Behavior:
+
 - Invalid phase names should be rejected
 - Error response should include valid phase options
 - Database state should not be modified on validation errors
@@ -92,6 +97,7 @@ So that I can control the development workflow progression when phases are compl
 **And** the database should store the transition reason
 
 ### Expected Behavior:
+
 - Transition reasons should be captured and stored
 - Reasons should be included in tool response
 - Historical transition data should be preserved
@@ -108,6 +114,7 @@ So that I can control the development workflow progression when phases are compl
 **And** appropriate instructions should be generated for the target phase
 
 ### Expected Behavior:
+
 - New conversations should be created if none exist
 - Target phase should be set as initial phase
 - Project detection should work same as whats_next tool
@@ -124,6 +131,7 @@ So that I can control the development workflow progression when phases are compl
 **And** no race conditions should occur in database updates
 
 ### Expected Behavior:
+
 - Database updates should be atomic and consistent
 - Concurrent requests should be handled gracefully
 - Final conversation state should be deterministic

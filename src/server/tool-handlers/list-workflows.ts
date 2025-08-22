@@ -1,13 +1,13 @@
 /**
  * List Workflows Tool Handler
- * 
+ *
  * Provides an overview of all available workflows with their descriptions
  * and resource URIs for detailed information.
  */
 
 import { z } from 'zod';
 import { BaseToolHandler } from './base-tool-handler.js';
-import { ServerContext, HandlerResult } from '../types.js';
+import { ServerContext } from '../types.js';
 import { createLogger } from '../../logger.js';
 
 const logger = createLogger('ListWorkflowsHandler');
@@ -38,30 +38,41 @@ interface ListWorkflowsResponse {
 /**
  * Tool handler for listing available workflows
  */
-export class ListWorkflowsHandler extends BaseToolHandler<ListWorkflowsArgs, ListWorkflowsResponse> {
+export class ListWorkflowsHandler extends BaseToolHandler<
+  ListWorkflowsArgs,
+  ListWorkflowsResponse
+> {
   protected readonly argsSchema = ListWorkflowsArgsSchema;
 
-  async executeHandler(args: ListWorkflowsArgs, context: ServerContext): Promise<ListWorkflowsResponse> {
-    logger.info('Listing available workflows', { projectPath: context.projectPath });
+  async executeHandler(
+    args: ListWorkflowsArgs,
+    context: ServerContext
+  ): Promise<ListWorkflowsResponse> {
+    logger.info('Listing available workflows', {
+      projectPath: context.projectPath,
+    });
 
     // Get workflows available for this project (filters custom workflow appropriately)
-    const availableWorkflows = context.workflowManager.getAvailableWorkflowsForProject(context.projectPath);
+    const availableWorkflows =
+      context.workflowManager.getAvailableWorkflowsForProject(
+        context.projectPath
+      );
 
     // Transform to response format with resource URIs
     const workflows: WorkflowOverview[] = availableWorkflows.map(workflow => ({
       name: workflow.name,
       displayName: workflow.displayName,
       description: workflow.description,
-      resourceUri: `workflow://${workflow.name}`
+      resourceUri: `workflow://${workflow.name}`,
     }));
 
     const response: ListWorkflowsResponse = {
-      workflows
+      workflows,
     };
 
-    logger.info('Successfully listed workflows', { 
+    logger.info('Successfully listed workflows', {
       count: workflows.length,
-      workflows: workflows.map(w => w.name)
+      workflows: workflows.map(w => w.name),
     });
 
     return response;

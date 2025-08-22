@@ -7,6 +7,7 @@ I want plan files to be created, updated, and managed automatically
 So that development progress and context are preserved across sessions
 
 ### Background:
+
 - Plan files are markdown documents containing development tasks and progress
 - Files are created automatically when conversations start
 - Plan files serve as external memory for LLM conversations
@@ -24,6 +25,7 @@ So that development progress and context are preserved across sessions
 **And** the file path should be stored in conversation state
 
 ### Expected Behavior:
+
 - Plan file should be created in project directory
 - Default template should include project overview and phase sections
 - File name should be descriptive and feature-specific
@@ -42,6 +44,7 @@ So that development progress and context are preserved across sessions
 **And** include task tracking format with checkboxes
 
 ### Expected Behavior:
+
 - Template should follow consistent markdown format
 - Phase sections should match server's development phases
 - Task format should support checkbox-style completion tracking
@@ -60,6 +63,7 @@ So that development progress and context are preserved across sessions
 **And** task analysis should inform phase transitions
 
 ### Expected Behavior:
+
 - Markdown checkbox parsing should work reliably
 - Task completion detection should be accurate
 - Phase-specific task analysis should be performed
@@ -78,6 +82,7 @@ So that development progress and context are preserved across sessions
 **And** file modifications should be atomic
 
 ### Expected Behavior:
+
 - File updates should preserve existing content structure
 - Task completion should be marked with proper checkbox syntax
 - New content should be added in appropriate sections
@@ -95,6 +100,7 @@ So that development progress and context are preserved across sessions
 **And** path validation should prevent security issues
 
 ### Expected Behavior:
+
 - File paths should be resolved relative to project directory
 - Path traversal attacks should be prevented
 - File accessibility should be validated before operations
@@ -112,6 +118,7 @@ So that development progress and context are preserved across sessions
 **And** version history should be manageable
 
 ### Expected Behavior:
+
 - Critical updates should create backup copies
 - Backup files should be clearly named and dated
 - Version history should not consume excessive disk space
@@ -129,6 +136,7 @@ So that development progress and context are preserved across sessions
 **And** error recovery should attempt to preserve valid content
 
 ### Expected Behavior:
+
 - Markdown parsing should be robust and fault-tolerant
 - Invalid syntax should not cause server failures
 - Error messages should be informative for debugging
@@ -146,6 +154,7 @@ So that development progress and context are preserved across sessions
 **And** file format should remain compatible with external editors
 
 ### Expected Behavior:
+
 - External file modifications should be detected
 - Server should re-read files to get latest content
 - File format should be standard markdown for compatibility
@@ -163,6 +172,7 @@ So that development progress and context are preserved across sessions
 **And** Cleanup should not affect active projects
 
 ### Expected Behavior:
+
 - Plan file lifecycle should be manageable
 - Orphaned files should be detectable and removable
 - Active project files should be protected from cleanup

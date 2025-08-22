@@ -2,8 +2,6 @@
  * Common types used across the application
  */
 
-import type { DevelopmentPhase } from './state-machine.js';
-
 /**
  * Interface for interaction log entries
  */
@@ -27,10 +25,10 @@ export interface InteractionLog {
  */
 export interface GitCommitConfig {
   enabled: boolean;
-  commitOnStep: boolean;    // Commit after each step (before whats_next)
-  commitOnPhase: boolean;   // Commit after each phase (before phase transition)
+  commitOnStep: boolean; // Commit after each step (before whats_next)
+  commitOnPhase: boolean; // Commit after each phase (before phase transition)
   commitOnComplete: boolean; // Final commit at development end with rebase+squash
-  initialMessage: string;   // Initial user message for commit context
+  initialMessage: string; // Initial user message for commit context
   startCommitHash?: string; // Hash of commit when development started (for squashing)
 }
 
@@ -57,4 +55,6 @@ export interface ConversationContext {
   currentPhase: string;
   planFilePath: string;
   workflowName: string;
+  gitCommitConfig?: GitCommitConfig;
+  requireReviewsBeforePhaseTransition?: boolean;
 }

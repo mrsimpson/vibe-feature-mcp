@@ -1,16 +1,19 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
-import path from 'path';
-import { promises as fs } from 'fs';
-import { TempProject, createTempProjectWithDefaultStateMachine } from '../../utils/temp-files';
+import path from 'node:path';
+import { promises as fs } from 'node:fs';
+import {
+  TempProject,
+  createTempProjectWithDefaultStateMachine,
+} from '../../utils/temp-files';
 
 vi.unmock('fs');
 vi.unmock('fs/promises');
 
 /**
  * MCP Contract Validation Tests
- * 
+ *
  * Tests the Model Context Protocol contract by using a real MCP TypeScript client
  * from the official SDK to connect to our responsible-vibe-mcp-server and validate:
  * - Server initialization and capability negotiation
@@ -35,22 +38,30 @@ describe('MCP Contract Validation', () => {
 
     // Build the server if needed
     const serverPath = path.resolve(__dirname, '../../../dist/index.js');
-    const serverExists = await fs.access(serverPath).then(() => true).catch(() => false);
+    const serverExists = await fs
+      .access(serverPath)
+      .then(() => true)
+      .catch(() => false);
 
     if (!serverExists) {
-      throw new Error(`Server not built. Please run 'npm run build' first. Looking for: ${serverPath}`);
+      throw new Error(
+        `Server not built. Please run 'npm run build' first. Looking for: ${serverPath}`
+      );
     }
 
     // Create MCP client and transport (this will spawn the server process)
     // Note: Due to limitations in StdioClientTransport, environment variables
     // are not properly passed to the spawned server process, so this test
     // may show INFO level logs despite our attempts to suppress them.
-    
+
     // Use a shell script wrapper that explicitly changes the working directory
     // This ensures the server operates in the temporary directory and not the current project directory
     // which is essential for clean test isolation
-    const wrapperScriptPath = path.resolve(__dirname, '../../utils/run-server-in-dir.sh');
-    
+    const wrapperScriptPath = path.resolve(
+      __dirname,
+      '../../utils/run-server-in-dir.sh'
+    );
+
     transport = new StdioClientTransport({
       command: wrapperScriptPath,
       args: [tempProject.projectPath, serverPath],
@@ -58,19 +69,22 @@ describe('MCP Contract Validation', () => {
         ...process.env,
         LOG_LEVEL: 'ERROR',
         NODE_ENV: 'test',
-        VITEST: 'true'
-      }
+        VITEST: 'true',
+      },
     });
 
-    client = new Client({
-      name: 'mcp-contract-test-client',
-      version: '1.0.0'
-    }, {
-      capabilities: {
-        roots: {},
-        sampling: {}
+    client = new Client(
+      {
+        name: 'mcp-contract-test-client',
+        version: '1.0.0',
+      },
+      {
+        capabilities: {
+          roots: {},
+          sampling: {},
+        },
       }
-    });
+    );
 
     // Connect to the server
     await client.connect(transport);
@@ -80,8 +94,8 @@ describe('MCP Contract Validation', () => {
       name: 'start_development',
       arguments: {
         workflow: 'waterfall',
-        commit_behaviour: 'none'  // Use 'none' for test isolation
-      }
+        commit_behaviour: 'none', // Use 'none' for test isolation
+      },
     });
   });
 
@@ -118,7 +132,7 @@ describe('MCP Contract Validation', () => {
       expect(tools.tools).toBeDefined();
       expect(Array.isArray(tools.tools)).toBe(true);
 
-      // Should support resources  
+      // Should support resources
       const resources = await client.listResources();
       expect(resources.resources).toBeDefined();
       expect(Array.isArray(resources.resources)).toBe(true);
@@ -129,7 +143,9 @@ describe('MCP Contract Validation', () => {
     it('should expose whats_next tool with correct schema', async () => {
       const tools = await client.listTools();
 
-      const whatsNextTool = tools.tools.find(tool => tool.name === 'whats_next');
+      const whatsNextTool = tools.tools.find(
+        tool => tool.name === 'whats_next'
+      );
       expect(whatsNextTool).toBeDefined();
       expect(whatsNextTool!.description).toBeTruthy();
       expect(whatsNextTool!.inputSchema).toBeDefined();
@@ -140,7 +156,7 @@ describe('MCP Contract Validation', () => {
       expect(schema.properties).toBeDefined();
 
       // Should accept optional parameters like user_input, context, etc.
-      const properties = schema.properties as Record<string, any>;
+      const properties = schema.properties as Record<string, unknown>;
       expect(properties.user_input).toBeDefined();
       expect(properties.context).toBeDefined();
       expect(properties.conversation_summary).toBeDefined();
@@ -150,7 +166,9 @@ describe('MCP Contract Validation', () => {
     it('should expose proceed_to_phase tool with correct schema', async () => {
       const tools = await client.listTools();
 
-      const proceedTool = tools.tools.find(tool => tool.name === 'proceed_to_phase');
+      const proceedTool = tools.tools.find(
+        tool => tool.name === 'proceed_to_phase'
+      );
       expect(proceedTool).toBeDefined();
       expect(proceedTool!.description).toBeTruthy();
       expect(proceedTool!.inputSchema).toBeDefined();
@@ -159,7 +177,7 @@ describe('MCP Contract Validation', () => {
       expect(schema.type).toBe('object');
       expect(schema.properties).toBeDefined();
 
-      const properties = schema.properties as Record<string, any>;
+      const properties = schema.properties as Record<string, unknown>;
       expect(properties.target_phase).toBeDefined();
       expect(properties.reason).toBeDefined();
 
@@ -171,8 +189,8 @@ describe('MCP Contract Validation', () => {
       const result = await client.callTool({
         name: 'whats_next',
         arguments: {
-          user_input: 'implement authentication system'
-        }
+          user_input: 'implement authentication system',
+        },
       });
 
       expect(result.content).toBeDefined();
@@ -196,8 +214,8 @@ describe('MCP Contract Validation', () => {
       await client.callTool({
         name: 'whats_next',
         arguments: {
-          user_input: 'start project'
-        }
+          user_input: 'start project',
+        },
       });
 
       // Then proceed to a different phase
@@ -206,8 +224,8 @@ describe('MCP Contract Validation', () => {
         arguments: {
           target_phase: 'design',
           reason: 'requirements complete',
-          review_state: 'not-required'
-        }
+          review_state: 'not-required',
+        },
       });
 
       expect(result.content).toBeDefined();
@@ -230,8 +248,8 @@ describe('MCP Contract Validation', () => {
         arguments: {
           target_phase: 'invalid_phase',
           reason: 'test error handling',
-          review_state: 'not-required'
-        }
+          review_state: 'not-required',
+        },
       });
 
       // Should return error information rather than throwing
@@ -244,7 +262,9 @@ describe('MCP Contract Validation', () => {
     it('should expose plan://current resource', async () => {
       const resources = await client.listResources();
 
-      const planResource = resources.resources.find(r => r.uri === 'plan://current');
+      const planResource = resources.resources.find(
+        r => r.uri === 'plan://current'
+      );
       expect(planResource).toBeDefined();
       expect(planResource!.name).toBeTruthy();
       expect(planResource!.description).toBeTruthy();
@@ -254,7 +274,9 @@ describe('MCP Contract Validation', () => {
     it('should expose state://current resource', async () => {
       const resources = await client.listResources();
 
-      const stateResource = resources.resources.find(r => r.uri === 'state://current');
+      const stateResource = resources.resources.find(
+        r => r.uri === 'state://current'
+      );
       expect(stateResource).toBeDefined();
       expect(stateResource!.name).toBeTruthy();
       expect(stateResource!.description).toBeTruthy();
@@ -266,12 +288,12 @@ describe('MCP Contract Validation', () => {
       await client.callTool({
         name: 'whats_next',
         arguments: {
-          user_input: 'test plan resource'
-        }
+          user_input: 'test plan resource',
+        },
       });
 
       const result = await client.readResource({
-        uri: 'plan://current'
+        uri: 'plan://current',
       });
 
       expect(result.contents).toBeDefined();
@@ -293,12 +315,12 @@ describe('MCP Contract Validation', () => {
       await client.callTool({
         name: 'whats_next',
         arguments: {
-          user_input: 'test state resource'
-        }
+          user_input: 'test state resource',
+        },
       });
 
       const result = await client.readResource({
-        uri: 'state://current'
+        uri: 'state://current',
       });
 
       expect(result.contents).toBeDefined();
@@ -321,7 +343,7 @@ describe('MCP Contract Validation', () => {
       // Test reading non-existent resource
       try {
         await client.readResource({
-          uri: 'nonexistent://resource'
+          uri: 'nonexistent://resource',
         });
         // Should not reach here
         expect(true).toBe(false);
@@ -338,22 +360,22 @@ describe('MCP Contract Validation', () => {
       const promises = [
         client.callTool({
           name: 'whats_next',
-          arguments: { user_input: 'concurrent test 1' }
+          arguments: { user_input: 'concurrent test 1' },
         }),
         client.callTool({
           name: 'whats_next',
-          arguments: { user_input: 'concurrent test 2' }
+          arguments: { user_input: 'concurrent test 2' },
         }),
         client.listTools(),
-        client.listResources()
+        client.listResources(),
       ];
 
       const results = await Promise.all(promises);
 
       // All requests should succeed
-      results.forEach(result => {
+      for (const result of results) {
         expect(result).toBeDefined();
-      });
+      }
 
       // Tool results should have content
       expect(results[0].content).toBeDefined();
@@ -369,8 +391,8 @@ describe('MCP Contract Validation', () => {
       const result1 = await client.callTool({
         name: 'whats_next',
         arguments: {
-          user_input: 'start new project'
-        }
+          user_input: 'start new project',
+        },
       });
 
       const response1 = JSON.parse(result1.content[0].text);
@@ -380,8 +402,8 @@ describe('MCP Contract Validation', () => {
       const result2 = await client.callTool({
         name: 'whats_next',
         arguments: {
-          user_input: 'continue project'
-        }
+          user_input: 'continue project',
+        },
       });
 
       const response2 = JSON.parse(result2.content[0].text);
@@ -400,8 +422,8 @@ describe('MCP Contract Validation', () => {
           arguments: {
             // Missing required target_phase
             reason: 'test malformed request',
-        review_state: 'not-required'
-          }
+            review_state: 'not-required',
+          },
         });
         // Should not reach here if validation works
         expect(true).toBe(false);
@@ -419,8 +441,8 @@ describe('MCP Contract Validation', () => {
         name: 'whats_next',
         arguments: {
           user_input: 'implement user authentication system',
-          context: 'new feature development'
-        }
+          context: 'new feature development',
+        },
       });
 
       const startResponse = JSON.parse(start.content[0].text);
@@ -428,10 +450,20 @@ describe('MCP Contract Validation', () => {
       // Check if we're using a custom state machine by looking at the phase
       // Default state machine uses: idle, requirements, design, implementation, qa, testing, complete
       // If we get other phases, skip the test as it's using a custom state machine
-      const defaultPhases = ['idle', 'requirements', 'design', 'implementation', 'qa', 'testing', 'complete'];
+      const defaultPhases = [
+        'idle',
+        'requirements',
+        'design',
+        'implementation',
+        'qa',
+        'testing',
+        'complete',
+      ];
 
       if (!defaultPhases.includes(startResponse.phase)) {
-        console.log(`Skipping test: Custom state machine detected (phase: ${startResponse.phase})`);
+        console.log(
+          `Skipping test: Custom state machine detected (phase: ${startResponse.phase})`
+        );
         return; // Skip test
       }
 
@@ -446,8 +478,8 @@ describe('MCP Contract Validation', () => {
           arguments: {
             target_phase: 'design',
             reason: 'requirements analysis complete',
-            review_state: 'not-required'
-          }
+            review_state: 'not-required',
+          },
         });
 
         const designResponse = JSON.parse(design.content[0].text);
@@ -457,7 +489,7 @@ describe('MCP Contract Validation', () => {
 
       // Verify state resource reflects the current phase
       const stateResult = await client.readResource({
-        uri: 'state://current'
+        uri: 'state://current',
       });
 
       const stateData = JSON.parse(stateResult.contents[0].text);
@@ -465,7 +497,7 @@ describe('MCP Contract Validation', () => {
 
       // Verify plan resource contains relevant phase information
       const planResult = await client.readResource({
-        uri: 'plan://current'
+        uri: 'plan://current',
       });
 
       const planContent = planResult.contents[0].text;
@@ -479,13 +511,23 @@ describe('MCP Contract Validation', () => {
         arguments: {
           user_input: 'implement OAuth integration',
           context: 'user wants third-party authentication',
-          conversation_summary: 'Discussed authentication options, user prefers OAuth with Google and GitHub',
+          conversation_summary:
+            'Discussed authentication options, user prefers OAuth with Google and GitHub',
           recent_messages: [
-            { role: 'user', content: 'What authentication options do we have?' },
-            { role: 'assistant', content: 'We can use OAuth, JWT, or traditional sessions' },
-            { role: 'user', content: 'OAuth sounds good, especially Google and GitHub' }
-          ]
-        }
+            {
+              role: 'user',
+              content: 'What authentication options do we have?',
+            },
+            {
+              role: 'assistant',
+              content: 'We can use OAuth, JWT, or traditional sessions',
+            },
+            {
+              role: 'user',
+              content: 'OAuth sounds good, especially Google and GitHub',
+            },
+          ],
+        },
       });
 
       expect(result.content).toBeDefined();

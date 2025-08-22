@@ -1,16 +1,16 @@
 /**
  * Plan Manager
- * 
+ *
  * Handles the creation, updating, and maintenance of project development plan files.
  * Manages markdown plan files that serve as long-term project memory.
  * Supports custom state machine definitions for dynamic plan file generation.
  */
 
-import { writeFile, readFile, access } from 'fs/promises';
-import { dirname } from 'path';
-import { mkdir } from 'fs/promises';
+import { writeFile, readFile, access } from 'node:fs/promises';
+import { dirname } from 'node:path';
+import { mkdir } from 'node:fs/promises';
 import { createLogger } from './logger.js';
-import type { DevelopmentPhase } from './state-machine.js';
+
 import type { YamlStateMachine } from './state-machine-types.js';
 
 const logger = createLogger('PlanManager');
@@ -31,7 +31,7 @@ export class PlanManager {
     this.stateMachine = stateMachine;
     logger.debug('State machine set for plan manager', {
       name: stateMachine.name,
-      phases: Object.keys(stateMachine.states)
+      phases: Object.keys(stateMachine.states),
     });
   }
 
@@ -45,12 +45,12 @@ export class PlanManager {
       return {
         path: planFilePath,
         exists: true,
-        content
+        content,
       };
-    } catch (error) {
+    } catch (_error) {
       return {
         path: planFilePath,
-        exists: false
+        exists: false,
       };
     }
   }
@@ -58,13 +58,23 @@ export class PlanManager {
   /**
    * Create initial plan file if it doesn't exist
    */
-  async ensurePlanFile(planFilePath: string, projectPath: string, gitBranch: string): Promise<void> {
-    logger.debug('Ensuring plan file exists', { planFilePath, projectPath, gitBranch });
+  async ensurePlanFile(
+    planFilePath: string,
+    projectPath: string,
+    gitBranch: string
+  ): Promise<void> {
+    logger.debug('Ensuring plan file exists', {
+      planFilePath,
+      projectPath,
+      gitBranch,
+    });
 
     const planInfo = await this.getPlanFileInfo(planFilePath);
 
     if (!planInfo.exists) {
-      logger.info('Plan file not found, creating initial plan', { planFilePath });
+      logger.info('Plan file not found, creating initial plan', {
+        planFilePath,
+      });
       await this.createInitialPlanFile(planFilePath, projectPath, gitBranch);
       logger.info('Initial plan file created successfully', { planFilePath });
     } else {
@@ -75,27 +85,38 @@ export class PlanManager {
   /**
    * Create initial plan file with template content
    */
-  private async createInitialPlanFile(planFilePath: string, projectPath: string, gitBranch: string): Promise<void> {
+  private async createInitialPlanFile(
+    planFilePath: string,
+    projectPath: string,
+    gitBranch: string
+  ): Promise<void> {
     logger.debug('Creating initial plan file', { planFilePath });
 
     try {
       // Ensure directory exists
       await mkdir(dirname(planFilePath), { recursive: true });
-      logger.debug('Plan file directory ensured', { directory: dirname(planFilePath) });
+      logger.debug('Plan file directory ensured', {
+        directory: dirname(planFilePath),
+      });
 
       const projectName = projectPath.split('/').pop() || 'Unknown Project';
       const branchInfo = gitBranch !== 'no-git' ? ` (${gitBranch} branch)` : '';
 
-      const initialContent = this.generateInitialPlanContent(projectName, branchInfo);
+      const initialContent = this.generateInitialPlanContent(
+        projectName,
+        branchInfo
+      );
 
       await writeFile(planFilePath, initialContent, 'utf-8');
       logger.info('Initial plan file written successfully', {
         planFilePath,
         contentLength: initialContent.length,
-        projectName
+        projectName,
       });
     } catch (error) {
-      logger.error('Failed to create initial plan file', error as Error, { planFilePath });
+      logger.error('Failed to create initial plan file', error as Error, {
+        planFilePath,
+      });
       throw error;
     }
   }
@@ -103,26 +124,33 @@ export class PlanManager {
   /**
    * Generate initial plan file content based on state machine definition
    */
-  private generateInitialPlanContent(projectName: string, branchInfo: string): string {
+  private generateInitialPlanContent(
+    projectName: string,
+    branchInfo: string
+  ): string {
     const timestamp = new Date().toISOString().split('T')[0];
 
     if (!this.stateMachine) {
-      throw new Error('State machine not set. This should not happen as state machine is always loaded.');
+      throw new Error(
+        'State machine not set. This should not happen as state machine is always loaded.'
+      );
     }
 
     const phases = Object.keys(this.stateMachine.states);
     const initialPhase = this.stateMachine.initial_state;
 
-
-    const documentationUrl = this.generateWorkflowDocumentationUrl(this.stateMachine.name);
+    const documentationUrl = this.generateWorkflowDocumentationUrl(
+      this.stateMachine.name
+    );
 
     let content = `# Development Plan: ${projectName}${branchInfo}
 
 *Generated on ${timestamp} by Vibe Feature MCP*
-*Workflow: ${documentationUrl
-        ? "[" + this.stateMachine.name + "]" + "(" + documentationUrl + ")"
+*Workflow: ${
+      documentationUrl
+        ? '[' + this.stateMachine.name + ']' + '(' + documentationUrl + ')'
         : this.stateMachine.name
-      }*
+    }*
 
 ## Goal
 *Define what you're building or fixing - this will be updated as requirements are gathered*
@@ -137,7 +165,7 @@ export class PlanManager {
 `;
 
     // Generate simple sections for each phase
-    phases.forEach((phase, index) => {
+    for (const phase of phases) {
       if (phase !== initialPhase) {
         content += `## ${this.capitalizePhase(phase)}
 ### Tasks
@@ -148,7 +176,7 @@ export class PlanManager {
 
 `;
       }
-    });
+    }
 
     content += `## Key Decisions
 *Important decisions will be documented here as they are made*
@@ -191,7 +219,9 @@ export class PlanManager {
    */
   generatePlanFileGuidance(phase: string): string {
     if (!this.stateMachine) {
-      throw new Error('State machine not set. This should not happen as state machine is always loaded.');
+      throw new Error(
+        'State machine not set. This should not happen as state machine is always loaded.'
+      );
     }
 
     const phaseDefinition = this.stateMachine.states[phase];
@@ -200,7 +230,6 @@ export class PlanManager {
       return `Update the ${this.capitalizePhase(phase)} section with current progress and mark completed tasks.`;
     }
 
-    const phaseDescription = phaseDefinition.description;
     const capitalizedPhase = this.capitalizePhase(phase);
 
     return `Update the ${capitalizedPhase} section with progress. Mark completed tasks with [x] and add new tasks as they are identified.`;
@@ -217,18 +246,22 @@ export class PlanManager {
       await access(planFilePath);
 
       // Import unlink dynamically to avoid issues
-      const { unlink } = await import('fs/promises');
+      const { unlink } = await import('node:fs/promises');
       await unlink(planFilePath);
 
       logger.info('Plan file deleted successfully', { planFilePath });
       return true;
-    } catch (error: any) {
-      if (error.code === 'ENOENT') {
-        logger.debug('Plan file does not exist, nothing to delete', { planFilePath });
+    } catch (error: unknown) {
+      if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
+        logger.debug('Plan file does not exist, nothing to delete', {
+          planFilePath,
+        });
         return true; // Consider it successful if file doesn't exist
       }
 
-      logger.error('Failed to delete plan file', error as Error, { planFilePath });
+      logger.error('Failed to delete plan file', error as Error, {
+        planFilePath,
+      });
       throw error;
     }
   }
@@ -242,16 +275,22 @@ export class PlanManager {
     try {
       await access(planFilePath);
       // If we reach here, file still exists
-      logger.warn('Plan file still exists after deletion attempt', { planFilePath });
+      logger.warn('Plan file still exists after deletion attempt', {
+        planFilePath,
+      });
       return false;
-    } catch (error: any) {
-      if (error.code === 'ENOENT') {
-        logger.debug('Plan file successfully deleted (does not exist)', { planFilePath });
+    } catch (error: unknown) {
+      if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
+        logger.debug('Plan file successfully deleted (does not exist)', {
+          planFilePath,
+        });
         return true;
       }
 
       // Some other error occurred
-      logger.error('Error checking plan file deletion', error as Error, { planFilePath });
+      logger.error('Error checking plan file deletion', error as Error, {
+        planFilePath,
+      });
       throw error;
     }
   }
@@ -260,7 +299,8 @@ export class PlanManager {
    * Capitalize phase name for display
    */
   private capitalizePhase(phase: string): string {
-    return phase.split('_')
+    return phase
+      .split('_')
       .map(word => word.charAt(0).toUpperCase() + word.slice(1))
       .join(' ');
   }
@@ -269,7 +309,9 @@ export class PlanManager {
    * Generate workflow documentation URL for predefined workflows
    * Returns undefined for custom workflows
    */
-  private generateWorkflowDocumentationUrl(workflowName: string): string | undefined {
+  private generateWorkflowDocumentationUrl(
+    workflowName: string
+  ): string | undefined {
     // Don't generate URL for custom workflows
     if (workflowName === 'custom') {
       return undefined;

@@ -1,13 +1,14 @@
 /**
  * ProceedToPhase Tool Handler
- * 
- * Handles explicit transitions to specific development phases when the current 
+ *
+ * Handles explicit transitions to specific development phases when the current
  * phase is complete or when a direct phase change is needed.
  */
 
 import { ConversationRequiredToolHandler } from './base-tool-handler.js';
 import { ServerContext } from '../types.js';
 import { validateRequiredArgs } from '../server-helpers.js';
+import type { ConversationContext } from '../../types.js';
 
 /**
  * Arguments for the proceed_to_phase tool
@@ -33,12 +34,14 @@ export interface ProceedToPhaseResult {
 /**
  * ProceedToPhase tool handler implementation
  */
-export class ProceedToPhaseHandler extends ConversationRequiredToolHandler<ProceedToPhaseArgs, ProceedToPhaseResult> {
-
+export class ProceedToPhaseHandler extends ConversationRequiredToolHandler<
+  ProceedToPhaseArgs,
+  ProceedToPhaseResult
+> {
   protected async executeWithConversation(
     args: ProceedToPhaseArgs,
     context: ServerContext,
-    conversationContext: any
+    conversationContext: ConversationContext
   ): Promise<ProceedToPhaseResult> {
     // Validate required arguments
     validateRequiredArgs(args, ['target_phase', 'review_state']);
@@ -47,20 +50,20 @@ export class ProceedToPhaseHandler extends ConversationRequiredToolHandler<Proce
     const conversationId = conversationContext.conversationId;
     const currentPhase = conversationContext.currentPhase;
 
-    this.logger.debug('Processing proceed_to_phase request', { 
-      conversationId, 
+    this.logger.debug('Processing proceed_to_phase request', {
+      conversationId,
       currentPhase,
       targetPhase: target_phase,
       reason,
-      reviewState: review_state
+      reviewState: review_state,
     });
 
     // Validate review state if reviews are required
     if (conversationContext.requireReviewsBeforePhaseTransition) {
       await this.validateReviewState(
-        review_state, 
-        currentPhase, 
-        target_phase, 
+        review_state,
+        currentPhase,
+        target_phase,
         conversationContext.workflowName,
         context
       );
@@ -79,15 +82,14 @@ export class ProceedToPhaseHandler extends ConversationRequiredToolHandler<Proce
     );
 
     // Update conversation state
-    await context.conversationManager.updateConversationState(
-      conversationId,
-      { currentPhase: transitionResult.newPhase }
-    );
-    
+    await context.conversationManager.updateConversationState(conversationId, {
+      currentPhase: transitionResult.newPhase,
+    });
+
     this.logger.info('Explicit phase transition completed', {
       from: currentPhase,
       to: transitionResult.newPhase,
-      reason: transitionResult.transitionReason
+      reason: transitionResult.transitionReason,
     });
 
     // Ensure plan file exists
@@ -98,26 +100,32 @@ export class ProceedToPhaseHandler extends ConversationRequiredToolHandler<Proce
     );
 
     // Check if plan file exists
-    const planInfo = await context.planManager.getPlanFileInfo(conversationContext.planFilePath);
+    const planInfo = await context.planManager.getPlanFileInfo(
+      conversationContext.planFilePath
+    );
 
     // Generate enhanced instructions
-    const instructions = await context.instructionGenerator.generateInstructions(
-      transitionResult.instructions,
-      {
-        phase: transitionResult.newPhase,
-        conversationContext: {
-          ...conversationContext,
-          currentPhase: transitionResult.newPhase
-        },
-        transitionReason: transitionResult.transitionReason,
-        isModeled: transitionResult.isModeled,
-        planFileExists: planInfo.exists
-      }
-    );
+    const instructions =
+      await context.instructionGenerator.generateInstructions(
+        transitionResult.instructions,
+        {
+          phase: transitionResult.newPhase,
+          conversationContext: {
+            ...conversationContext,
+            currentPhase: transitionResult.newPhase,
+          },
+          transitionReason: transitionResult.transitionReason,
+          isModeled: transitionResult.isModeled,
+          planFileExists: planInfo.exists,
+        }
+      );
 
     // Add commit instructions if configured
     let finalInstructions = instructions.instructions;
-    if (conversationContext.gitCommitConfig?.enabled && conversationContext.gitCommitConfig.commitOnPhase) {
+    if (
+      conversationContext.gitCommitConfig?.enabled &&
+      conversationContext.gitCommitConfig.commitOnPhase
+    ) {
       const commitMessage = `Phase transition: ${currentPhase} → ${target_phase}`;
       finalInstructions += `\n\n**Git Commit Required**: Create a commit for this phase transition using:\n\`\`\`bash\ngit add . && git commit -m "${commitMessage}"\n\`\`\``;
     }
@@ -129,7 +137,7 @@ export class ProceedToPhaseHandler extends ConversationRequiredToolHandler<Proce
       plan_file_path: conversationContext.planFilePath,
       transition_reason: transitionResult.transitionReason,
       is_modeled_transition: transitionResult.isModeled,
-      conversation_id: conversationContext.conversationId
+      conversation_id: conversationContext.conversationId,
     };
 
     // Log interaction
@@ -156,27 +164,38 @@ export class ProceedToPhaseHandler extends ConversationRequiredToolHandler<Proce
     context: ServerContext
   ): Promise<void> {
     // Get transition configuration from workflow
-    const stateMachine = context.workflowManager.loadWorkflowForProject(context.projectPath, workflowName);
+    const stateMachine = context.workflowManager.loadWorkflowForProject(
+      context.projectPath,
+      workflowName
+    );
     const currentState = stateMachine.states[currentPhase];
-    
+
     if (!currentState) {
       throw new Error(`Invalid current phase: ${currentPhase}`);
     }
 
-    const transition = currentState.transitions.find((t: any) => t.to === targetPhase);
+    const transition = currentState.transitions.find(t => t.to === targetPhase);
     if (!transition) {
-      throw new Error(`No transition found from ${currentPhase} to ${targetPhase}`);
+      throw new Error(
+        `No transition found from ${currentPhase} to ${targetPhase}`
+      );
     }
 
-    const hasReviewPerspectives = transition.review_perspectives && transition.review_perspectives.length > 0;
+    const hasReviewPerspectives =
+      transition.review_perspectives &&
+      transition.review_perspectives.length > 0;
 
     if (hasReviewPerspectives) {
       // This transition has review perspectives defined
       if (reviewState === 'pending') {
-        throw new Error(`Review is required before proceeding to ${targetPhase}. Please use the conduct_review tool first.`);
+        throw new Error(
+          `Review is required before proceeding to ${targetPhase}. Please use the conduct_review tool first.`
+        );
       }
       if (reviewState === 'not-required') {
-        throw new Error(`This transition requires review, but review_state is 'not-required'. Use 'pending' or 'performed'.`);
+        throw new Error(
+          `This transition requires review, but review_state is 'not-required'. Use 'pending' or 'performed'.`
+        );
       }
     } else {
       // No review perspectives defined - transition proceeds normally

@@ -1,15 +1,23 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { TempProject, createTempProjectWithDefaultStateMachine } from '../../utils/temp-files';
-import { DirectServerInterface, createSuiteIsolatedE2EScenario, assertToolSuccess, initializeDevelopment } from '../../utils/e2e-test-setup';
-import { promises as fs } from 'fs';
-import path from 'path';
+import {
+  TempProject,
+  createTempProjectWithDefaultStateMachine,
+} from '../../utils/temp-files';
+import {
+  DirectServerInterface,
+  createSuiteIsolatedE2EScenario,
+  assertToolSuccess,
+  initializeDevelopment,
+} from '../../utils/e2e-test-setup';
+import { promises as fs } from 'node:fs';
+import path from 'node:path';
 
 vi.unmock('fs');
 vi.unmock('fs/promises');
 
 /**
  * Workflow Integration Tests
- * 
+ *
  * Tests complete end-to-end workflows including:
  * - Full development lifecycle scenarios
  * - Multi-phase project progression
@@ -24,14 +32,14 @@ describe('Workflow Integration', () => {
   beforeEach(async () => {
     const scenario = await createSuiteIsolatedE2EScenario({
       suiteName: 'workflow-integration',
-      tempProjectFactory: createTempProjectWithDefaultStateMachine
+      tempProjectFactory: createTempProjectWithDefaultStateMachine,
     });
     client = scenario.client;
     tempProject = scenario.tempProject;
     cleanup = scenario.cleanup;
 
     // Start development for all workflow integration tests
-      await initializeDevelopment(client, 'waterfall');
+    await initializeDevelopment(client, 'waterfall');
   });
 
   afterEach(async () => {
@@ -46,7 +54,7 @@ describe('Workflow Integration', () => {
       const requirements = await client.callTool('whats_next', {
         user_input: 'implement user authentication system',
         context: 'new feature request',
-        conversation_summary: 'User wants to add authentication to their app'
+        conversation_summary: 'User wants to add authentication to their app',
       });
       const reqResponse = assertToolSuccess(requirements);
       expect(reqResponse.phase).toBe('requirements');
@@ -56,7 +64,7 @@ describe('Workflow Integration', () => {
       const design = await client.callTool('proceed_to_phase', {
         target_phase: 'design',
         reason: 'requirements analysis complete',
-        review_state: 'not-required'
+        review_state: 'not-required',
       });
       const designResponse = assertToolSuccess(design);
       expect(designResponse.phase).toBe('design');
@@ -66,7 +74,7 @@ describe('Workflow Integration', () => {
       const implementation = await client.callTool('proceed_to_phase', {
         target_phase: 'implementation',
         reason: 'design approved',
-        review_state: 'not-required'
+        review_state: 'not-required',
       });
       const implResponse = assertToolSuccess(implementation);
       expect(implResponse.phase).toBe('implementation');
@@ -75,7 +83,7 @@ describe('Workflow Integration', () => {
       const qa = await client.callTool('proceed_to_phase', {
         target_phase: 'qa',
         reason: 'implementation complete',
-        review_state: 'not-required'
+        review_state: 'not-required',
       });
       const qaResponse = assertToolSuccess(qa);
       expect(qaResponse.phase).toBe('qa');
@@ -84,7 +92,7 @@ describe('Workflow Integration', () => {
       const testing = await client.callTool('proceed_to_phase', {
         target_phase: 'testing',
         reason: 'qa passed',
-        review_state: 'not-required'
+        review_state: 'not-required',
       });
       const testResponse = assertToolSuccess(testing);
       expect(testResponse.phase).toBe('testing');
@@ -93,7 +101,7 @@ describe('Workflow Integration', () => {
       const finalize = await client.callTool('proceed_to_phase', {
         target_phase: 'finalize',
         reason: 'all tests passed',
-        review_state: 'not-required'
+        review_state: 'not-required',
       });
       const finalizeResponse = assertToolSuccess(finalize);
       expect(finalizeResponse.phase).toBe('finalize');
@@ -113,14 +121,14 @@ describe('Workflow Integration', () => {
       await client.callTool('proceed_to_phase', {
         target_phase: 'implementation',
         reason: 'quick prototype',
-        review_state: 'not-required'
+        review_state: 'not-required',
       });
 
       // Realize need to go back to design
       const backToDesign = await client.callTool('proceed_to_phase', {
         target_phase: 'design',
         reason: 'need to revise architecture',
-        review_state: 'not-required'
+        review_state: 'not-required',
       });
       expect(assertToolSuccess(backToDesign).phase).toBe('design');
 
@@ -128,7 +136,7 @@ describe('Workflow Integration', () => {
       const backToImpl = await client.callTool('proceed_to_phase', {
         target_phase: 'implementation',
         reason: 'design revised',
-        review_state: 'not-required'
+        review_state: 'not-required',
       });
       expect(assertToolSuccess(backToImpl).phase).toBe('implementation');
 
@@ -141,18 +149,33 @@ describe('Workflow Integration', () => {
     it('should maintain plan file consistency throughout workflow', async () => {
       // Start workflow
       const start = await client.callTool('whats_next', {
-        user_input: 'comprehensive project'
+        user_input: 'comprehensive project',
       });
       const startResponse = assertToolSuccess(start);
       const planPath = startResponse.plan_file_path;
 
       // Progress through phases
-      await client.callTool('proceed_to_phase', { target_phase: 'design', reason: 'test' , review_state: 'not-required'});
-      await client.callTool('proceed_to_phase', { target_phase: 'implementation', reason: 'test' , review_state: 'not-required'});
-      await client.callTool('proceed_to_phase', { target_phase: 'qa', reason: 'test' , review_state: 'not-required'});
+      await client.callTool('proceed_to_phase', {
+        target_phase: 'design',
+        reason: 'test',
+        review_state: 'not-required',
+      });
+      await client.callTool('proceed_to_phase', {
+        target_phase: 'implementation',
+        reason: 'test',
+        review_state: 'not-required',
+      });
+      await client.callTool('proceed_to_phase', {
+        target_phase: 'qa',
+        reason: 'test',
+        review_state: 'not-required',
+      });
 
       // Verify plan file exists and is updated
-      const planExists = await fs.access(planPath).then(() => true).catch(() => false);
+      const planExists = await fs
+        .access(planPath)
+        .then(() => true)
+        .catch(() => false);
       expect(planExists).toBe(true);
 
       const planResource = await client.readResource('plan://current');
@@ -171,7 +194,7 @@ describe('Workflow Integration', () => {
       // Start first project context
       const project1 = await client.callTool('whats_next', {
         user_input: 'project 1 feature',
-        context: 'first project'
+        context: 'first project',
       });
       const p1Response = assertToolSuccess(project1);
       const p1ConversationId = p1Response.conversation_id;
@@ -179,7 +202,7 @@ describe('Workflow Integration', () => {
       // Continue with same project
       const project1Continue = await client.callTool('whats_next', {
         user_input: 'continue project 1',
-        context: 'same project context'
+        context: 'same project context',
       });
       const p1ContinueResponse = assertToolSuccess(project1Continue);
 
@@ -189,7 +212,7 @@ describe('Workflow Integration', () => {
 
     it('should maintain separate plan files for different contexts', async () => {
       const result = await client.callTool('whats_next', {
-        user_input: 'test plan separation'
+        user_input: 'test plan separation',
       });
       const response = assertToolSuccess(result);
 
@@ -204,7 +227,7 @@ describe('Workflow Integration', () => {
       // User starts with vague request
       const vague = await client.callTool('whats_next', {
         user_input: 'I need to add some features',
-        context: 'user has general idea'
+        context: 'user has general idea',
       });
       expect(assertToolSuccess(vague).phase).toBe('requirements');
 
@@ -212,7 +235,7 @@ describe('Workflow Integration', () => {
       const specific = await client.callTool('whats_next', {
         user_input: 'I need user login and dashboard',
         context: 'user clarified requirements',
-        conversation_summary: 'User wants login and dashboard features'
+        conversation_summary: 'User wants login and dashboard features',
       });
       const specificResponse = assertToolSuccess(specific);
       expect(specificResponse.phase).toBe('requirements');
@@ -221,7 +244,7 @@ describe('Workflow Integration', () => {
       const ready = await client.callTool('proceed_to_phase', {
         target_phase: 'design',
         reason: 'requirements clear',
-        review_state: 'not-required'
+        review_state: 'not-required',
       });
       expect(assertToolSuccess(ready).phase).toBe('design');
     });
@@ -230,13 +253,23 @@ describe('Workflow Integration', () => {
       const result = await client.callTool('whats_next', {
         user_input: 'implement OAuth integration',
         context: 'user wants third-party authentication',
-        conversation_summary: 'Discussed authentication options, user prefers OAuth with Google and GitHub',
+        conversation_summary:
+          'Discussed authentication options, user prefers OAuth with Google and GitHub',
         recent_messages: [
           { role: 'user', content: 'What authentication options do we have?' },
-          { role: 'assistant', content: 'We can use OAuth, JWT, or traditional sessions' },
-          { role: 'user', content: 'OAuth sounds good, especially Google and GitHub' },
-          { role: 'assistant', content: 'Great choice! OAuth is secure and user-friendly' }
-        ]
+          {
+            role: 'assistant',
+            content: 'We can use OAuth, JWT, or traditional sessions',
+          },
+          {
+            role: 'user',
+            content: 'OAuth sounds good, especially Google and GitHub',
+          },
+          {
+            role: 'assistant',
+            content: 'Great choice! OAuth is secure and user-friendly',
+          },
+        ],
       });
 
       const response = assertToolSuccess(result);
@@ -248,14 +281,28 @@ describe('Workflow Integration', () => {
     it('should handle rapid development iterations', async () => {
       // Quick succession of development activities
       await client.callTool('whats_next', { user_input: 'rapid prototype' });
-      await client.callTool('proceed_to_phase', { target_phase: 'implementation', reason: 'skip to coding' , review_state: 'not-required'});
+      await client.callTool('proceed_to_phase', {
+        target_phase: 'implementation',
+        reason: 'skip to coding',
+        review_state: 'not-required',
+      });
       await client.callTool('whats_next', { user_input: 'found issues' });
-      await client.callTool('proceed_to_phase', { target_phase: 'design', reason: 'need better design' , review_state: 'not-required'});
-      await client.callTool('proceed_to_phase', { target_phase: 'implementation', reason: 'design fixed' , review_state: 'not-required'});
-      
-      const final = await client.callTool('whats_next', { user_input: 'check status' });
+      await client.callTool('proceed_to_phase', {
+        target_phase: 'design',
+        reason: 'need better design',
+        review_state: 'not-required',
+      });
+      await client.callTool('proceed_to_phase', {
+        target_phase: 'implementation',
+        reason: 'design fixed',
+        review_state: 'not-required',
+      });
+
+      const final = await client.callTool('whats_next', {
+        user_input: 'check status',
+      });
       const finalResponse = assertToolSuccess(final);
-      
+
       expect(finalResponse.phase).toBe('implementation');
       expect(finalResponse.conversation_id).toBeTruthy();
     });
@@ -269,22 +316,22 @@ describe('Workflow Integration', () => {
       await client.callTool('proceed_to_phase', {
         target_phase: 'invalid_phase',
         reason: 'test error handling',
-        review_state: 'not-required'
+        review_state: 'not-required',
       });
 
       // Should still be able to continue normally
       const recovery = await client.callTool('whats_next', {
-        user_input: 'continue after error'
+        user_input: 'continue after error',
       });
       const recoveryResponse = assertToolSuccess(recovery);
-      
+
       expect(recoveryResponse.phase).toBeTruthy();
       expect(recoveryResponse.instructions).toBeTruthy();
     });
 
     it('should handle file system issues gracefully', async () => {
       const result = await client.callTool('whats_next', {
-        user_input: 'test file system resilience'
+        user_input: 'test file system resilience',
       });
       const response = assertToolSuccess(result);
 
@@ -298,18 +345,18 @@ describe('Workflow Integration', () => {
       const promises = Array.from({ length: 10 }, (_, i) =>
         client.callTool('whats_next', {
           user_input: `stress test ${i}`,
-          context: `iteration ${i}`
+          context: `iteration ${i}`,
         })
       );
 
       const results = await Promise.all(promises);
-      
+
       // All requests should succeed
-      results.forEach((result, index) => {
+      for (const result of results) {
         const response = assertToolSuccess(result);
         expect(response.phase).toBeTruthy();
         expect(response.conversation_id).toBeTruthy();
-      });
+      }
 
       // Final state should be consistent
       const stateResource = await client.readResource('state://current');
@@ -317,7 +364,6 @@ describe('Workflow Integration', () => {
       expect(stateData.currentPhase).toBeTruthy();
     });
   });
-
 });
 
 // Custom Workflow Integration tests need their own setup without start_development in beforeEach
@@ -329,7 +375,7 @@ describe('Workflow Integration - Custom State Machines', () => {
   beforeEach(async () => {
     const scenario = await createSuiteIsolatedE2EScenario({
       suiteName: 'workflow-integration-custom',
-      tempProjectFactory: createTempProjectWithDefaultStateMachine
+      tempProjectFactory: createTempProjectWithDefaultStateMachine,
     });
     client = scenario.client;
     tempProject = scenario.tempProject;
@@ -397,30 +443,36 @@ states:
       // First, initialize development with the custom workflow
       const initResult = await client.callTool('start_development', {
         workflow: 'custom',
-        commit_behaviour: 'none'
+        commit_behaviour: 'none',
       });
       assertToolSuccess(initResult);
-      
+
       // Then call whats_next to get instructions
       const start = await client.callTool('whats_next', {
         user_input: 'start agile sprint development',
-        context: 'new feature request'
+        context: 'new feature request',
       });
       const startResponse = assertToolSuccess(start);
-      
+
       // The server may start at any valid phase in the custom state machine
       // Let's accept any of the valid phases from our custom workflow
-      expect(['backlog', 'sprint_planning', 'development', 'review', 'done']).toContain(startResponse.phase);
+      expect([
+        'backlog',
+        'sprint_planning',
+        'development',
+        'review',
+        'done',
+      ]).toContain(startResponse.phase);
 
       // Progress through custom phases - start from whatever phase we're in
       let currentPhase = startResponse.phase;
-      
+
       // If we're not already at development, try to get there
       if (currentPhase !== 'development') {
         const development = await client.callTool('proceed_to_phase', {
           target_phase: 'development',
           reason: 'ready to develop',
-        review_state: 'not-required'
+          review_state: 'not-required',
         });
         const devResponse = assertToolSuccess(development);
         expect(devResponse.phase).toBe('development');
@@ -431,7 +483,7 @@ states:
       const review = await client.callTool('proceed_to_phase', {
         target_phase: 'review',
         reason: 'development complete',
-        review_state: 'not-required'
+        review_state: 'not-required',
       });
       expect(assertToolSuccess(review).phase).toBe('review');
 

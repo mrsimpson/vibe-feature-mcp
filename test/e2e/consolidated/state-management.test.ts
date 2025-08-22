@@ -1,15 +1,23 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { TempProject, createTempProjectWithDefaultStateMachine } from '../../utils/temp-files';
-import { DirectServerInterface, createSuiteIsolatedE2EScenario, assertToolSuccess, initializeDevelopment } from '../../utils/e2e-test-setup';
-import { promises as fs } from 'fs';
-import path from 'path';
+import {
+  TempProject,
+  createTempProjectWithDefaultStateMachine,
+} from '../../utils/temp-files';
+import {
+  DirectServerInterface,
+  createSuiteIsolatedE2EScenario,
+  assertToolSuccess,
+  initializeDevelopment,
+} from '../../utils/e2e-test-setup';
+import { promises as fs } from 'node:fs';
+import path from 'node:path';
 
 vi.unmock('fs');
 vi.unmock('fs/promises');
 
 /**
  * State Management Tests
- * 
+ *
  * Tests state machine functionality including:
  * - Phase transitions and state machine logic
  * - Custom state machine loading and validation
@@ -24,12 +32,12 @@ describe('State Management', () => {
   beforeEach(async () => {
     const scenario = await createSuiteIsolatedE2EScenario({
       suiteName: 'state-management',
-      tempProjectFactory: createTempProjectWithDefaultStateMachine
+      tempProjectFactory: createTempProjectWithDefaultStateMachine,
     });
     client = scenario.client;
     tempProject = scenario.tempProject;
     cleanup = scenario.cleanup;
-    
+
     // Initialize development with default workflow before each test
     await initializeDevelopment(client);
   });
@@ -44,7 +52,7 @@ describe('State Management', () => {
     it('should transition through standard development phases', async () => {
       // Start with requirements
       const start = await client.callTool('whats_next', {
-        user_input: 'implement feature'
+        user_input: 'implement feature',
       });
       expect(assertToolSuccess(start).phase).toBe('requirements');
 
@@ -52,7 +60,7 @@ describe('State Management', () => {
       const design = await client.callTool('proceed_to_phase', {
         target_phase: 'design',
         reason: 'requirements complete',
-        review_state: 'not-required'
+        review_state: 'not-required',
       });
       expect(assertToolSuccess(design).phase).toBe('design');
 
@@ -60,7 +68,7 @@ describe('State Management', () => {
       const impl = await client.callTool('proceed_to_phase', {
         target_phase: 'implementation',
         reason: 'design complete',
-        review_state: 'not-required'
+        review_state: 'not-required',
       });
       expect(assertToolSuccess(impl).phase).toBe('implementation');
 
@@ -78,7 +86,7 @@ describe('State Management', () => {
       const testing = await client.callTool('proceed_to_phase', {
         target_phase: 'testing',
         reason: 'skip to testing',
-        review_state: 'not-required'
+        review_state: 'not-required',
       });
       expect(assertToolSuccess(testing).phase).toBe('testing');
 
@@ -86,19 +94,27 @@ describe('State Management', () => {
       const design = await client.callTool('proceed_to_phase', {
         target_phase: 'design',
         reason: 'need to revise design',
-        review_state: 'not-required'
+        review_state: 'not-required',
       });
       expect(assertToolSuccess(design).phase).toBe('design');
     });
 
     it('should track phase transition history', async () => {
       await client.callTool('whats_next', { user_input: 'start' });
-      await client.callTool('proceed_to_phase', { target_phase: 'design', reason: 'test' , review_state: 'not-required'});
-      await client.callTool('proceed_to_phase', { target_phase: 'implementation', reason: 'test' , review_state: 'not-required'});
+      await client.callTool('proceed_to_phase', {
+        target_phase: 'design',
+        reason: 'test',
+        review_state: 'not-required',
+      });
+      await client.callTool('proceed_to_phase', {
+        target_phase: 'implementation',
+        reason: 'test',
+        review_state: 'not-required',
+      });
 
       const stateResource = await client.readResource('state://current');
       const stateData = JSON.parse(stateResource.contents[0].text);
-      
+
       expect(stateData.currentPhase).toBe('implementation');
       // Verify conversation maintains consistency
       expect(stateData.conversationId).toBeTruthy();
@@ -109,13 +125,13 @@ describe('State Management', () => {
     beforeEach(async () => {
       // Reset any existing development state
       await cleanup();
-      
+
       // Create a fresh test environment without initializing development
       const scenario = await createSuiteIsolatedE2EScenario({
         suiteName: 'state-management-custom',
-        tempProjectFactory: createTempProjectWithDefaultStateMachine
+        tempProjectFactory: createTempProjectWithDefaultStateMachine,
       });
-      
+
       client = scenario.client;
       tempProject = scenario.tempProject;
       cleanup = scenario.cleanup;
@@ -152,12 +168,15 @@ states:
     transitions: []
 `;
 
-      await fs.writeFile(path.join(vibeDir, 'workflow.yaml'), customStateMachine);
+      await fs.writeFile(
+        path.join(vibeDir, 'workflow.yaml'),
+        customStateMachine
+      );
 
       // Initialize development with start_development and specify custom workflow
-      const result = await client.callTool('start_development', { 
+      const result = await client.callTool('start_development', {
         workflow: 'custom',
-        commit_behaviour: 'none'
+        commit_behaviour: 'none',
       });
       const response = assertToolSuccess(result);
 
@@ -180,17 +199,20 @@ states:
     transitions: []
 `;
 
-      await fs.writeFile(path.join(vibeDir, 'workflow.yml'), customStateMachine);
+      await fs.writeFile(
+        path.join(vibeDir, 'workflow.yml'),
+        customStateMachine
+      );
 
       // Initialize development with custom workflow
-      await client.callTool('start_development', { 
+      await client.callTool('start_development', {
         workflow: 'custom',
-        commit_behaviour: 'none'
+        commit_behaviour: 'none',
       });
-      
+
       // Then call whats_next
       const result = await client.callTool('whats_next', {
-        user_input: 'test yml'
+        user_input: 'test yml',
       });
       const response = assertToolSuccess(result);
 
@@ -203,16 +225,19 @@ states:
       await fs.mkdir(vibeDir, { recursive: true });
 
       // Create invalid YAML
-      await fs.writeFile(path.join(vibeDir, 'workflow.yaml'), 'invalid: yaml: [');
+      await fs.writeFile(
+        path.join(vibeDir, 'workflow.yaml'),
+        'invalid: yaml: ['
+      );
 
       // Initialize development with waterfall workflow since custom will fail
-      await client.callTool('start_development', { 
+      await client.callTool('start_development', {
         workflow: 'waterfall',
-        commit_behaviour: 'none'
+        commit_behaviour: 'none',
       });
-      
+
       const result = await client.callTool('whats_next', {
-        user_input: 'test fallback'
+        user_input: 'test fallback',
       });
       const response = assertToolSuccess(result);
 
@@ -223,13 +248,13 @@ states:
 
     it('should use default state machine when no custom configuration exists', async () => {
       // Initialize development with waterfall workflow
-      await client.callTool('start_development', { 
+      await client.callTool('start_development', {
         workflow: 'waterfall',
-        commit_behaviour: 'none'
+        commit_behaviour: 'none',
       });
-      
+
       const result = await client.callTool('whats_next', {
-        user_input: 'test default'
+        user_input: 'test default',
       });
       const response = assertToolSuccess(result);
 
@@ -241,18 +266,18 @@ states:
   describe('State Persistence', () => {
     it('should persist state across tool calls', async () => {
       const first = await client.callTool('whats_next', {
-        user_input: 'start project'
+        user_input: 'start project',
       });
       const firstResponse = assertToolSuccess(first);
 
       await client.callTool('proceed_to_phase', {
         target_phase: 'design',
         reason: 'move to design',
-        review_state: 'not-required'
+        review_state: 'not-required',
       });
 
       const third = await client.callTool('whats_next', {
-        user_input: 'continue'
+        user_input: 'continue',
       });
       const thirdResponse = assertToolSuccess(third);
 
@@ -262,7 +287,7 @@ states:
 
     it('should maintain conversation state consistency', async () => {
       const result = await client.callTool('whats_next', {
-        user_input: 'test consistency'
+        user_input: 'test consistency',
       });
       const response = assertToolSuccess(result);
 
@@ -279,17 +304,29 @@ states:
 
       // Make multiple rapid state changes
       const promises = [
-        client.callTool('proceed_to_phase', { target_phase: 'design', reason: 'test1' , review_state: 'not-required'}),
-        client.callTool('proceed_to_phase', { target_phase: 'implementation', reason: 'test2' , review_state: 'not-required'}),
-        client.callTool('proceed_to_phase', { target_phase: 'qa', reason: 'test3' , review_state: 'not-required'})
+        client.callTool('proceed_to_phase', {
+          target_phase: 'design',
+          reason: 'test1',
+          review_state: 'not-required',
+        }),
+        client.callTool('proceed_to_phase', {
+          target_phase: 'implementation',
+          reason: 'test2',
+          review_state: 'not-required',
+        }),
+        client.callTool('proceed_to_phase', {
+          target_phase: 'qa',
+          reason: 'test3',
+          review_state: 'not-required',
+        }),
       ];
 
       const results = await Promise.all(promises);
-      
+
       // All should succeed (though final state may vary)
-      results.forEach(result => {
+      for (const result of results) {
         expect(result).toBeTruthy();
-      });
+      }
 
       // Final state should be consistent
       const stateResource = await client.readResource('state://current');
@@ -307,27 +344,27 @@ states:
         conversation_summary: 'Starting new auth feature',
         recent_messages: [
           { role: 'user', content: 'I need authentication' },
-          { role: 'assistant', content: 'I can help with that' }
-        ]
+          { role: 'assistant', content: 'I can help with that' },
+        ],
       });
 
       const response = assertToolSuccess(result);
       expect(response.phase).toBeTruthy();
       expect(response.instructions).toBeTruthy();
     });
-    
+
     it('should maintain context across phase transitions', async () => {
       // Start with context
       await client.callTool('whats_next', {
         user_input: 'start feature',
-        context: 'new feature development'
+        context: 'new feature development',
       });
 
       // Transition with context
       const transition = await client.callTool('proceed_to_phase', {
         target_phase: 'design',
         reason: 'requirements gathered',
-        review_state: 'not-required'
+        review_state: 'not-required',
       });
 
       const response = assertToolSuccess(transition);

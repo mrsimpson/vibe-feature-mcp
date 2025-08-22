@@ -9,8 +9,8 @@ process.env.LOG_LEVEL = process.env.LOG_LEVEL || 'ERROR';
 process.env.NODE_ENV = 'test';
 process.env.VITEST = 'true';
 
-import { join } from 'path';
-import { tmpdir } from 'os';
+import { join } from 'node:path';
+import { tmpdir } from 'node:os';
 
 // Global test configuration
 const TEST_DB_DIR = join(tmpdir(), 'responsible-vibe-mcp-test');
@@ -20,5 +20,5 @@ export const TEST_CONFIG = {
   DB_DIR: TEST_DB_DIR,
   DB_PATH: join(TEST_DB_DIR, 'test.sqlite'),
   PROJECT_PATH: '/test/project',
-  GIT_BRANCH: 'main'
+  GIT_BRANCH: 'main',
 };

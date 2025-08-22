@@ -1,14 +1,14 @@
 /**
  * Enhanced unit tests for WorkflowManager path resolution strategies
- * 
+ *
  * Tests the comprehensive workflow directory finding functionality
  * including npx scenarios and various npm installation patterns
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { existsSync, readFileSync, writeFileSync, mkdirSync, rmSync } from 'fs';
-import { resolve, join, dirname } from 'path';
-import { tmpdir } from 'os';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { existsSync, writeFileSync, mkdirSync, rmSync } from 'node:fs';
+import { resolve, join } from 'node:path';
+import { tmpdir } from 'node:os';
 import { WorkflowManager } from '../../src/workflow-manager.js';
 
 describe('WorkflowManager enhanced path resolution', () => {
@@ -21,7 +21,7 @@ describe('WorkflowManager enhanced path resolution', () => {
     // Create temporary directory for testing
     tempDir = resolve(tmpdir(), `workflow-enhanced-test-${Date.now()}`);
     mkdirSync(tempDir, { recursive: true });
-    
+
     // Store original environment variables
     originalNodePath = process.env.NODE_PATH;
     originalHome = process.env.HOME;
@@ -33,20 +33,20 @@ describe('WorkflowManager enhanced path resolution', () => {
     if (existsSync(tempDir)) {
       rmSync(tempDir, { recursive: true, force: true });
     }
-    
+
     // Restore environment variables
     if (originalNodePath !== undefined) {
       process.env.NODE_PATH = originalNodePath;
     } else {
       delete process.env.NODE_PATH;
     }
-    
+
     if (originalHome !== undefined) {
       process.env.HOME = originalHome;
     } else {
       delete process.env.HOME;
     }
-    
+
     if (originalUserProfile !== undefined) {
       process.env.USERPROFILE = originalUserProfile;
     } else {
@@ -72,13 +72,19 @@ states:
     writeFileSync(join(dir, name), content);
   }
 
-  function createPackageJson(dir: string, name: string = 'responsible-vibe-mcp') {
+  function createPackageJson(
+    dir: string,
+    name: string = 'responsible-vibe-mcp'
+  ) {
     const packageJson = {
       name,
       version: '1.0.0',
-      description: 'Test package'
+      description: 'Test package',
     };
-    writeFileSync(join(dir, 'package.json'), JSON.stringify(packageJson, null, 2));
+    writeFileSync(
+      join(dir, 'package.json'),
+      JSON.stringify(packageJson, null, 2)
+    );
   }
 
   describe('Strategy 1: Relative to current file', () => {
@@ -87,16 +93,16 @@ states:
       const projectRoot = join(tempDir, 'project');
       const distDir = join(projectRoot, 'dist');
       const workflowsDir = join(projectRoot, 'resources', 'workflows');
-      
+
       mkdirSync(distDir, { recursive: true });
       mkdirSync(workflowsDir, { recursive: true });
-      
+
       createWorkflowFile(workflowsDir, 'waterfall.yaml');
       createPackageJson(projectRoot);
 
       const workflowManager = new WorkflowManager();
       const workflows = workflowManager.getAvailableWorkflows();
-      
+
       // Should find at least the predefined workflows
       expect(workflows.length).toBeGreaterThan(0);
       const workflowNames = workflows.map(w => w.name);
@@ -110,16 +116,16 @@ states:
       const projectRoot = join(tempDir, 'project');
       const deepDir = join(projectRoot, 'dist', 'server', 'handlers');
       const workflowsDir = join(projectRoot, 'resources', 'workflows');
-      
+
       mkdirSync(deepDir, { recursive: true });
       mkdirSync(workflowsDir, { recursive: true });
-      
+
       createWorkflowFile(workflowsDir, 'epcc.yaml');
       createPackageJson(projectRoot);
 
       const workflowManager = new WorkflowManager();
       const workflows = workflowManager.getAvailableWorkflows();
-      
+
       expect(workflows.length).toBeGreaterThan(0);
       const workflowNames = workflows.map(w => w.name);
       expect(workflowNames).toContain('epcc');
@@ -130,17 +136,17 @@ states:
       const projectRoot = join(tempDir, 'project');
       const nodeModulesDir = join(projectRoot, 'node_modules', 'other-package');
       const workflowsDir = join(projectRoot, 'resources', 'workflows');
-      
+
       mkdirSync(nodeModulesDir, { recursive: true });
       mkdirSync(workflowsDir, { recursive: true });
-      
+
       createWorkflowFile(workflowsDir, 'bugfix.yaml');
       createPackageJson(projectRoot); // Our package
       createPackageJson(nodeModulesDir, 'other-package'); // Different package
 
       const workflowManager = new WorkflowManager();
       const workflows = workflowManager.getAvailableWorkflows();
-      
+
       expect(workflows.length).toBeGreaterThan(0);
       const workflowNames = workflows.map(w => w.name);
       expect(workflowNames).toContain('bugfix');
@@ -149,16 +155,11 @@ states:
 
   describe('Strategy 3: Common npm installation paths', () => {
     it('should find workflows in local node_modules', () => {
-      // Simulate local node_modules installation
-      const projectRoot = process.cwd();
-      const nodeModulesDir = join(projectRoot, 'node_modules', 'responsible-vibe-mcp');
-      const workflowsDir = join(nodeModulesDir, 'resources', 'workflows');
-      
       // Note: We can't actually create files in the real node_modules during tests,
       // but we can verify the path resolution logic works
       const workflowManager = new WorkflowManager();
       const workflows = workflowManager.getAvailableWorkflows();
-      
+
       // Should still find predefined workflows from the actual package
       expect(workflows.length).toBeGreaterThan(0);
     });
@@ -168,17 +169,17 @@ states:
       const nodePath = join(tempDir, 'global-modules');
       const packageDir = join(nodePath, 'responsible-vibe-mcp');
       const workflowsDir = join(packageDir, 'resources', 'workflows');
-      
+
       mkdirSync(workflowsDir, { recursive: true });
       createWorkflowFile(workflowsDir, 'greenfield.yaml');
       createPackageJson(packageDir);
-      
+
       // Set NODE_PATH
       process.env.NODE_PATH = nodePath;
 
       const workflowManager = new WorkflowManager();
       const workflows = workflowManager.getAvailableWorkflows();
-      
+
       expect(workflows.length).toBeGreaterThan(0);
       const workflowNames = workflows.map(w => w.name);
       expect(workflowNames).toContain('greenfield');
@@ -191,19 +192,23 @@ states:
       const homeDir = join(tempDir, 'home');
       const npxCacheDir = join(homeDir, '.npm/_npx');
       const cacheEntry = join(npxCacheDir, 'abc123');
-      const packageDir = join(cacheEntry, 'node_modules', 'responsible-vibe-mcp');
+      const packageDir = join(
+        cacheEntry,
+        'node_modules',
+        'responsible-vibe-mcp'
+      );
       const workflowsDir = join(packageDir, 'resources', 'workflows');
-      
+
       mkdirSync(workflowsDir, { recursive: true });
       createWorkflowFile(workflowsDir, 'minor.yaml');
       createPackageJson(packageDir);
-      
+
       // Set HOME environment variable
       process.env.HOME = homeDir;
 
       const workflowManager = new WorkflowManager();
       const workflows = workflowManager.getAvailableWorkflows();
-      
+
       expect(workflows.length).toBeGreaterThan(0);
       const workflowNames = workflows.map(w => w.name);
       expect(workflowNames).toContain('minor');
@@ -216,18 +221,18 @@ states:
       const cacheEntry = join(npxCacheDir, 'def456');
       const packageDir = join(cacheEntry, 'responsible-vibe-mcp');
       const workflowsDir = join(packageDir, 'resources', 'workflows');
-      
+
       mkdirSync(workflowsDir, { recursive: true });
       createWorkflowFile(workflowsDir, 'waterfall.yaml');
       createPackageJson(packageDir);
-      
+
       // Set USERPROFILE environment variable (Windows)
       process.env.USERPROFILE = userProfile;
       delete process.env.HOME; // Remove HOME to simulate Windows
 
       const workflowManager = new WorkflowManager();
       const workflows = workflowManager.getAvailableWorkflows();
-      
+
       expect(workflows.length).toBeGreaterThan(0);
       const workflowNames = workflows.map(w => w.name);
       expect(workflowNames).toContain('waterfall');
@@ -238,19 +243,23 @@ states:
       const homeDir = join(tempDir, 'Users', 'testuser');
       const npxCacheDir = join(homeDir, 'Library/Caches/npm/_npx');
       const cacheEntry = join(npxCacheDir, 'ghi789');
-      const packageDir = join(cacheEntry, 'node_modules', 'responsible-vibe-mcp');
+      const packageDir = join(
+        cacheEntry,
+        'node_modules',
+        'responsible-vibe-mcp'
+      );
       const workflowsDir = join(packageDir, 'resources', 'workflows');
-      
+
       mkdirSync(workflowsDir, { recursive: true });
       createWorkflowFile(workflowsDir, 'epcc.yaml');
       createPackageJson(packageDir);
-      
+
       // Set HOME environment variable
       process.env.HOME = homeDir;
 
       const workflowManager = new WorkflowManager();
       const workflows = workflowManager.getAvailableWorkflows();
-      
+
       expect(workflows.length).toBeGreaterThan(0);
       const workflowNames = workflows.map(w => w.name);
       expect(workflowNames).toContain('epcc');
@@ -263,7 +272,7 @@ states:
       // We can't easily mock this in tests, but we can verify the logic
       const workflowManager = new WorkflowManager();
       const workflows = workflowManager.getAvailableWorkflows();
-      
+
       // Should find predefined workflows
       expect(workflows.length).toBeGreaterThan(0);
     });
@@ -275,10 +284,10 @@ states:
       // In the test environment, this should work since we're running from the package
       const workflowManager = new WorkflowManager();
       const workflows = workflowManager.getAvailableWorkflows();
-      
+
       expect(workflows.length).toBeGreaterThan(0);
       const workflowNames = workflows.map(w => w.name);
-      
+
       // Should find all predefined workflows
       expect(workflowNames).toContain('waterfall');
       expect(workflowNames).toContain('bugfix');
@@ -292,7 +301,7 @@ states:
       // This is difficult to test since our actual package has workflows
       // But we can verify the manager doesn't crash
       const workflowManager = new WorkflowManager();
-      
+
       expect(() => {
         const workflows = workflowManager.getAvailableWorkflows();
         expect(workflows).toBeDefined();
@@ -304,7 +313,7 @@ states:
       // The implementation should remove duplicates and invalid paths
       const workflowManager = new WorkflowManager();
       const workflows = workflowManager.getAvailableWorkflows();
-      
+
       // Should work without errors despite potential duplicate strategies
       expect(workflows).toBeDefined();
       expect(Array.isArray(workflows)).toBe(true);
@@ -315,15 +324,15 @@ states:
     it('should load all predefined workflows correctly', () => {
       const workflowManager = new WorkflowManager();
       const workflows = workflowManager.getAvailableWorkflows();
-      
+
       // Verify all expected workflows are present
       const workflowNames = workflows.map(w => w.name).sort();
       expect(workflowNames).toContain('waterfall');
       expect(workflowNames).toContain('bugfix');
       expect(workflowNames).toContain('epcc');
-      
+
       // Verify each workflow has required properties
-      workflows.forEach(workflow => {
+      for (const workflow of workflows) {
         expect(workflow.name).toBeDefined();
         expect(workflow.displayName).toBeDefined();
         expect(workflow.description).toBeDefined();
@@ -331,12 +340,12 @@ states:
         expect(workflow.phases).toBeDefined();
         expect(Array.isArray(workflow.phases)).toBe(true);
         expect(workflow.phases.length).toBeGreaterThan(0);
-      });
+      }
     });
 
     it('should load specific workflows with correct structure', () => {
       const workflowManager = new WorkflowManager();
-      
+
       // Test waterfall workflow
       const waterfall = workflowManager.getWorkflow('waterfall');
       expect(waterfall).toBeDefined();
@@ -345,7 +354,7 @@ states:
       expect(Object.keys(waterfall?.states || {})).toContain('requirements');
       expect(Object.keys(waterfall?.states || {})).toContain('design');
       expect(Object.keys(waterfall?.states || {})).toContain('implementation');
-      
+
       // Test bugfix workflow
       const bugfix = workflowManager.getWorkflow('bugfix');
       expect(bugfix).toBeDefined();

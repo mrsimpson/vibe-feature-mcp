@@ -1,6 +1,6 @@
 /**
  * Resource Handler Registry
- * 
+ *
  * Central registry for all resource handlers. Provides registration and lookup
  * functionality for resource handlers used by the MCP server.
  */
@@ -21,9 +21,9 @@ export class DefaultResourceRegistry implements ResourceRegistry {
   private handlers = new Map<string, ResourceHandler>();
 
   register(pattern: string, handler: ResourceHandler): void {
-    logger.debug('Registering resource handler', { 
-      pattern, 
-      handlerType: handler.constructor.name 
+    logger.debug('Registering resource handler', {
+      pattern,
+      handlerType: handler.constructor.name,
     });
     this.handlers.set(pattern, handler);
   }
@@ -36,7 +36,7 @@ export class DefaultResourceRegistry implements ResourceRegistry {
         return handler;
       }
     }
-    
+
     logger.debug('No resource handler found for URI', { uri });
     return undefined;
   }
@@ -47,17 +47,22 @@ export class DefaultResourceRegistry implements ResourceRegistry {
  */
 export function createResourceRegistry(): ResourceRegistry {
   const registry = new DefaultResourceRegistry();
-  
+
   // Register all standard resource handlers
   registry.register('plan://current', new DevelopmentPlanResourceHandler());
   registry.register('state://current', new ConversationStateResourceHandler());
   registry.register('workflow://', new WorkflowResourceHandler());
   registry.register('system-prompt://', new SystemPromptResourceHandler());
-  
-  logger.info('Resource registry created with handlers', { 
-    patterns: ['plan://current', 'state://current', 'workflow://', 'system-prompt://']
+
+  logger.info('Resource registry created with handlers', {
+    patterns: [
+      'plan://current',
+      'state://current',
+      'workflow://',
+      'system-prompt://',
+    ],
   });
-  
+
   return registry;
 }
 

@@ -1,14 +1,15 @@
 /**
  * Shared Test Utilities
- * 
+ *
  * Common utilities to eliminate repetition across test files
  */
 
-import { mkdirSync, writeFileSync, existsSync } from 'fs';
-import { execSync } from 'child_process';
-import { join } from 'path';
+import { mkdirSync, writeFileSync, existsSync } from 'node:fs';
+import { execSync } from 'node:child_process';
+import { join } from 'node:path';
 import { vi, expect } from 'vitest';
 import { ResponsibleVibeMCPServer } from '../../src/server/index.js';
+import type { ServerContext } from '../../src/server/types.js';
 import { TempProject } from './temp-files.js';
 
 /**
@@ -17,7 +18,7 @@ import { TempProject } from './temp-files.js';
 export const MOCK_DOCS = {
   architecture: '# Architecture\n\nMock architecture document for testing.',
   requirements: '# Requirements\n\nMock requirements document for testing.',
-  design: '# Design\n\nMock design document for testing.'
+  design: '# Design\n\nMock design document for testing.',
 } as const;
 
 /**
@@ -36,7 +37,10 @@ export class GitTestHelper {
     execSync('git commit -m "Initial commit"', { cwd: projectPath });
   }
 
-  static createFeatureBranch(projectPath: string, branchName: string = 'feature/test'): void {
+  static createFeatureBranch(
+    projectPath: string,
+    branchName: string = 'feature/test'
+  ): void {
     execSync(`git checkout -b ${branchName}`, { cwd: projectPath });
   }
 
@@ -53,10 +57,13 @@ export class GitTestHelper {
  * Server test utilities
  */
 export class ServerTestHelper {
-  static async createServer(projectPath: string, options: { enableLogging?: boolean } = {}): Promise<ResponsibleVibeMCPServer> {
-    const server = new ResponsibleVibeMCPServer({ 
+  static async createServer(
+    projectPath: string,
+    options: { enableLogging?: boolean } = {}
+  ): Promise<ResponsibleVibeMCPServer> {
+    const server = new ResponsibleVibeMCPServer({
       projectPath,
-      enableLogging: options.enableLogging ?? false 
+      enableLogging: options.enableLogging ?? false,
     });
     await server.initialize();
     return server;
@@ -76,10 +83,10 @@ export class MockDocsHelper {
   static addToProject(projectPath: string): void {
     const docsDir = join(projectPath, '.vibe', 'docs');
     mkdirSync(docsDir, { recursive: true });
-    
-    Object.entries(MOCK_DOCS).forEach(([docType, content]) => {
+
+    for (const [docType, content] of Object.entries(MOCK_DOCS)) {
       writeFileSync(join(docsDir, `${docType}.md`), content);
-    });
+    }
   }
 
   static addToTempProject(tempProject: TempProject): void {
@@ -97,21 +104,26 @@ export class MockDocsHelper {
  * Mock context factory for unit tests
  */
 export class MockContextFactory {
-  static createBasicContext(projectPath: string, overrides: any = {}) {
+  static createBasicContext(
+    projectPath: string,
+    overrides: Partial<ServerContext> = {}
+  ) {
     return {
       projectPath,
       workflowManager: {
         validateWorkflowName: vi.fn().mockReturnValue(true),
-        getWorkflowNames: vi.fn().mockReturnValue(['waterfall', 'epcc', 'greenfield']),
+        getWorkflowNames: vi
+          .fn()
+          .mockReturnValue(['waterfall', 'epcc', 'greenfield']),
         loadWorkflowForProject: vi.fn().mockReturnValue({
           initial_state: 'requirements',
           states: {
             requirements: {
               description: 'Define requirements',
-              instructions: 'Create detailed requirements for the project.'
-            }
-          }
-        })
+              instructions: 'Create detailed requirements for the project.',
+            },
+          },
+        }),
       },
       conversationManager: {
         createConversationContext: vi.fn().mockResolvedValue({
@@ -119,20 +131,20 @@ export class MockContextFactory {
           currentPhase: 'requirements',
           projectPath,
           planFilePath: join(projectPath, '.vibe', 'plan.md'),
-          gitBranch: 'feature-branch'
+          gitBranch: 'feature-branch',
         }),
-        updateConversationState: vi.fn()
+        updateConversationState: vi.fn(),
       },
       transitionEngine: {
         handleExplicitTransition: vi.fn().mockResolvedValue({
-          newPhase: 'requirements'
-        })
+          newPhase: 'requirements',
+        }),
       },
       planManager: {
         setStateMachine: vi.fn(),
-        ensurePlanFile: vi.fn()
+        ensurePlanFile: vi.fn(),
       },
-      ...overrides
+      ...overrides,
     };
   }
 
@@ -140,22 +152,32 @@ export class MockContextFactory {
     return {
       getProjectDocsInfo: vi.fn(),
       getVariableSubstitutions: vi.fn().mockReturnValue({
-        '$ARCHITECTURE_DOC': join(projectPath, '.vibe', 'docs', 'architecture.md'),
-        '$REQUIREMENTS_DOC': join(projectPath, '.vibe', 'docs', 'requirements.md'),
-        '$DESIGN_DOC': join(projectPath, '.vibe', 'docs', 'design.md')
+        $ARCHITECTURE_DOC: join(
+          projectPath,
+          '.vibe',
+          'docs',
+          'architecture.md'
+        ),
+        $REQUIREMENTS_DOC: join(
+          projectPath,
+          '.vibe',
+          'docs',
+          'requirements.md'
+        ),
+        $DESIGN_DOC: join(projectPath, '.vibe', 'docs', 'design.md'),
       }),
       templateManager: {
         getAvailableTemplates: vi.fn().mockResolvedValue({
           architecture: ['arc42', 'freestyle'],
           requirements: ['ears', 'freestyle'],
-          design: ['comprehensive', 'freestyle']
+          design: ['comprehensive', 'freestyle'],
         }),
         getDefaults: vi.fn().mockResolvedValue({
           architecture: 'freestyle',
           requirements: 'freestyle',
-          design: 'freestyle'
-        })
-      }
+          design: 'freestyle',
+        }),
+      },
     };
   }
 }
@@ -169,52 +191,54 @@ export const TEST_WORKFLOWS = {
     states: {
       requirements: {
         description: 'Define requirements',
-        instructions: 'Create detailed requirements for the project.'
-      }
-    }
+        instructions: 'Create detailed requirements for the project.',
+      },
+    },
   },
-  
+
   withArchDoc: {
     initial_state: 'design',
     states: {
       design: {
         description: 'Create design',
-        instructions: 'Review the architecture in $ARCHITECTURE_DOC and create detailed design.'
-      }
-    }
+        instructions:
+          'Review the architecture in $ARCHITECTURE_DOC and create detailed design.',
+      },
+    },
   },
-  
+
   withMultipleDocs: {
     initial_state: 'implementation',
     states: {
       implementation: {
         description: 'Implement solution',
-        instructions: 'Follow the architecture in $ARCHITECTURE_DOC and implement according to $DESIGN_DOC requirements.'
+        instructions:
+          'Follow the architecture in $ARCHITECTURE_DOC and implement according to $DESIGN_DOC requirements.',
       },
       testing: {
         description: 'Test solution',
-        instructions: 'Verify all requirements from $REQUIREMENTS_DOC are met.'
-      }
-    }
-  }
+        instructions: 'Verify all requirements from $REQUIREMENTS_DOC are met.',
+      },
+    },
+  },
 } as const;
 
 /**
  * Common test assertions
  */
 export class TestAssertions {
-  static expectValidResult(result: any): void {
+  static expectValidResult(result: unknown): void {
     expect(result).toBeTypeOf('object');
     expect(result.phase).toBeDefined();
     expect(result.instructions).toBeDefined();
   }
 
-  static expectArtifactSetupPhase(result: any): void {
+  static expectArtifactSetupPhase(result: unknown): void {
     expect(result.phase).toBe('artifact-setup');
     expect(result.instructions).toContain('Referenced Variables');
   }
 
-  static expectNormalPhase(result: any, expectedPhase: string): void {
+  static expectNormalPhase(result: unknown, expectedPhase: string): void {
     expect(result.phase).toBe(expectedPhase);
     expect(result.instructions).toBeDefined();
   }

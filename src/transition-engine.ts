@@ -1,6 +1,6 @@
 /**
  * Transition Engine
- * 
+ *
  * Manages the development state machine and determines appropriate phase transitions.
  * Analyzes conversation context and user input to make intelligent phase decisions.
  */
@@ -8,6 +8,7 @@
 import { createLogger } from './logger.js';
 import { StateMachineLoader } from './state-machine-loader.js';
 import { WorkflowManager } from './workflow-manager.js';
+import type { ConversationState } from './types.js';
 
 const logger = createLogger('TransitionEngine');
 
@@ -31,78 +32,102 @@ export interface TransitionResult {
 export class TransitionEngine {
   private stateMachineLoader: StateMachineLoader;
   private workflowManager: WorkflowManager;
-  private conversationManager?: { 
+  private conversationManager?: {
     hasInteractions: (conversationId: string) => Promise<boolean>;
-    getConversationState: (conversationId: string) => Promise<any>;
+    getConversationState: (
+      conversationId: string
+    ) => Promise<ConversationState | null>;
   };
-  
+
   constructor(projectPath: string) {
     this.stateMachineLoader = new StateMachineLoader();
     this.workflowManager = new WorkflowManager();
-    
+
     logger.info('TransitionEngine initialized', { projectPath });
   }
-  
+
   /**
    * Set the conversation manager (dependency injection)
    */
-  setConversationManager(conversationManager: { 
+  setConversationManager(conversationManager: {
     hasInteractions: (conversationId: string) => Promise<boolean>;
-    getConversationState: (conversationId: string) => Promise<any>;
+    getConversationState: (
+      conversationId: string
+    ) => Promise<ConversationState | null>;
   }) {
     this.conversationManager = conversationManager;
   }
-  
+
   /**
    * Get the loaded state machine for the current project
    */
   getStateMachine(projectPath: string, workflowName?: string) {
     // Use WorkflowManager to load the appropriate workflow
-    return this.workflowManager.loadWorkflowForProject(projectPath, workflowName);
+    return this.workflowManager.loadWorkflowForProject(
+      projectPath,
+      workflowName
+    );
   }
 
   /**
    * Check if this is the first call from initial state based on database interactions
    */
-  private async isFirstCallFromInitialState(context: TransitionContext): Promise<boolean> {
+  private async isFirstCallFromInitialState(
+    context: TransitionContext
+  ): Promise<boolean> {
     // Get workflow name from conversation state
-    const conversationState = await this.conversationManager?.getConversationState(context.conversationId);
+    const conversationState =
+      await this.conversationManager?.getConversationState(
+        context.conversationId
+      );
     const workflowName = conversationState?.workflowName;
-    
-    const stateMachine = this.workflowManager.loadWorkflowForProject(context.projectPath, workflowName);
+
+    const stateMachine = this.workflowManager.loadWorkflowForProject(
+      context.projectPath,
+      workflowName
+    );
     const isInitialState = context.currentPhase === stateMachine.initial_state;
-    
+
     if (!isInitialState) return false;
-    
+
     // Check database for any previous interactions in this conversation
     if (!this.conversationManager) {
       logger.warn('ConversationManager not set, assuming first call');
       return true;
     }
 
-    const hasInteractions = await this.conversationManager.hasInteractions(context.conversationId);
-    
+    const hasInteractions = await this.conversationManager.hasInteractions(
+      context.conversationId
+    );
+
     logger.debug('Checking first call from initial state', {
       isInitialState,
       hasInteractions,
       conversationId: context.conversationId,
-      currentPhase: context.currentPhase
+      currentPhase: context.currentPhase,
     });
-    
+
     return !hasInteractions;
   }
 
   /**
    * Generate instructions for defining phase entrance criteria
    */
-  private async generateCriteriaDefinitionInstructions(projectPath: string, conversationId: string): Promise<string> {
+  private async generateCriteriaDefinitionInstructions(
+    projectPath: string,
+    conversationId: string
+  ): Promise<string> {
     // Get workflow name from conversation state
-    const conversationState = await this.conversationManager?.getConversationState(conversationId);
+    const conversationState =
+      await this.conversationManager?.getConversationState(conversationId);
     const workflowName = conversationState?.workflowName;
-    
-    const stateMachine = this.workflowManager.loadWorkflowForProject(projectPath, workflowName);
+
+    const stateMachine = this.workflowManager.loadWorkflowForProject(
+      projectPath,
+      workflowName
+    );
     const phases = Object.keys(stateMachine.states);
-    
+
     let instructions = `Welcome to ${stateMachine.name}!
 
 Before we begin development, let's establish clear entrance criteria for each phase. This will help us make informed decisions about when to transition between phases throughout the development process.
@@ -114,12 +139,12 @@ Please update the plan file with a "Phase Entrance Criteria" section that define
 `;
 
     // Generate criteria template for each phase (except initial state)
-    phases.forEach(phase => {
-      if (phase === stateMachine.initial_state) return; // Skip initial state
-      
+    for (const phase of phases) {
+      if (phase === stateMachine.initial_state) continue; // Skip initial state
+
       const phaseDefinition = stateMachine.states[phase];
       const capitalizedPhase = this.capitalizePhase(phase);
-      
+
       instructions += `### ${capitalizedPhase} Phase
 *${phaseDefinition.description}*
 
@@ -129,7 +154,7 @@ Please update the plan file with a "Phase Entrance Criteria" section that define
 - [ ] [Include any deliverables or milestones required]
 
 `;
-    });
+    }
 
     instructions += `
 Once you've defined these criteria, we can begin development. Throughout the process, consult these criteria when considering phase transitions.
@@ -142,23 +167,31 @@ Once you've defined these criteria, we can begin development. Throughout the pro
   /**
    * Get phase-specific instructions for continuing work in current phase
    */
-  private async getContinuePhaseInstructions(phase: string, projectPath: string, conversationId: string): Promise<string> {
+  private async getContinuePhaseInstructions(
+    phase: string,
+    projectPath: string,
+    conversationId: string
+  ): Promise<string> {
     // Get workflow name from conversation state
-    const conversationState = await this.conversationManager?.getConversationState(conversationId);
+    const conversationState =
+      await this.conversationManager?.getConversationState(conversationId);
     const workflowName = conversationState?.workflowName;
-    
-    const stateMachine = this.workflowManager.loadWorkflowForProject(projectPath, workflowName);
-    
+
+    const stateMachine = this.workflowManager.loadWorkflowForProject(
+      projectPath,
+      workflowName
+    );
+
     const stateDefinition = stateMachine.states[phase];
     if (!stateDefinition) {
       logger.error('Unknown phase', new Error(`Unknown phase: ${phase}`));
       throw new Error(`Unknown phase: ${phase}`);
     }
-    
+
     const continueTransition = stateDefinition.transitions.find(
       t => t.to === phase
     );
-    
+
     if (continueTransition) {
       // Use the transition instructions if available, otherwise use default + additional
       if (continueTransition.instructions) {
@@ -171,84 +204,120 @@ Once you've defined these criteria, we can begin development. Throughout the pro
         return composedInstructions;
       }
     }
-    
+
     // Fall back to default instructions for the phase
     return stateDefinition.default_instructions;
   }
   /**
    * Get the first development phase from the state machine
    */
-  private async getFirstDevelopmentPhase(projectPath: string, conversationId: string): Promise<string> {
+  private async getFirstDevelopmentPhase(
+    projectPath: string,
+    conversationId: string
+  ): Promise<string> {
     // Get workflow name from conversation state
-    const conversationState = await this.conversationManager?.getConversationState(conversationId);
+    const conversationState =
+      await this.conversationManager?.getConversationState(conversationId);
     const workflowName = conversationState?.workflowName;
-    
-    const stateMachine = this.workflowManager.loadWorkflowForProject(projectPath, workflowName);
+
+    const stateMachine = this.workflowManager.loadWorkflowForProject(
+      projectPath,
+      workflowName
+    );
     const initialState = stateMachine.initial_state;
-    
+
     // The first development phase IS the initial state - we should stay there
     // Don't automatically transition to the first transition target
     return initialState;
   }
-  
+
   /**
    * Analyze context and determine appropriate phase transition
    */
-  async analyzePhaseTransition(context: TransitionContext): Promise<TransitionResult> {
-    const { currentPhase, projectPath, conversationId, userInput, context: additionalContext, conversationSummary } = context;
-    
-    // Get workflow name from conversation state
-    const conversationState = await this.conversationManager?.getConversationState(conversationId);
-    const workflowName = conversationState?.workflowName;
-    
+  async analyzePhaseTransition(
+    context: TransitionContext
+  ): Promise<TransitionResult> {
+    const {
+      currentPhase,
+      projectPath,
+      conversationId,
+      userInput,
+      context: additionalContext,
+      conversationSummary,
+    } = context;
+
     // Load the appropriate workflow for this project/conversation
-    const stateMachine = this.workflowManager.loadWorkflowForProject(projectPath, workflowName);
-    
+
     logger.debug('Analyzing phase transition', {
       currentPhase,
       projectPath,
       hasUserInput: !!userInput,
       hasContext: !!additionalContext,
       hasSummary: !!conversationSummary,
-      userInput: userInput ? userInput.substring(0, 50) + (userInput.length > 50 ? '...' : '') : undefined
+      userInput: userInput
+        ? userInput.substring(0, 50) + (userInput.length > 50 ? '...' : '')
+        : undefined,
     });
 
     // Check if this is the first call from initial state - transition to first development phase
     if (await this.isFirstCallFromInitialState(context)) {
-      const firstDevelopmentPhase = await this.getFirstDevelopmentPhase(projectPath, conversationId);
-      
-      logger.info('First call from initial state - transitioning to first development phase with criteria', {
-        currentPhase,
-        firstDevelopmentPhase,
-        projectPath
-      });
-      
+      const firstDevelopmentPhase = await this.getFirstDevelopmentPhase(
+        projectPath,
+        conversationId
+      );
+
+      logger.info(
+        'First call from initial state - transitioning to first development phase with criteria',
+        {
+          currentPhase,
+          firstDevelopmentPhase,
+          projectPath,
+        }
+      );
+
       // Combine criteria definition with first phase instructions
-      const criteriaInstructions = await this.generateCriteriaDefinitionInstructions(projectPath, conversationId);
-      const phaseInstructions = await this.getContinuePhaseInstructions(firstDevelopmentPhase, projectPath, conversationId);
-      
+      const criteriaInstructions =
+        await this.generateCriteriaDefinitionInstructions(
+          projectPath,
+          conversationId
+        );
+      const phaseInstructions = await this.getContinuePhaseInstructions(
+        firstDevelopmentPhase,
+        projectPath,
+        conversationId
+      );
+
       return {
         newPhase: firstDevelopmentPhase, // Transition to first development phase
-        instructions: criteriaInstructions + "\n\n---\n\n" + phaseInstructions,
-        transitionReason: "Starting development - defining criteria and beginning first phase",
-        isModeled: true
+        instructions: criteriaInstructions + '\n\n---\n\n' + phaseInstructions,
+        transitionReason:
+          'Starting development - defining criteria and beginning first phase',
+        isModeled: true,
       };
     }
 
     // For all other cases, stay in current phase and let LLM decide based on plan file criteria
     // The LLM will consult the entrance criteria in the plan file and use proceed_to_phase when ready
-    const continueInstructions = await this.getContinuePhaseInstructions(currentPhase, projectPath, conversationId);
-    
-    logger.debug('Continuing in current phase - LLM will evaluate transition criteria', {
+    const continueInstructions = await this.getContinuePhaseInstructions(
       currentPhase,
-      projectPath
-    });
-    
+      projectPath,
+      conversationId
+    );
+
+    logger.debug(
+      'Continuing in current phase - LLM will evaluate transition criteria',
+      {
+        currentPhase,
+        projectPath,
+      }
+    );
+
     return {
       newPhase: currentPhase,
       instructions: continueInstructions,
-      transitionReason: "Continue current phase - LLM will evaluate transition criteria from plan file",
-      isModeled: false
+      transitionReason:
+        'Continue current phase - LLM will evaluate transition criteria from plan file',
+      isModeled: false,
     };
   }
 
@@ -264,15 +333,15 @@ Once you've defined these criteria, we can begin development. Throughout the pro
   ): TransitionResult {
     // Load the appropriate state machine for this project/workflow
     const stateMachine = this.getStateMachine(projectPath, workflowName);
-    
+
     logger.debug('Handling explicit phase transition', {
       currentPhase,
       targetPhase,
       projectPath,
       workflowName,
-      reason 
+      reason,
     });
-    
+
     // Validate that the target phase exists in the state machine
     if (!stateMachine.states[targetPhase]) {
       const validPhases = Object.keys(stateMachine.states);
@@ -287,21 +356,21 @@ Once you've defined these criteria, we can begin development. Throughout the pro
     const transitionInfo = {
       instructions: instructions,
       transitionReason: reason || `Moving to ${targetPhase}`,
-      isModeled: false // Direct phase transitions are not modeled
+      isModeled: false, // Direct phase transitions are not modeled
     };
-    
+
     logger.info('Explicit phase transition processed', {
       fromPhase: currentPhase,
       toPhase: targetPhase,
       reason: transitionInfo.transitionReason,
-      isModeled: transitionInfo.isModeled
+      isModeled: transitionInfo.isModeled,
     });
-    
+
     return {
       newPhase: targetPhase,
       instructions: transitionInfo.instructions,
       transitionReason: reason || transitionInfo.transitionReason,
-      isModeled: transitionInfo.isModeled
+      isModeled: transitionInfo.isModeled,
     };
   }
 
@@ -309,7 +378,8 @@ Once you've defined these criteria, we can begin development. Throughout the pro
    * Capitalize phase name for display
    */
   private capitalizePhase(phase: string): string {
-    return phase.split('_')
+    return phase
+      .split('_')
       .map(word => word.charAt(0).toUpperCase() + word.slice(1))
       .join(' ');
   }

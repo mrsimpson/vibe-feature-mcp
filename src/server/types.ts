@@ -27,11 +27,11 @@ export interface ServerContext {
  * Standard result format for all handler operations
  * Separates business logic results from MCP protocol concerns
  */
-export interface HandlerResult<T = any> {
+export interface HandlerResult<T = unknown> {
   success: boolean;
   data?: T;
   error?: string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 /**
@@ -71,7 +71,7 @@ export interface McpResourceResponse {
  * Tool handler interface
  * All tool handlers must implement this interface
  */
-export interface ToolHandler<TArgs = any, TResult = any> {
+export interface ToolHandler<TArgs = unknown, TResult = unknown> {
   handle(args: TArgs, context: ServerContext): Promise<HandlerResult<TResult>>;
 }
 
@@ -80,7 +80,10 @@ export interface ToolHandler<TArgs = any, TResult = any> {
  * All resource handlers must implement this interface
  */
 export interface ResourceHandler {
-  handle(uri: URL, context: ServerContext): Promise<HandlerResult<ResourceContent>>;
+  handle(
+    uri: URL,
+    context: ServerContext
+  ): Promise<HandlerResult<ResourceContent>>;
 }
 
 /**
@@ -89,7 +92,9 @@ export interface ResourceHandler {
  */
 export interface ResponseRenderer {
   renderToolResponse<T>(result: HandlerResult<T>): McpToolResponse;
-  renderResourceResponse(result: HandlerResult<ResourceContent>): McpResourceResponse;
+  renderResourceResponse(
+    result: HandlerResult<ResourceContent>
+  ): McpResourceResponse;
   renderError(error: Error | string): McpToolResponse;
 }
 

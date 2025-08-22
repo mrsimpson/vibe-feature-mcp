@@ -1,6 +1,6 @@
 /**
  * Instruction Generator
- * 
+ *
  * Creates phase-specific guidance for the LLM based on current conversation state.
  * Customizes instructions based on project context and development phase.
  * Supports custom state machine definitions for dynamic instruction generation.
@@ -55,16 +55,17 @@ export class InstructionGenerator {
     baseInstructions: string,
     context: InstructionContext
   ): Promise<GeneratedInstructions> {
-    
     // Apply variable substitution to base instructions
     const substitutedInstructions = this.applyVariableSubstitution(
       baseInstructions,
       context.conversationContext.projectPath
     );
-    
+
     // Get plan file guidance
-    const planFileGuidance = this.planManager.generatePlanFileGuidance(context.phase);
-    
+    const planFileGuidance = this.planManager.generatePlanFileGuidance(
+      context.phase
+    );
+
     // Enhance base instructions with context-specific guidance
     const enhancedInstructions = await this.enhanceInstructions(
       substitutedInstructions,
@@ -79,8 +80,8 @@ export class InstructionGenerator {
         phase: context.phase,
         planFilePath: context.conversationContext.planFilePath,
         transitionReason: context.transitionReason,
-        isModeled: context.isModeled
-      }
+        isModeled: context.isModeled,
+      },
     };
   }
 
@@ -88,15 +89,22 @@ export class InstructionGenerator {
    * Apply variable substitution to instructions
    * Replaces project artifact variables with actual file paths
    */
-  private applyVariableSubstitution(instructions: string, projectPath: string): string {
-    const substitutions = this.projectDocsManager.getVariableSubstitutions(projectPath);
-    
+  private applyVariableSubstitution(
+    instructions: string,
+    projectPath: string
+  ): string {
+    const substitutions =
+      this.projectDocsManager.getVariableSubstitutions(projectPath);
+
     let result = instructions;
     for (const [variable, value] of Object.entries(substitutions)) {
       // Use global replace to handle multiple occurrences
-      result = result.replace(new RegExp(this.escapeRegExp(variable), 'g'), value);
+      result = result.replace(
+        new RegExp(this.escapeRegExp(variable), 'g'),
+        value
+      );
     }
-    
+
     return result;
   }
 
@@ -113,11 +121,16 @@ export class InstructionGenerator {
   private async enhanceInstructions(
     baseInstructions: string,
     context: InstructionContext,
-    planFileGuidance: string
+    _planFileGuidance: string
   ): Promise<string> {
-    
-    const { phase, conversationContext, transitionReason, isModeled, planFileExists } = context;
-    
+    const {
+      phase,
+      conversationContext,
+      transitionReason,
+      isModeled,
+      planFileExists,
+    } = context;
+
     // Build plan-file-referential instructions
     let enhanced = `Check your plan file at \`${conversationContext.planFilePath}\` and focus on the "${this.capitalizePhase(phase)}" section.
 
@@ -144,7 +157,8 @@ ${baseInstructions}
 
     // Add plan file creation note if needed
     if (!planFileExists) {
-      enhanced += '\n\n**Note**: Plan file will be created when you first update it.';
+      enhanced +=
+        '\n\n**Note**: Plan file will be created when you first update it.';
     }
 
     return enhanced;
@@ -160,8 +174,10 @@ ${baseInstructions}
         return `**Context**: ${phaseDefinition.description}`;
       }
     }
-    
-    throw new Error(`State machine not set or unknown phase: ${phase}. This should not happen as state machine is always loaded.`);
+
+    throw new Error(
+      `State machine not set or unknown phase: ${phase}. This should not happen as state machine is always loaded.`
+    );
   }
 
   /**
@@ -173,19 +189,21 @@ ${baseInstructions}
     if (this.stateMachine) {
       const phaseDefinition = this.stateMachine.states[phase];
       if (phaseDefinition) {
-        const capitalizedPhase = this.capitalizePhase(phase);
         return `**Remember**: \n- Focus on: ${phaseDefinition.description}\n- Update plan file with ${phase} progress\n- Mark completed tasks with [x]\n- Stay focused on current phase objectives`;
       }
     }
-    
-    throw new Error(`State machine not set or unknown phase: ${phase}. This should not happen as state machine is always loaded.`);
+
+    throw new Error(
+      `State machine not set or unknown phase: ${phase}. This should not happen as state machine is always loaded.`
+    );
   }
 
   /**
    * Capitalize phase name for display
    */
   private capitalizePhase(phase: string): string {
-    return phase.split('_')
+    return phase
+      .split('_')
       .map(word => word.charAt(0).toUpperCase() + word.slice(1))
       .join(' ');
   }

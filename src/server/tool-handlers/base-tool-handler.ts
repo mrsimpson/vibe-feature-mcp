@@ -1,24 +1,26 @@
 /**
  * Base Tool Handler
- * 
+ *
  * Provides common functionality for all tool handlers including
  * error handling, logging, and conversation state management.
  */
 
 import { createLogger } from '../../logger.js';
 import { ToolHandler, ServerContext, HandlerResult } from '../types.js';
-import { 
-  safeExecute, 
-  logHandlerExecution, 
+import type { ConversationContext } from '../../types.js';
+import {
+  safeExecute,
+  logHandlerExecution,
   logHandlerCompletion,
-  createConversationNotFoundResult 
 } from '../server-helpers.js';
 
 /**
  * Abstract base class for tool handlers
  * Provides common functionality and enforces consistent patterns
  */
-export abstract class BaseToolHandler<TArgs = any, TResult = any> implements ToolHandler<TArgs, TResult> {
+export abstract class BaseToolHandler<TArgs = unknown, TResult = unknown>
+  implements ToolHandler<TArgs, TResult>
+{
   protected readonly logger: ReturnType<typeof createLogger>;
 
   constructor() {
@@ -28,7 +30,10 @@ export abstract class BaseToolHandler<TArgs = any, TResult = any> implements Too
   /**
    * Main handler method - implements consistent error handling and logging
    */
-  async handle(args: TArgs, context: ServerContext): Promise<HandlerResult<TResult>> {
+  async handle(
+    args: TArgs,
+    context: ServerContext
+  ): Promise<HandlerResult<TResult>> {
     const handlerName = this.constructor.name;
     logHandlerExecution(handlerName, args);
 
@@ -45,7 +50,10 @@ export abstract class BaseToolHandler<TArgs = any, TResult = any> implements Too
    * Abstract method that subclasses must implement
    * Contains the actual business logic for the tool
    */
-  protected abstract executeHandler(args: TArgs, context: ServerContext): Promise<TResult>;
+  protected abstract executeHandler(
+    args: TArgs,
+    context: ServerContext
+  ): Promise<TResult>;
 
   /**
    * Helper method to get conversation context with proper error handling
@@ -63,11 +71,14 @@ export abstract class BaseToolHandler<TArgs = any, TResult = any> implements Too
    * Helper method to ensure state machine is loaded for a project
    */
   protected ensureStateMachineForProject(
-    context: ServerContext, 
-    projectPath: string, 
+    context: ServerContext,
+    projectPath: string,
     workflowName?: string
   ): void {
-    const stateMachine = context.transitionEngine.getStateMachine(projectPath, workflowName);
+    const stateMachine = context.transitionEngine.getStateMachine(
+      projectPath,
+      workflowName
+    );
     context.planManager.setStateMachine(stateMachine);
     context.instructionGenerator.setStateMachine(stateMachine);
   }
@@ -79,16 +90,16 @@ export abstract class BaseToolHandler<TArgs = any, TResult = any> implements Too
     context: ServerContext,
     conversationId: string,
     toolName: string,
-    args: any,
-    response: any,
+    args: unknown,
+    response: unknown,
     phase: string
   ): Promise<void> {
     if (context.interactionLogger) {
       await context.interactionLogger.logInteraction(
-        conversationId, 
-        toolName, 
-        args, 
-        response, 
+        conversationId,
+        toolName,
+        args,
+        response,
         phase
       );
     }
@@ -99,15 +110,19 @@ export abstract class BaseToolHandler<TArgs = any, TResult = any> implements Too
  * Base class for tool handlers that require an existing conversation
  * Automatically handles the conversation-not-found case
  */
-export abstract class ConversationRequiredToolHandler<TArgs = any, TResult = any> 
-  extends BaseToolHandler<TArgs, TResult> {
-
-  protected async executeHandler(args: TArgs, context: ServerContext): Promise<TResult> {
+export abstract class ConversationRequiredToolHandler<
+  TArgs = unknown,
+  TResult = unknown,
+> extends BaseToolHandler<TArgs, TResult> {
+  protected async executeHandler(
+    args: TArgs,
+    context: ServerContext
+  ): Promise<TResult> {
     let conversationContext;
-    
+
     try {
       conversationContext = await this.getConversationContext(context);
-    } catch (error) {
+    } catch (_error) {
       // Return a special error result that the response renderer can handle
       throw new Error('CONVERSATION_NOT_FOUND');
     }
@@ -119,8 +134,8 @@ export abstract class ConversationRequiredToolHandler<TArgs = any, TResult = any
    * Abstract method for handlers that need conversation context
    */
   protected abstract executeWithConversation(
-    args: TArgs, 
-    context: ServerContext, 
-    conversationContext: any
+    args: TArgs,
+    context: ServerContext,
+    conversationContext: ConversationContext
   ): Promise<TResult>;
 }

@@ -1,6 +1,6 @@
 /**
  * System Prompt Generator for Vibe Feature MCP
- * 
+ *
  * Dynamically generates a comprehensive system prompt for LLMs to properly
  * integrate with the responsible-vibe-mcp server. The prompt is generated from
  * the actual state machine definition to ensure accuracy and consistency.
@@ -19,7 +19,7 @@ const logger = createLogger('SystemPromptGenerator');
 export function generateSystemPrompt(stateMachine: YamlStateMachine): string {
   logger.debug('Generating system prompt from state machine definition', {
     stateMachineName: stateMachine.name,
-    phaseCount: Object.keys(stateMachine.states).length
+    phaseCount: Object.keys(stateMachine.states).length,
   });
 
   return generateSimpleSystemPrompt(stateMachine);
@@ -28,7 +28,7 @@ export function generateSystemPrompt(stateMachine: YamlStateMachine): string {
 /**
  * Generate a simple system prompt for LLM integration
  */
-function generateSimpleSystemPrompt(stateMachine: YamlStateMachine): string {
+function generateSimpleSystemPrompt(_stateMachine: YamlStateMachine): string {
   logger.debug('Generating system prompt');
 
   const systemPrompt = `
@@ -105,7 +105,7 @@ Since responsible-vibe-mcp operates statelessly, provide:
 Remember: responsible-vibe-mcp guides the development process but relies on you to provide conversation context and follow its instructions precisely.`;
 
   logger.info('System prompt generated successfully', {
-    promptLength: systemPrompt.length
+    promptLength: systemPrompt.length,
   });
 
   return systemPrompt;
@@ -114,8 +114,9 @@ Remember: responsible-vibe-mcp guides the development process but relies on you 
 /**
  * Capitalize phase name for display
  */
-function capitalizePhase(phase: string): string {
-  return phase.split('_')
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(' ');
-}
+// function capitalizePhase(phase: string): string {
+//   return phase
+//     .split('_')
+//     .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+//     .join(' ');
+// }

@@ -7,6 +7,7 @@ I want the server to initialize properly with all components
 So that I can interact with it through the MCP protocol
 
 ### Background:
+
 - The server uses stdio transport for MCP communication
 - Database is stored in `~/.responsible-vibe-mcp/db.sqlite`
 - Server exposes 2 tools and 2 resources
@@ -22,13 +23,15 @@ So that I can interact with it through the MCP protocol
 **And** the database should be created at `~/.responsible-vibe-mcp/db.sqlite`
 **And** the conversation_states table should be created
 **And** the server should expose the following tools:
-  - `whats_next`
-  - `proceed_to_phase`
-**And** the server should expose the following resources:
-  - `development-plan` at `plan://current`
-  - `conversation-state` at `state://current`
+
+- `whats_next`
+- `proceed_to_phase`
+  **And** the server should expose the following resources:
+- `development-plan` at `plan://current`
+- `conversation-state` at `state://current`
 
 ### Expected Behavior:
+
 - Database directory should be created at `~/.responsible-vibe-mcp/`
 - SQLite database file should be created with proper schema
 - All MCP tools should be registered and available
@@ -46,6 +49,7 @@ So that I can interact with it through the MCP protocol
 **And** not crash the process
 
 ### Expected Behavior:
+
 - Server should catch and handle initialization errors gracefully
 - Error messages should be informative and actionable
 - Server process should not terminate unexpectedly
@@ -62,6 +66,7 @@ So that I can interact with it through the MCP protocol
 **And** be able to continue previous conversations
 
 ### Expected Behavior:
+
 - Server should successfully connect to existing database file
 - All existing conversation states should be preserved and accessible
 - Database schema should be validated and upgraded if necessary

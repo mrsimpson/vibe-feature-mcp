@@ -1,6 +1,6 @@
 /**
  * Vibe Feature MCP Server Core
- * 
+ *
  * Updated to use the new modular architecture while maintaining backward compatibility.
  * The actual implementation is now in src/server/ with proper separation of concerns.
  */

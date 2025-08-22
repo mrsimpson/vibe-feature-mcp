@@ -1,15 +1,14 @@
 /**
  * Tests for "none" template functionality
- * 
+ *
  * Tests the ability to disable specific document types using "none" templates
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { ProjectDocsManager } from '../../src/project-docs-manager.js';
-import { join } from 'path';
-import { tmpdir } from 'os';
-import { mkdir, writeFile, rm, readFile } from 'fs/promises';
-import { mkdir, rmdir } from 'fs/promises';
+import { join } from 'node:path';
+import { tmpdir } from 'node:os';
+import { mkdir, rmdir, readFile } from 'node:fs/promises';
 
 describe('None Template Functionality', () => {
   let testProjectPath: string;
@@ -27,7 +26,7 @@ describe('None Template Functionality', () => {
     // Clean up test directory
     try {
       await rmdir(testProjectPath, { recursive: true });
-    } catch (error) {
+    } catch {
       // Ignore cleanup errors
     }
   });
@@ -39,7 +38,7 @@ describe('None Template Functionality', () => {
         {
           architecture: 'none',
           requirements: 'freestyle',
-          design: 'freestyle'
+          design: 'freestyle',
         },
         {}
       );
@@ -49,9 +48,12 @@ describe('None Template Functionality', () => {
       expect(result.created).toContain('design.md');
 
       // Verify the none template content
-      const archPath = await projectDocsManager.readDocument(testProjectPath, 'architecture');
+      const archPath = await projectDocsManager.readDocument(
+        testProjectPath,
+        'architecture'
+      );
       expect(archPath).toContain('architecture.md');
-      
+
       // Read the actual file to verify placeholder content
       const archContent = await readFile(archPath, 'utf-8');
       expect(archContent).toContain('Architecture Placeholder');
@@ -65,7 +67,7 @@ describe('None Template Functionality', () => {
         {
           architecture: 'freestyle',
           requirements: 'none',
-          design: 'freestyle'
+          design: 'freestyle',
         },
         {}
       );
@@ -73,9 +75,12 @@ describe('None Template Functionality', () => {
       expect(result.created).toContain('requirements.md');
 
       // Verify the none template content
-      const reqPath = await projectDocsManager.readDocument(testProjectPath, 'requirements');
+      const reqPath = await projectDocsManager.readDocument(
+        testProjectPath,
+        'requirements'
+      );
       expect(reqPath).toContain('requirements.md');
-      
+
       // Read the actual file to verify placeholder content
       const reqContent = await readFile(reqPath, 'utf-8');
       expect(reqContent).toContain('Requirements Placeholder');
@@ -89,7 +94,7 @@ describe('None Template Functionality', () => {
         {
           architecture: 'freestyle',
           requirements: 'freestyle',
-          design: 'none'
+          design: 'none',
         },
         {}
       );
@@ -97,9 +102,12 @@ describe('None Template Functionality', () => {
       expect(result.created).toContain('design.md');
 
       // Verify the none template content
-      const designPath = await projectDocsManager.readDocument(testProjectPath, 'design');
+      const designPath = await projectDocsManager.readDocument(
+        testProjectPath,
+        'design'
+      );
       expect(designPath).toContain('design.md');
-      
+
       // Read the actual file to verify placeholder content
       const designContent = await readFile(designPath, 'utf-8');
       expect(designContent).toContain('Design Placeholder');
@@ -111,17 +119,20 @@ describe('None Template Functionality', () => {
       // Create a test README file
       const readmePath = join(testProjectPath, 'README.md');
       await mkdir(testProjectPath, { recursive: true });
-      const fs = await import('fs/promises');
-      await fs.writeFile(readmePath, '# Test Project\n\nThis is a test project.');
+      const fs = await import('node:fs/promises');
+      await fs.writeFile(
+        readmePath,
+        '# Test Project\n\nThis is a test project.'
+      );
 
       const result = await projectDocsManager.createOrLinkProjectDocs(
         testProjectPath,
         {
-          architecture: 'freestyle',  // Template
-          design: 'none'              // None template
+          architecture: 'freestyle', // Template
+          design: 'none', // None template
         },
         {
-          requirements: readmePath    // File link
+          requirements: readmePath, // File link
         }
       );
 
@@ -130,15 +141,24 @@ describe('None Template Functionality', () => {
       expect(result.linked).toContain('requirements.md');
 
       // Verify each document type
-      const archPath = await projectDocsManager.readDocument(testProjectPath, 'architecture');
+      const archPath = await projectDocsManager.readDocument(
+        testProjectPath,
+        'architecture'
+      );
       const archContent = await readFile(archPath, 'utf-8');
       expect(archContent).toContain('INSTRUCTIONS FOR ARCHITECTURE');
 
-      const reqPath = await projectDocsManager.readDocument(testProjectPath, 'requirements');
+      const reqPath = await projectDocsManager.readDocument(
+        testProjectPath,
+        'requirements'
+      );
       const reqContent = await readFile(reqPath, 'utf-8');
       expect(reqContent).toContain('This is a test project');
 
-      const designPath = await projectDocsManager.readDocument(testProjectPath, 'design');
+      const designPath = await projectDocsManager.readDocument(
+        testProjectPath,
+        'design'
+      );
       const designContent = await readFile(designPath, 'utf-8');
       expect(designContent).toContain('Design Placeholder');
       expect(designContent).toContain('DO NOT EDIT THIS FILE');
@@ -150,18 +170,31 @@ describe('None Template Functionality', () => {
         {
           architecture: 'none',
           requirements: 'none',
-          design: 'none'
+          design: 'none',
         },
         {}
       );
 
-      expect(result.created).toEqual(['architecture.md', 'requirements.md', 'design.md']);
+      expect(result.created).toEqual([
+        'architecture.md',
+        'requirements.md',
+        'design.md',
+      ]);
       expect(result.linked).toEqual([]);
 
       // Verify all contain placeholder content
-      const archPath = await projectDocsManager.readDocument(testProjectPath, 'architecture');
-      const reqPath = await projectDocsManager.readDocument(testProjectPath, 'requirements');
-      const designPath = await projectDocsManager.readDocument(testProjectPath, 'design');
+      const archPath = await projectDocsManager.readDocument(
+        testProjectPath,
+        'architecture'
+      );
+      const reqPath = await projectDocsManager.readDocument(
+        testProjectPath,
+        'requirements'
+      );
+      const designPath = await projectDocsManager.readDocument(
+        testProjectPath,
+        'design'
+      );
 
       const archContent = await readFile(archPath, 'utf-8');
       const reqContent = await readFile(reqPath, 'utf-8');
@@ -180,8 +213,9 @@ describe('None Template Functionality', () => {
 
   describe('Template Discovery', () => {
     it('should include none in available templates', async () => {
-      const availableTemplates = await projectDocsManager.templateManager.getAvailableTemplates();
-      
+      const availableTemplates =
+        await projectDocsManager.templateManager.getAvailableTemplates();
+
       expect(availableTemplates.architecture).toContain('none');
       expect(availableTemplates.requirements).toContain('none');
       expect(availableTemplates.design).toContain('none');

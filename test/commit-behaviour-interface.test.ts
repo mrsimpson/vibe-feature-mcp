@@ -5,10 +5,17 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { StartDevelopmentHandler } from '../src/server/tool-handlers/start-development.js';
 import * as GitManagerModule from '../src/git-manager.js';
+import type { ServerContext } from '../src/server/types.js';
 
 // Spy on GitManager methods
-const isGitRepositorySpy = vi.spyOn(GitManagerModule.GitManager, 'isGitRepository');
-const getCurrentCommitHashSpy = vi.spyOn(GitManagerModule.GitManager, 'getCurrentCommitHash');
+const isGitRepositorySpy = vi.spyOn(
+  GitManagerModule.GitManager,
+  'isGitRepository'
+);
+const getCurrentCommitHashSpy = vi.spyOn(
+  GitManagerModule.GitManager,
+  'getCurrentCommitHash'
+);
 
 describe('Commit Behaviour Interface', () => {
   beforeEach(() => {
@@ -21,41 +28,52 @@ describe('Commit Behaviour Interface', () => {
     const handler = new StartDevelopmentHandler();
     const mockContext = {
       projectPath: '/test/path',
-      conversationManager: { 
-        createConversationContext: vi.fn().mockResolvedValue({ conversationId: 'test' }),
-        updateConversationState: vi.fn().mockResolvedValue(undefined)
+      conversationManager: {
+        createConversationContext: vi
+          .fn()
+          .mockResolvedValue({ conversationId: 'test' }),
+        updateConversationState: vi.fn().mockResolvedValue(undefined),
       },
-      workflowManager: { 
+      workflowManager: {
         validateWorkflowName: vi.fn().mockReturnValue(true),
-        loadWorkflowForProject: vi.fn().mockReturnValue({ name: 'minor', phases: ['explore', 'implement'] })
+        loadWorkflowForProject: vi
+          .fn()
+          .mockReturnValue({ name: 'minor', phases: ['explore', 'implement'] }),
       },
-      transitionEngine: { 
-        handleExplicitTransition: vi.fn().mockResolvedValue({ newPhase: 'explore' })
+      transitionEngine: {
+        handleExplicitTransition: vi
+          .fn()
+          .mockResolvedValue({ newPhase: 'explore' }),
       },
       planManager: {
-        ensurePlanFile: vi.fn().mockResolvedValue('/test/plan.md')
+        ensurePlanFile: vi.fn().mockResolvedValue('/test/plan.md'),
       },
       instructionGenerator: {
-        generateInstructions: vi.fn().mockReturnValue('Test instructions')
-      }
+        generateInstructions: vi.fn().mockReturnValue('Test instructions'),
+      },
     };
-    
-    const result = await handler.handle({ 
-      workflow: 'minor', 
-      commit_behaviour: 'step' 
-    }, mockContext as any);
-    
+
+    const result = await handler.handle(
+      {
+        workflow: 'minor',
+        commit_behaviour: 'step',
+      },
+      mockContext as ServerContext
+    );
+
     // Verify the handler processed the commit_behaviour parameter
     expect(result).toBeTruthy();
-    expect(mockContext.conversationManager.updateConversationState).toHaveBeenCalledWith(
+    expect(
+      mockContext.conversationManager.updateConversationState
+    ).toHaveBeenCalledWith(
       'test',
       expect.objectContaining({
         gitCommitConfig: expect.objectContaining({
           enabled: true,
           commitOnStep: true,
           commitOnPhase: false,
-          commitOnComplete: true // Should be true when step commits are enabled
-        })
+          commitOnComplete: true, // Should be true when step commits are enabled
+        }),
       })
     );
   });
@@ -64,39 +82,50 @@ describe('Commit Behaviour Interface', () => {
     const handler = new StartDevelopmentHandler();
     const mockContext = {
       projectPath: '/test/path',
-      conversationManager: { 
-        createConversationContext: vi.fn().mockResolvedValue({ conversationId: 'test' }),
-        updateConversationState: vi.fn().mockResolvedValue(undefined)
+      conversationManager: {
+        createConversationContext: vi
+          .fn()
+          .mockResolvedValue({ conversationId: 'test' }),
+        updateConversationState: vi.fn().mockResolvedValue(undefined),
       },
-      workflowManager: { 
+      workflowManager: {
         validateWorkflowName: vi.fn().mockReturnValue(true),
-        loadWorkflowForProject: vi.fn().mockReturnValue({ name: 'minor', phases: ['explore', 'implement'] })
+        loadWorkflowForProject: vi
+          .fn()
+          .mockReturnValue({ name: 'minor', phases: ['explore', 'implement'] }),
       },
-      transitionEngine: { 
-        handleExplicitTransition: vi.fn().mockResolvedValue({ newPhase: 'explore' })
+      transitionEngine: {
+        handleExplicitTransition: vi
+          .fn()
+          .mockResolvedValue({ newPhase: 'explore' }),
       },
       planManager: {
-        ensurePlanFile: vi.fn().mockResolvedValue('/test/plan.md')
+        ensurePlanFile: vi.fn().mockResolvedValue('/test/plan.md'),
       },
       instructionGenerator: {
-        generateInstructions: vi.fn().mockReturnValue('Test instructions')
-      }
+        generateInstructions: vi.fn().mockReturnValue('Test instructions'),
+      },
     };
-    
-    await handler.handle({ 
-      workflow: 'minor', 
-      commit_behaviour: 'phase' 
-    }, mockContext as any);
-    
-    expect(mockContext.conversationManager.updateConversationState).toHaveBeenCalledWith(
+
+    await handler.handle(
+      {
+        workflow: 'minor',
+        commit_behaviour: 'phase',
+      },
+      mockContext as ServerContext
+    );
+
+    expect(
+      mockContext.conversationManager.updateConversationState
+    ).toHaveBeenCalledWith(
       'test',
       expect.objectContaining({
         gitCommitConfig: expect.objectContaining({
           enabled: true,
           commitOnStep: false,
           commitOnPhase: true,
-          commitOnComplete: true // Should be true when phase commits are enabled
-        })
+          commitOnComplete: true, // Should be true when phase commits are enabled
+        }),
       })
     );
   });
@@ -105,39 +134,50 @@ describe('Commit Behaviour Interface', () => {
     const handler = new StartDevelopmentHandler();
     const mockContext = {
       projectPath: '/test/path',
-      conversationManager: { 
-        createConversationContext: vi.fn().mockResolvedValue({ conversationId: 'test' }),
-        updateConversationState: vi.fn().mockResolvedValue(undefined)
+      conversationManager: {
+        createConversationContext: vi
+          .fn()
+          .mockResolvedValue({ conversationId: 'test' }),
+        updateConversationState: vi.fn().mockResolvedValue(undefined),
       },
-      workflowManager: { 
+      workflowManager: {
         validateWorkflowName: vi.fn().mockReturnValue(true),
-        loadWorkflowForProject: vi.fn().mockReturnValue({ name: 'minor', phases: ['explore', 'implement'] })
+        loadWorkflowForProject: vi
+          .fn()
+          .mockReturnValue({ name: 'minor', phases: ['explore', 'implement'] }),
       },
-      transitionEngine: { 
-        handleExplicitTransition: vi.fn().mockResolvedValue({ newPhase: 'explore' })
+      transitionEngine: {
+        handleExplicitTransition: vi
+          .fn()
+          .mockResolvedValue({ newPhase: 'explore' }),
       },
       planManager: {
-        ensurePlanFile: vi.fn().mockResolvedValue('/test/plan.md')
+        ensurePlanFile: vi.fn().mockResolvedValue('/test/plan.md'),
       },
       instructionGenerator: {
-        generateInstructions: vi.fn().mockReturnValue('Test instructions')
-      }
+        generateInstructions: vi.fn().mockReturnValue('Test instructions'),
+      },
     };
-    
-    await handler.handle({ 
-      workflow: 'minor', 
-      commit_behaviour: 'end' 
-    }, mockContext as any);
-    
-    expect(mockContext.conversationManager.updateConversationState).toHaveBeenCalledWith(
+
+    await handler.handle(
+      {
+        workflow: 'minor',
+        commit_behaviour: 'end',
+      },
+      mockContext as ServerContext
+    );
+
+    expect(
+      mockContext.conversationManager.updateConversationState
+    ).toHaveBeenCalledWith(
       'test',
       expect.objectContaining({
         gitCommitConfig: expect.objectContaining({
           enabled: true,
           commitOnStep: false,
           commitOnPhase: false,
-          commitOnComplete: true
-        })
+          commitOnComplete: true,
+        }),
       })
     );
   });
@@ -146,39 +186,50 @@ describe('Commit Behaviour Interface', () => {
     const handler = new StartDevelopmentHandler();
     const mockContext = {
       projectPath: '/test/path',
-      conversationManager: { 
-        createConversationContext: vi.fn().mockResolvedValue({ conversationId: 'test' }),
-        updateConversationState: vi.fn().mockResolvedValue(undefined)
+      conversationManager: {
+        createConversationContext: vi
+          .fn()
+          .mockResolvedValue({ conversationId: 'test' }),
+        updateConversationState: vi.fn().mockResolvedValue(undefined),
       },
-      workflowManager: { 
+      workflowManager: {
         validateWorkflowName: vi.fn().mockReturnValue(true),
-        loadWorkflowForProject: vi.fn().mockReturnValue({ name: 'minor', phases: ['explore', 'implement'] })
+        loadWorkflowForProject: vi
+          .fn()
+          .mockReturnValue({ name: 'minor', phases: ['explore', 'implement'] }),
       },
-      transitionEngine: { 
-        handleExplicitTransition: vi.fn().mockResolvedValue({ newPhase: 'explore' })
+      transitionEngine: {
+        handleExplicitTransition: vi
+          .fn()
+          .mockResolvedValue({ newPhase: 'explore' }),
       },
       planManager: {
-        ensurePlanFile: vi.fn().mockResolvedValue('/test/plan.md')
+        ensurePlanFile: vi.fn().mockResolvedValue('/test/plan.md'),
       },
       instructionGenerator: {
-        generateInstructions: vi.fn().mockReturnValue('Test instructions')
-      }
+        generateInstructions: vi.fn().mockReturnValue('Test instructions'),
+      },
     };
-    
-    await handler.handle({ 
-      workflow: 'minor', 
-      commit_behaviour: 'none' 
-    }, mockContext as any);
-    
-    expect(mockContext.conversationManager.updateConversationState).toHaveBeenCalledWith(
+
+    await handler.handle(
+      {
+        workflow: 'minor',
+        commit_behaviour: 'none',
+      },
+      mockContext as ServerContext
+    );
+
+    expect(
+      mockContext.conversationManager.updateConversationState
+    ).toHaveBeenCalledWith(
       'test',
       expect.objectContaining({
         gitCommitConfig: expect.objectContaining({
           enabled: false,
           commitOnStep: false,
           commitOnPhase: false,
-          commitOnComplete: false
-        })
+          commitOnComplete: false,
+        }),
       })
     );
   });

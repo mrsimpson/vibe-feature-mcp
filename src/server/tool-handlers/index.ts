@@ -1,6 +1,6 @@
 /**
  * Tool Handler Registry
- * 
+ *
  * Central registry for all tool handlers. Provides registration and lookup
  * functionality for tool handlers used by the MCP server.
  */
@@ -26,7 +26,10 @@ export class DefaultToolRegistry implements ToolRegistry {
   private handlers = new Map<string, ToolHandler>();
 
   register<T extends ToolHandler>(name: string, handler: T): void {
-    logger.debug('Registering tool handler', { name, handlerType: handler.constructor.name });
+    logger.debug('Registering tool handler', {
+      name,
+      handlerType: handler.constructor.name,
+    });
     this.handlers.set(name, handler);
   }
 
@@ -44,7 +47,7 @@ export class DefaultToolRegistry implements ToolRegistry {
  */
 export function createToolRegistry(): ToolRegistry {
   const registry = new DefaultToolRegistry();
-  
+
   // Register all standard tool handlers
   registry.register('whats_next', new WhatsNextHandler());
   registry.register('proceed_to_phase', new ProceedToPhaseHandler());
@@ -55,11 +58,11 @@ export function createToolRegistry(): ToolRegistry {
   registry.register('list_workflows', new ListWorkflowsHandler());
   registry.register('get_tool_info', new GetToolInfoHandler());
   registry.register('setup_project_docs', new SetupProjectDocsHandler());
-  
-  logger.info('Tool registry created with handlers', { 
-    handlers: registry.list() 
+
+  logger.info('Tool registry created with handlers', {
+    handlers: registry.list(),
   });
-  
+
   return registry;
 }
 
@@ -73,14 +76,35 @@ export { ResetDevelopmentHandler } from './reset-development.js';
 export { ListWorkflowsHandler } from './list-workflows.js';
 export { GetToolInfoHandler } from './get-tool-info.js';
 export { SetupProjectDocsHandler } from './setup-project-docs.js';
-export { BaseToolHandler, ConversationRequiredToolHandler } from './base-tool-handler.js';
+export {
+  BaseToolHandler,
+  ConversationRequiredToolHandler,
+} from './base-tool-handler.js';
 
 // Export argument and result types
 export type { WhatsNextArgs, WhatsNextResult } from './whats-next.js';
-export type { ProceedToPhaseArgs, ProceedToPhaseResult } from './proceed-to-phase.js';
-export type { ConductReviewArgs, ConductReviewResult } from './conduct-review.js';
-export type { StartDevelopmentArgs, StartDevelopmentResult } from './start-development.js';
-export type { ResumeWorkflowArgs, ResumeWorkflowResult } from './resume-workflow.js';
-export type { ResetDevelopmentArgs, ResetDevelopmentResult } from './reset-development.js';
+export type {
+  ProceedToPhaseArgs,
+  ProceedToPhaseResult,
+} from './proceed-to-phase.js';
+export type {
+  ConductReviewArgs,
+  ConductReviewResult,
+} from './conduct-review.js';
+export type {
+  StartDevelopmentArgs,
+  StartDevelopmentResult,
+} from './start-development.js';
+export type {
+  ResumeWorkflowArgs,
+  ResumeWorkflowResult,
+} from './resume-workflow.js';
+export type {
+  ResetDevelopmentArgs,
+  ResetDevelopmentResult,
+} from './reset-development.js';
 export type { GetToolInfoArgs, GetToolInfoResponse } from './get-tool-info.js';
-export type { SetupProjectDocsArgs, SetupProjectDocsResult } from './setup-project-docs.js';
+export type {
+  SetupProjectDocsArgs,
+  SetupProjectDocsResult,
+} from './setup-project-docs.js';

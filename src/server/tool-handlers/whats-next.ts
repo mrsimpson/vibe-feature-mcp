@@ -1,12 +1,13 @@
 /**
  * WhatsNext Tool Handler
- * 
- * Handles the whats_next tool which analyzes conversation context and 
+ *
+ * Handles the whats_next tool which analyzes conversation context and
  * determines the next development phase with specific instructions for the LLM.
  */
 
 import { ConversationRequiredToolHandler } from './base-tool-handler.js';
 import { ServerContext } from '../types.js';
+import type { ConversationContext } from '../../types.js';
 
 /**
  * Arguments for the whats_next tool
@@ -35,34 +36,36 @@ export interface WhatsNextResult {
 /**
  * WhatsNext tool handler implementation
  */
-export class WhatsNextHandler extends ConversationRequiredToolHandler<WhatsNextArgs, WhatsNextResult> {
-
+export class WhatsNextHandler extends ConversationRequiredToolHandler<
+  WhatsNextArgs,
+  WhatsNextResult
+> {
   protected async executeWithConversation(
     args: WhatsNextArgs,
     context: ServerContext,
-    conversationContext: any
+    conversationContext: ConversationContext
   ): Promise<WhatsNextResult> {
     const {
       context: requestContext = '',
       user_input = '',
       conversation_summary = '',
-      recent_messages = []
+      recent_messages = [],
     } = args;
 
     const conversationId = conversationContext.conversationId;
     const currentPhase = conversationContext.currentPhase;
-    
-    this.logger.debug('Processing whats_next request', { 
-      conversationId, 
+
+    this.logger.debug('Processing whats_next request', {
+      conversationId,
       currentPhase,
       hasContext: !!requestContext,
-      hasUserInput: !!user_input
+      hasUserInput: !!user_input,
     });
 
     // Ensure state machine is loaded for this project
     this.ensureStateMachineForProject(
-      context, 
-      conversationContext.projectPath, 
+      context,
+      conversationContext.projectPath,
       conversationContext.workflowName
     );
 
@@ -74,15 +77,16 @@ export class WhatsNextHandler extends ConversationRequiredToolHandler<WhatsNextA
     );
 
     // Analyze phase transition
-    const transitionResult = await context.transitionEngine.analyzePhaseTransition({
-      currentPhase,
-      projectPath: conversationContext.projectPath,
-      userInput: user_input,
-      context: requestContext,
-      conversationSummary: conversation_summary,
-      recentMessages: recent_messages,
-      conversationId: conversationContext.conversationId
-    });
+    const transitionResult =
+      await context.transitionEngine.analyzePhaseTransition({
+        currentPhase,
+        projectPath: conversationContext.projectPath,
+        userInput: user_input,
+        context: requestContext,
+        conversationSummary: conversation_summary,
+        recentMessages: recent_messages,
+        conversationId: conversationContext.conversationId,
+      });
 
     // Update conversation state if phase changed
     if (transitionResult.newPhase !== currentPhase) {
@@ -90,50 +94,63 @@ export class WhatsNextHandler extends ConversationRequiredToolHandler<WhatsNextA
         conversationId,
         { currentPhase: transitionResult.newPhase }
       );
-      
+
       // If this was a first-call auto-transition, regenerate the plan file
-      if (transitionResult.transitionReason.includes('Starting development - defining criteria')) {
-        this.logger.info('Regenerating plan file after first-call auto-transition', {
-          from: currentPhase,
-          to: transitionResult.newPhase,
-          planFilePath: conversationContext.planFilePath
-        });
-        
+      if (
+        transitionResult.transitionReason.includes(
+          'Starting development - defining criteria'
+        )
+      ) {
+        this.logger.info(
+          'Regenerating plan file after first-call auto-transition',
+          {
+            from: currentPhase,
+            to: transitionResult.newPhase,
+            planFilePath: conversationContext.planFilePath,
+          }
+        );
+
         await context.planManager.ensurePlanFile(
           conversationContext.planFilePath,
           conversationContext.projectPath,
           conversationContext.gitBranch
         );
       }
-      
+
       this.logger.info('Phase transition completed', {
         from: currentPhase,
         to: transitionResult.newPhase,
-        reason: transitionResult.transitionReason
+        reason: transitionResult.transitionReason,
       });
     }
 
     // Check if plan file exists
-    const planInfo = await context.planManager.getPlanFileInfo(conversationContext.planFilePath);
+    const planInfo = await context.planManager.getPlanFileInfo(
+      conversationContext.planFilePath
+    );
 
     // Generate enhanced instructions
-    const instructions = await context.instructionGenerator.generateInstructions(
-      transitionResult.instructions,
-      {
-        phase: transitionResult.newPhase,
-        conversationContext: {
-          ...conversationContext,
-          currentPhase: transitionResult.newPhase
-        },
-        transitionReason: transitionResult.transitionReason,
-        isModeled: transitionResult.isModeled,
-        planFileExists: planInfo.exists
-      }
-    );
+    const instructions =
+      await context.instructionGenerator.generateInstructions(
+        transitionResult.instructions,
+        {
+          phase: transitionResult.newPhase,
+          conversationContext: {
+            ...conversationContext,
+            currentPhase: transitionResult.newPhase,
+          },
+          transitionReason: transitionResult.transitionReason,
+          isModeled: transitionResult.isModeled,
+          planFileExists: planInfo.exists,
+        }
+      );
 
     // Add commit instructions if configured
     let finalInstructions = instructions.instructions;
-    if (conversationContext.gitCommitConfig?.enabled && conversationContext.gitCommitConfig.commitOnStep) {
+    if (
+      conversationContext.gitCommitConfig?.enabled &&
+      conversationContext.gitCommitConfig.commitOnStep
+    ) {
       const commitMessage = requestContext || 'Step completion';
       finalInstructions += `\n\n**Git Commit Required**: Create a commit for this step using:\n\`\`\`bash\ngit add . && git commit -m "${commitMessage}"\n\`\`\``;
     }
@@ -144,7 +161,7 @@ export class WhatsNextHandler extends ConversationRequiredToolHandler<WhatsNextA
       instructions: finalInstructions,
       plan_file_path: conversationContext.planFilePath,
       is_modeled_transition: transitionResult.isModeled,
-      conversation_id: conversationContext.conversationId
+      conversation_id: conversationContext.conversationId,
     };
 
     // Log interaction

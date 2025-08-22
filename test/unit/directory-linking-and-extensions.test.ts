@@ -1,6 +1,6 @@
 /**
  * Tests for directory linking and extension preservation functionality
- * 
+ *
  * Tests the fixes for:
  * - Issue 1: Directory linking support
  * - Issue 2: Extension preservation in symlinks
@@ -9,9 +9,9 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { PathValidationUtils } from '../../src/path-validation-utils.js';
 import { ProjectDocsManager } from '../../src/project-docs-manager.js';
-import { join } from 'path';
-import { tmpdir } from 'os';
-import { mkdir, writeFile, rm, readlink, lstat } from 'fs/promises';
+import { join } from 'node:path';
+import { tmpdir } from 'node:os';
+import { mkdir, writeFile, rm, readlink, lstat } from 'node:fs/promises';
 
 describe('Directory Linking and Extension Preservation', () => {
   let testProjectPath: string;
@@ -29,7 +29,7 @@ describe('Directory Linking and Extension Preservation', () => {
     // Clean up test directory
     try {
       await rm(testProjectPath, { recursive: true });
-    } catch (error) {
+    } catch {
       // Ignore cleanup errors
     }
   });
@@ -41,8 +41,11 @@ describe('Directory Linking and Extension Preservation', () => {
       await mkdir(docsDir, { recursive: true });
       await writeFile(join(docsDir, 'index.md'), '# Documentation');
 
-      const result = await PathValidationUtils.validateFileOrDirectoryPath(docsDir, testProjectPath);
-      
+      const result = await PathValidationUtils.validateFileOrDirectoryPath(
+        docsDir,
+        testProjectPath
+      );
+
       expect(result.isValid).toBe(true);
       expect(result.resolvedPath).toBe(docsDir);
     });
@@ -53,8 +56,11 @@ describe('Directory Linking and Extension Preservation', () => {
       await mkdir(docsDir, { recursive: true });
       await writeFile(join(docsDir, 'index.md'), '# Documentation');
 
-      const result = await PathValidationUtils.validateFilePath(docsDir, testProjectPath);
-      
+      const result = await PathValidationUtils.validateFilePath(
+        docsDir,
+        testProjectPath
+      );
+
       expect(result.isValid).toBe(false);
       expect(result.error).toContain('directory, not a file');
     });
@@ -65,8 +71,12 @@ describe('Directory Linking and Extension Preservation', () => {
       await mkdir(docsDir, { recursive: true });
       await writeFile(join(docsDir, 'index.md'), '# Documentation');
 
-      const result = await PathValidationUtils.validateParameter(docsDir, ['arc42'], testProjectPath);
-      
+      const result = await PathValidationUtils.validateParameter(
+        docsDir,
+        ['arc42'],
+        testProjectPath
+      );
+
       expect(result.isTemplate).toBe(false);
       expect(result.isFilePath).toBe(true);
       expect(result.resolvedPath).toBe(docsDir);
@@ -89,7 +99,10 @@ describe('Directory Linking and Extension Preservation', () => {
       expect(result.skipped.length).toBe(0);
 
       // Verify symlink was created
-      const paths = await projectDocsManager.getDocumentPathsWithExtensions(testProjectPath, { architecture: docsDir });
+      const paths = await projectDocsManager.getDocumentPathsWithExtensions(
+        testProjectPath,
+        { architecture: docsDir }
+      );
       const stats = await lstat(paths.architecture);
       expect(stats.isSymbolicLink()).toBe(true);
 
@@ -108,10 +121,13 @@ describe('Directory Linking and Extension Preservation', () => {
       const sourcePaths = {
         architecture: join(testProjectPath, 'arch.adoc'),
         requirements: join(testProjectPath, 'reqs.docx'),
-        design: join(testProjectPath, 'design.txt')
+        design: join(testProjectPath, 'design.txt'),
       };
 
-      const paths = await projectDocsManager.getDocumentPathsWithExtensions(testProjectPath, sourcePaths);
+      const paths = await projectDocsManager.getDocumentPathsWithExtensions(
+        testProjectPath,
+        sourcePaths
+      );
 
       expect(paths.architecture.endsWith('.adoc')).toBe(true);
       expect(paths.requirements.endsWith('.docx')).toBe(true);
@@ -119,7 +135,10 @@ describe('Directory Linking and Extension Preservation', () => {
     });
 
     it('should use .md extension for templates (backward compatibility)', async () => {
-      const paths = await projectDocsManager.getDocumentPathsWithExtensions(testProjectPath);
+      const paths =
+        await projectDocsManager.getDocumentPathsWithExtensions(
+          testProjectPath
+        );
 
       expect(paths.architecture.endsWith('.md')).toBe(true);
       expect(paths.requirements.endsWith('.md')).toBe(true);
@@ -128,14 +147,20 @@ describe('Directory Linking and Extension Preservation', () => {
 
     it('should create symlinks with preserved extensions', async () => {
       // Create test files
-      await writeFile(join(testProjectPath, 'architecture.adoc'), '= Architecture\n\nAsciiDoc format');
-      await writeFile(join(testProjectPath, 'requirements.docx'), 'Word document');
+      await writeFile(
+        join(testProjectPath, 'architecture.adoc'),
+        '= Architecture\n\nAsciiDoc format'
+      );
+      await writeFile(
+        join(testProjectPath, 'requirements.docx'),
+        'Word document'
+      );
       await writeFile(join(testProjectPath, 'design.txt'), 'Plain text');
 
       const sourcePaths = {
         architecture: join(testProjectPath, 'architecture.adoc'),
         requirements: join(testProjectPath, 'requirements.docx'),
-        design: join(testProjectPath, 'design.txt')
+        design: join(testProjectPath, 'design.txt'),
       };
 
       const result = await projectDocsManager.createOrLinkProjectDocs(
@@ -144,35 +169,45 @@ describe('Directory Linking and Extension Preservation', () => {
         sourcePaths
       );
 
-      expect(result.linked).toEqual(['architecture.adoc', 'requirements.docx', 'design.txt']);
+      expect(result.linked).toEqual([
+        'architecture.adoc',
+        'requirements.docx',
+        'design.txt',
+      ]);
       expect(result.created).toEqual([]);
       expect(result.skipped).toEqual([]);
 
       // Verify symlinks exist with correct extensions
-      const paths = await projectDocsManager.getDocumentPathsWithExtensions(testProjectPath, sourcePaths);
-      
+      const paths = await projectDocsManager.getDocumentPathsWithExtensions(
+        testProjectPath,
+        sourcePaths
+      );
+
       const archStats = await lstat(paths.architecture);
       expect(archStats.isSymbolicLink()).toBe(true);
-      
+
       const reqStats = await lstat(paths.requirements);
       expect(reqStats.isSymbolicLink()).toBe(true);
-      
+
       const designStats = await lstat(paths.design);
       expect(designStats.isSymbolicLink()).toBe(true);
     });
 
     it('should handle mixed templates and file paths with correct extensions', async () => {
       // Create one test file
-      await writeFile(join(testProjectPath, 'existing-design.adoc'), '= Design\n\nExisting design doc');
+      await writeFile(
+        join(testProjectPath, 'existing-design.adoc'),
+        '= Design\n\nExisting design doc'
+      );
 
       const result = await projectDocsManager.createOrLinkProjectDocs(
         testProjectPath,
         {
           architecture: 'freestyle', // Template
-          requirements: 'freestyle'  // Template
+          requirements: 'freestyle', // Template
         },
         {
-          design: join(testProjectPath, 'existing-design.adoc') // File path
+          design: join(testProjectPath, 'existing-design.adoc'), // File path
         }
       );
 
@@ -183,13 +218,19 @@ describe('Directory Linking and Extension Preservation', () => {
 
     it('should handle files without extensions', async () => {
       // Create file without extension
-      await writeFile(join(testProjectPath, 'README'), '# Project\n\nNo extension file');
+      await writeFile(
+        join(testProjectPath, 'README'),
+        '# Project\n\nNo extension file'
+      );
 
       const sourcePaths = {
-        architecture: join(testProjectPath, 'README')
+        architecture: join(testProjectPath, 'README'),
       };
 
-      const paths = await projectDocsManager.getDocumentPathsWithExtensions(testProjectPath, sourcePaths);
+      const paths = await projectDocsManager.getDocumentPathsWithExtensions(
+        testProjectPath,
+        sourcePaths
+      );
 
       // Should default to .md for files without extensions
       expect(paths.architecture.endsWith('.md')).toBe(true);
@@ -202,10 +243,13 @@ describe('Directory Linking and Extension Preservation', () => {
       await writeFile(join(docsDir, 'index.md'), '# Documentation Index');
 
       const sourcePaths = {
-        architecture: docsDir
+        architecture: docsDir,
       };
 
-      const paths = await projectDocsManager.getDocumentPathsWithExtensions(testProjectPath, sourcePaths);
+      const paths = await projectDocsManager.getDocumentPathsWithExtensions(
+        testProjectPath,
+        sourcePaths
+      );
 
       // Should use standardized document type name
       expect(paths.architecture.endsWith('architecture')).toBe(true);
@@ -223,10 +267,15 @@ describe('Directory Linking and Extension Preservation', () => {
     });
 
     it('should maintain old getVariableSubstitutions behavior', () => {
-      const substitutions = projectDocsManager.getVariableSubstitutions(testProjectPath);
+      const substitutions =
+        projectDocsManager.getVariableSubstitutions(testProjectPath);
 
-      expect(substitutions['$ARCHITECTURE_DOC'].endsWith('architecture.md')).toBe(true);
-      expect(substitutions['$REQUIREMENTS_DOC'].endsWith('requirements.md')).toBe(true);
+      expect(
+        substitutions['$ARCHITECTURE_DOC'].endsWith('architecture.md')
+      ).toBe(true);
+      expect(
+        substitutions['$REQUIREMENTS_DOC'].endsWith('requirements.md')
+      ).toBe(true);
       expect(substitutions['$DESIGN_DOC'].endsWith('design.md')).toBe(true);
     });
 
@@ -235,13 +284,21 @@ describe('Directory Linking and Extension Preservation', () => {
       await writeFile(join(testProjectPath, 'arch.adoc'), '= Architecture');
 
       const sourcePaths = {
-        architecture: join(testProjectPath, 'arch.adoc')
+        architecture: join(testProjectPath, 'arch.adoc'),
       };
 
-      const substitutions = await projectDocsManager.getVariableSubstitutionsWithExtensions(testProjectPath, sourcePaths);
+      const substitutions =
+        await projectDocsManager.getVariableSubstitutionsWithExtensions(
+          testProjectPath,
+          sourcePaths
+        );
 
-      expect(substitutions['$ARCHITECTURE_DOC'].endsWith('architecture.adoc')).toBe(true);
-      expect(substitutions['$REQUIREMENTS_DOC'].endsWith('requirements.md')).toBe(true); // Default for no source
+      expect(
+        substitutions['$ARCHITECTURE_DOC'].endsWith('architecture.adoc')
+      ).toBe(true);
+      expect(
+        substitutions['$REQUIREMENTS_DOC'].endsWith('requirements.md')
+      ).toBe(true); // Default for no source
       expect(substitutions['$DESIGN_DOC'].endsWith('design.md')).toBe(true); // Default for no source
     });
   });
@@ -249,10 +306,13 @@ describe('Directory Linking and Extension Preservation', () => {
   describe('Error Handling', () => {
     it('should handle non-existent source paths gracefully', async () => {
       const sourcePaths = {
-        architecture: join(testProjectPath, 'nonexistent.adoc')
+        architecture: join(testProjectPath, 'nonexistent.adoc'),
       };
 
-      const paths = await projectDocsManager.getDocumentPathsWithExtensions(testProjectPath, sourcePaths);
+      const paths = await projectDocsManager.getDocumentPathsWithExtensions(
+        testProjectPath,
+        sourcePaths
+      );
 
       // Should default to .md when source doesn't exist
       expect(paths.architecture.endsWith('.md')).toBe(true);
@@ -262,8 +322,11 @@ describe('Directory Linking and Extension Preservation', () => {
       // Test with an absolute path that's clearly outside any reasonable project boundary
       // This tests the security logic without relying on filesystem creation
       const maliciousPath = '/etc/passwd';
-      
-      const result = await PathValidationUtils.validateFileOrDirectoryPath(maliciousPath, testProjectPath);
+
+      const result = await PathValidationUtils.validateFileOrDirectoryPath(
+        maliciousPath,
+        testProjectPath
+      );
 
       // This should fail because /etc/passwd doesn't exist as a directory we can create,
       // but more importantly, it tests that we're not allowing arbitrary system paths

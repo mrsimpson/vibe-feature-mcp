@@ -7,6 +7,7 @@ This directory contains comprehensive integration test specifications for the Vi
 The integration tests are organized into focused specification files that cover different aspects of the MCP server functionality:
 
 ### 01. Server Initialization (`01-server-initialization.md`)
+
 - MCP server startup and configuration
 - Database initialization and connection
 - Tool and resource registration
@@ -14,6 +15,7 @@ The integration tests are organized into focused specification files that cover 
 - Server restart and reconnection scenarios
 
 ### 02. whats_next Tool (`02-whats-next-tool.md`)
+
 - Primary analysis and instruction tool functionality
 - New conversation creation and management
 - Existing conversation continuation
@@ -21,6 +23,7 @@ The integration tests are organized into focused specification files that cover 
 - Error handling and parameter validation
 
 ### 03. proceed_to_phase Tool (`03-proceed-to-phase-tool.md`)
+
 - Explicit phase transition functionality
 - Valid and invalid phase transitions
 - Transition reason tracking
@@ -28,6 +31,7 @@ The integration tests are organized into focused specification files that cover 
 - Error scenarios and validation
 
 ### 04. Resource Access (`04-resource-access.md`)
+
 - MCP resource endpoint functionality
 - Development plan resource access
 - Conversation state resource access
@@ -35,6 +39,7 @@ The integration tests are organized into focused specification files that cover 
 - Real-time content updates
 
 ### 05. Conversation State Management (`05-conversation-state-management.md`)
+
 - Persistent conversation state handling
 - Multi-project and multi-branch isolation
 - State synchronization and updates
@@ -42,6 +47,7 @@ The integration tests are organized into focused specification files that cover 
 - State validation and recovery
 
 ### 06. Plan File Management (`06-plan-file-management.md`)
+
 - Automatic plan file creation and templating
 - Content analysis and task completion tracking
 - File updates and synchronization
@@ -49,6 +55,7 @@ The integration tests are organized into focused specification files that cover 
 - External tool integration
 
 ### 07. Phase Transition Engine (`07-phase-transition-engine.md`)
+
 - Intelligent phase determination logic
 - Context analysis and transition decisions
 - Phase completion detection
@@ -56,6 +63,7 @@ The integration tests are organized into focused specification files that cover 
 - Complex project context handling
 
 ### 08. End-to-End Workflows (`08-end-to-end-workflows.md`)
+
 - Complete development lifecycle scenarios
 - Multi-session workflow continuation
 - Parallel feature development
@@ -65,20 +73,26 @@ The integration tests are organized into focused specification files that cover 
 ## Test Approach
 
 ### BDD Style Specifications
+
 Each test specification follows the Given-When-Then format:
+
 - **Given**: Initial conditions and context setup
 - **When**: Actions or events that trigger behavior
 - **Then**: Expected outcomes and behaviors
 
 ### Expected Behavior Sections
+
 Each scenario includes an "Expected Behavior" section that details:
+
 - System interactions and side effects
 - Data persistence and state changes
 - Error handling and recovery mechanisms
 - Performance and reliability expectations
 
 ### Integration Focus
+
 These tests are designed as integration tests that:
+
 - Test complete workflows across multiple components
 - Validate MCP protocol compliance
 - Verify database and filesystem interactions
@@ -90,23 +104,27 @@ These tests are designed as integration tests that:
 The integration tests should use mocks for:
 
 ### Database Operations
+
 - SQLite database connections and queries
 - Transaction handling and rollback scenarios
 - Database corruption and recovery testing
 - Concurrent access simulation
 
 ### File System Operations
+
 - Plan file creation, reading, and writing
 - Directory and path resolution
 - File permission and access error simulation
 - External file modification detection
 
 ### Git Operations
+
 - Branch detection and switching
 - Repository state simulation
 - Git command execution mocking
 
 ### MCP Protocol
+
 - Tool call parameter validation
 - Resource access request handling
 - Error response formatting
@@ -115,18 +133,21 @@ The integration tests should use mocks for:
 ## Test Data Management
 
 ### Conversation States
+
 - Various development phases and transitions
 - Different project contexts and configurations
 - Multiple git branch scenarios
 - Historical conversation data
 
 ### Plan Files
+
 - Template generation and customization
 - Task completion tracking formats
 - Various markdown structures and content
 - External modification scenarios
 
 ### Project Contexts
+
 - Different project types and structures
 - Multi-feature development scenarios
 - Complex project hierarchies
@@ -150,6 +171,7 @@ When implementing these specifications:
 ## Coverage Goals
 
 These specifications aim to provide comprehensive coverage of:
+
 - All MCP tools and resources
 - Complete development workflow scenarios
 - Error handling and recovery mechanisms

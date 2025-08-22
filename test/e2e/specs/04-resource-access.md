@@ -7,6 +7,7 @@ I want to access development plan and conversation state resources
 So that I can read current project status and development plans
 
 ### Background:
+
 - Server exposes two resources: `plan://current` and `state://current`
 - Resources should be accessible via MCP resource protocol
 - Plan resource returns markdown content of current development plan
@@ -24,6 +25,7 @@ So that I can read current project status and development plans
 **And** the MIME type should be `text/markdown`
 
 ### Expected Behavior:
+
 - Plan file should be read from filesystem
 - Content should be returned with proper MIME type
 - File path should be resolved from conversation state
@@ -40,6 +42,7 @@ So that I can read current project status and development plans
 **And** the MIME type should be `application/json`
 
 ### Expected Behavior:
+
 - Current conversation state should be retrieved from database
 - JSON should include all relevant conversation metadata
 - Response should be properly formatted with correct MIME type
@@ -56,6 +59,7 @@ So that I can read current project status and development plans
 **And** the resources should be accessible immediately
 
 ### Expected Behavior:
+
 - New conversation should be initialized on resource access
 - Default plan file should be created if none exists
 - State resource should return newly created conversation state
@@ -73,6 +77,7 @@ So that I can read current project status and development plans
 **And** the content should be returned successfully
 
 ### Expected Behavior:
+
 - Missing plan files should be created automatically
 - Default plan template should be used for new files
 - File creation should not cause errors
@@ -90,6 +95,7 @@ So that I can read current project status and development plans
 **And** the server should remain stable
 
 ### Expected Behavior:
+
 - Filesystem errors should be handled gracefully
 - Error messages should be informative
 - Server should not crash on file access errors
@@ -106,6 +112,7 @@ So that I can read current project status and development plans
 **And** the server should attempt graceful degradation
 
 ### Expected Behavior:
+
 - Database errors should be caught and handled
 - Error responses should be properly formatted
 - Server should remain responsive after database errors
@@ -122,6 +129,7 @@ So that I can read current project status and development plans
 **And** changes should be reflected immediately
 
 ### Expected Behavior:
+
 - Resource content should be read fresh on each request
 - No caching should prevent real-time updates
 - External file modifications should be visible immediately
@@ -139,6 +147,7 @@ So that I can read current project status and development plans
 **And** resource descriptions should be informative
 
 ### Expected Behavior:
+
 - Resource URIs should follow MCP protocol standards
 - Resource metadata should include proper descriptions
 - MIME types should be correctly specified

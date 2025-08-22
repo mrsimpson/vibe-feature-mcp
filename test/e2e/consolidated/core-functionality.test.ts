@@ -1,13 +1,18 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { TempProject, createTempProjectWithDefaultStateMachine } from '../../utils/temp-files';
-import { DirectServerInterface, createSuiteIsolatedE2EScenario, assertToolSuccess, initializeDevelopment } from '../../utils/e2e-test-setup';
+import { createTempProjectWithDefaultStateMachine } from '../../utils/temp-files';
+import {
+  DirectServerInterface,
+  createSuiteIsolatedE2EScenario,
+  assertToolSuccess,
+  initializeDevelopment,
+} from '../../utils/e2e-test-setup';
 
 vi.unmock('fs');
 vi.unmock('fs/promises');
 
 /**
  * Core Functionality Tests
- * 
+ *
  * Tests the essential server operations including:
  * - Server initialization and basic tool operations
  * - Resource access (plan and state resources)
@@ -16,18 +21,16 @@ vi.unmock('fs/promises');
  */
 describe('Core Functionality', () => {
   let client: DirectServerInterface;
-  let tempProject: TempProject;
   let cleanup: () => Promise<void>;
 
   beforeEach(async () => {
     const scenario = await createSuiteIsolatedE2EScenario({
       suiteName: 'core-functionality',
-      tempProjectFactory: createTempProjectWithDefaultStateMachine
+      tempProjectFactory: createTempProjectWithDefaultStateMachine,
     });
     client = scenario.client;
-    tempProject = scenario.tempProject;
     cleanup = scenario.cleanup;
-    
+
     // Initialize development with default workflow before each test
     await initializeDevelopment(client);
   });
@@ -60,10 +63,10 @@ describe('Core Functionality', () => {
   describe('Basic Tool Operations', () => {
     it('should handle whats_next tool calls', async () => {
       const result = await client.callTool('whats_next', {
-        user_input: 'implement authentication'
+        user_input: 'implement authentication',
       });
       const response = assertToolSuccess(result);
-      
+
       expect(response.phase).toBeTruthy();
       expect(response.instructions).toBeTruthy();
       expect(response.conversation_id).toBeTruthy();
@@ -73,14 +76,14 @@ describe('Core Functionality', () => {
     it('should handle proceed_to_phase tool calls', async () => {
       // First establish a conversation
       await client.callTool('whats_next', { user_input: 'start project' });
-      
+
       const result = await client.callTool('proceed_to_phase', {
         target_phase: 'design',
         reason: 'requirements complete',
-        review_state: 'not-required'
+        review_state: 'not-required',
       });
       const response = assertToolSuccess(result);
-      
+
       expect(response.phase).toBe('design');
       expect(response.instructions).toBeTruthy();
     });
@@ -90,7 +93,7 @@ describe('Core Functionality', () => {
     it('should provide plan resource as markdown', async () => {
       // Initialize conversation to create plan file
       await client.callTool('whats_next', { user_input: 'test project' });
-      
+
       const planResource = await client.readResource('plan://current');
       expect(planResource.contents).toHaveLength(1);
       expect(planResource.contents[0].mimeType).toBe('text/markdown');
@@ -100,11 +103,11 @@ describe('Core Functionality', () => {
     it('should provide state resource as JSON', async () => {
       // Initialize conversation
       await client.callTool('whats_next', { user_input: 'test project' });
-      
+
       const stateResource = await client.readResource('state://current');
       expect(stateResource.contents).toHaveLength(1);
       expect(stateResource.contents[0].mimeType).toBe('application/json');
-      
+
       const stateData = JSON.parse(stateResource.contents[0].text);
       expect(stateData.conversationId).toBeTruthy();
       expect(stateData.currentPhase).toBeTruthy();
@@ -116,9 +119,9 @@ describe('Core Functionality', () => {
       const result = await client.callTool('proceed_to_phase', {
         target_phase: 'invalid_phase',
         reason: 'test',
-        review_state: 'not-required'
+        review_state: 'not-required',
       });
-      
+
       // Should not throw, but may return error or fallback behavior
       expect(result).toBeTruthy();
     });
@@ -126,7 +129,7 @@ describe('Core Functionality', () => {
     it('should handle missing parameters gracefully', async () => {
       const result = await client.callTool('whats_next', {});
       const response = assertToolSuccess(result);
-      
+
       // Should still work with empty parameters
       expect(response.phase).toBeTruthy();
       expect(response.instructions).toBeTruthy();
@@ -136,9 +139,9 @@ describe('Core Functionality', () => {
       // This test would require mocking database failures
       // For now, verify basic resilience
       const result = await client.callTool('whats_next', {
-        user_input: 'test resilience'
+        user_input: 'test resilience',
       });
-      
+
       expect(assertToolSuccess(result)).toBeTruthy();
     });
   });
@@ -146,26 +149,28 @@ describe('Core Functionality', () => {
   describe('Basic Conversation Management', () => {
     it('should create new conversations', async () => {
       const result = await client.callTool('whats_next', {
-        user_input: 'new feature request'
+        user_input: 'new feature request',
       });
       const response = assertToolSuccess(result);
-      
+
       expect(response.conversation_id).toBeTruthy();
       expect(response.conversation_id).toMatch(/^default-sm-/);
     });
 
     it('should maintain conversation state across calls', async () => {
       const first = await client.callTool('whats_next', {
-        user_input: 'start project'
+        user_input: 'start project',
       });
       const firstResponse = assertToolSuccess(first);
-      
+
       const second = await client.callTool('whats_next', {
-        user_input: 'continue project'
+        user_input: 'continue project',
       });
       const secondResponse = assertToolSuccess(second);
-      
-      expect(firstResponse.conversation_id).toBe(secondResponse.conversation_id);
+
+      expect(firstResponse.conversation_id).toBe(
+        secondResponse.conversation_id
+      );
     });
   });
 });
