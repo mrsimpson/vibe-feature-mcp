@@ -5,7 +5,13 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { existsSync, readFileSync, writeFileSync, mkdirSync, rmSync } from 'node:fs';
+import {
+  existsSync,
+  readFileSync,
+  writeFileSync,
+  mkdirSync,
+  rmSync,
+} from 'node:fs';
 import { resolve } from 'node:path';
 import { tmpdir } from 'node:os';
 import { StartDevelopmentHandler } from '../../src/server/tool-handlers/start-development.js';
@@ -13,7 +19,12 @@ import { StartDevelopmentHandler } from '../../src/server/tool-handlers/start-de
 describe('StartDevelopment .gitignore management', () => {
   let tempDir: string;
   let handler: StartDevelopmentHandler;
-  let mockLogger: any;
+  let mockLogger: {
+    debug: ReturnType<typeof vi.fn>;
+    info: ReturnType<typeof vi.fn>;
+    warn: ReturnType<typeof vi.fn>;
+    error: ReturnType<typeof vi.fn>;
+  };
 
   beforeEach(() => {
     // Create temporary directory for testing

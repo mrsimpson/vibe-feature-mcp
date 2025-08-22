@@ -7,13 +7,17 @@
 
 import { describe, it, expect } from 'vitest';
 import { SystemPromptResourceHandler } from '../src/server/resource-handlers/system-prompt.js';
+import type { ServerContext } from '../src/server/types.js';
 
 describe('System Prompt Resource', () => {
   it('should expose system prompt as MCP resource', async () => {
     const handler = new SystemPromptResourceHandler();
 
     // Call the handler directly
-    const result = await handler.handle(new URL('system-prompt://'), {} as any);
+    const result = await handler.handle(
+      new URL('system-prompt://'),
+      {} as ServerContext
+    );
 
     // Verify the safeExecute wrapper structure
     expect(result).toBeDefined();
@@ -45,15 +49,15 @@ describe('System Prompt Resource', () => {
     // Get system prompt multiple times
     const result1 = await handler.handle(
       new URL('system-prompt://'),
-      {} as any
+      {} as ServerContext
     );
     const result2 = await handler.handle(
       new URL('system-prompt://'),
-      {} as any
+      {} as ServerContext
     );
     const result3 = await handler.handle(
       new URL('system-prompt://'),
-      {} as any
+      {} as ServerContext
     );
 
     // All should be successful
@@ -75,7 +79,10 @@ describe('System Prompt Resource', () => {
   it('should use default waterfall workflow for system prompt', async () => {
     const handler = new SystemPromptResourceHandler();
 
-    const result = await handler.handle(new URL('system-prompt://'), {} as any);
+    const result = await handler.handle(
+      new URL('system-prompt://'),
+      {} as ServerContext
+    );
 
     expect(result.success).toBe(true);
 
