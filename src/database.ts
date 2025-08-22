@@ -19,6 +19,7 @@ const logger = createLogger('Database');
 
 // SQLite parameter types
 type SqliteParam = string | number | boolean | null | undefined | Buffer;
+type SqliteRow = Record<string, SqliteParam>;
 type SqliteColumnInfo = {
   cid: number;
   name: string;
@@ -137,7 +138,10 @@ export class Database {
   /**
    * Helper method to get single row with promises
    */
-  private getRow(sql: string, params: SqliteParam[] = []): Promise<any> {
+  private getRow(
+    sql: string,
+    params: SqliteParam[] = []
+  ): Promise<SqliteRow | null> {
     return new Promise((resolve, reject) => {
       if (!this.db) {
         reject(new Error('Database not initialized'));
@@ -148,7 +152,7 @@ export class Database {
         if (err) {
           reject(err);
         } else {
-          resolve(row);
+          resolve(row as SqliteRow | null);
         }
       });
     });
@@ -157,7 +161,10 @@ export class Database {
   /**
    * Helper method to get multiple rows with promises
    */
-  private getAllRows(sql: string, params: SqliteParam[] = []): Promise<any[]> {
+  private getAllRows(
+    sql: string,
+    params: SqliteParam[] = []
+  ): Promise<SqliteRow[]> {
     return new Promise((resolve, reject) => {
       if (!this.db) {
         reject(new Error('Database not initialized'));
@@ -168,7 +175,7 @@ export class Database {
         if (err) {
           reject(err);
         } else {
-          resolve(rows);
+          resolve(rows as SqliteRow[]);
         }
       });
     });
@@ -194,20 +201,20 @@ export class Database {
       }
 
       const state: ConversationState = {
-        conversationId: row.conversation_id,
-        projectPath: row.project_path,
-        gitBranch: row.git_branch,
+        conversationId: row.conversation_id as string,
+        projectPath: row.project_path as string,
+        gitBranch: row.git_branch as string,
         currentPhase: row.current_phase as DevelopmentPhase,
-        planFilePath: row.plan_file_path,
-        workflowName: row.workflow_name || 'waterfall',
+        planFilePath: row.plan_file_path as string,
+        workflowName: (row.workflow_name as string) || 'waterfall',
         gitCommitConfig: row.git_commit_config
-          ? JSON.parse(row.git_commit_config)
+          ? JSON.parse(row.git_commit_config as string)
           : undefined,
         requireReviewsBeforePhaseTransition: Boolean(
           row.require_reviews_before_phase_transition
         ),
-        createdAt: row.created_at,
-        updatedAt: row.updated_at,
+        createdAt: row.created_at as string,
+        updatedAt: row.updated_at as string,
       };
 
       logger.debug('Conversation state retrieved', {
@@ -285,20 +292,20 @@ export class Database {
     }
 
     return {
-      conversationId: row.conversation_id,
-      projectPath: row.project_path,
-      gitBranch: row.git_branch,
+      conversationId: row.conversation_id as string,
+      projectPath: row.project_path as string,
+      gitBranch: row.git_branch as string,
       currentPhase: row.current_phase as DevelopmentPhase,
-      planFilePath: row.plan_file_path,
-      workflowName: row.workflow_name || 'waterfall',
+      planFilePath: row.plan_file_path as string,
+      workflowName: (row.workflow_name as string) || 'waterfall',
       gitCommitConfig: row.git_commit_config
-        ? JSON.parse(row.git_commit_config)
+        ? JSON.parse(row.git_commit_config as string)
         : undefined,
       requireReviewsBeforePhaseTransition: Boolean(
         row.require_reviews_before_phase_transition
       ),
-      createdAt: row.created_at,
-      updatedAt: row.updated_at,
+      createdAt: row.created_at as string,
+      updatedAt: row.updated_at as string,
     };
   }
 
@@ -365,13 +372,13 @@ export class Database {
       );
 
       const logs: InteractionLog[] = rows.map(row => ({
-        id: row.id,
-        conversationId: row.conversation_id,
-        toolName: row.tool_name,
-        inputParams: row.input_params,
-        responseData: row.response_data,
+        id: row.id as number | undefined,
+        conversationId: row.conversation_id as string,
+        toolName: row.tool_name as string,
+        inputParams: row.input_params as string,
+        responseData: row.response_data as string,
         currentPhase: row.current_phase as DevelopmentPhase,
-        timestamp: row.timestamp,
+        timestamp: row.timestamp as string,
       }));
 
       logger.debug('Retrieved interaction logs', {
@@ -405,10 +412,10 @@ export class Database {
         const tableInfo = await this.getAllRows(
           'PRAGMA table_info(interaction_logs)'
         );
-        const hasIsReset = tableInfo.some(
+        const hasIsReset = (tableInfo as unknown as SqliteColumnInfo[]).some(
           (col: SqliteColumnInfo) => col.name === 'is_reset'
         );
-        const hasResetAt = tableInfo.some(
+        const hasResetAt = (tableInfo as unknown as SqliteColumnInfo[]).some(
           (col: SqliteColumnInfo) => col.name === 'reset_at'
         );
 
