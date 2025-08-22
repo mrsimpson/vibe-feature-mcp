@@ -20,6 +20,11 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Install platform-specific dependencies
+        run: |
+          # Install oxlint platform dependency for Linux (temporary, not saved to package.json)
+          npm install @oxlint/linux-x64-gnu --no-save || echo "Failed to install oxlint platform dependency, continuing..."
+
       - name: Check formatting
         run: npm run format:check
 
@@ -44,6 +49,11 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
+
+      - name: Install platform-specific dependencies
+        run: |
+          # Install Rollup platform dependency for Linux (temporary, not saved to package.json)
+          npm install @rollup/rollup-linux-x64-gnu --no-save || echo "Failed to install Rollup platform dependency, continuing..."
 
       - name: Build project (CI - skip visualizer)
         run: npm run build:ci

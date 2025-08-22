@@ -25,6 +25,18 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Install platform-specific dependencies
+        run: |
+          # Install platform dependencies for Linux (temporary, not saved to package.json)
+          npm install @oxlint/linux-x64-gnu --no-save || echo "Failed to install oxlint platform dependency, continuing..."
+          npm install @rollup/rollup-linux-x64-gnu --no-save || echo "Failed to install Rollup platform dependency, continuing..."
+
+      - name: Check formatting
+        run: npm run format:check
+
+      - name: Run linting
+        run: npm run lint
+
       - name: Build project (CI - skip visualizer for tests)
         run: npm run build:ci
 
@@ -61,9 +73,11 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Install Rollup platform dependencies
+      - name: Install platform-specific dependencies
         run: |
-          npm install @rollup/rollup-linux-x64-gnu --save-dev --no-optional || true
+          # Install platform dependencies for Linux CI environment (temporary, not saved to package.json)
+          npm install @rollup/rollup-linux-x64-gnu --no-save || echo "Failed to install Rollup platform dependency"
+          npm install @oxlint/linux-x64-gnu --no-save || echo "Failed to install oxlint platform dependency"
 
       - name: Build project
         run: npm run build
@@ -71,7 +85,9 @@ jobs:
       - name: Build workflow visualizer
         run: |
           cd workflow-visualizer
-          npm ci
+          # Clean install for visualizer to avoid dependency conflicts
+          rm -rf node_modules package-lock.json || true
+          npm install
           npm run build
 
       - name: Bump version and create tag
@@ -87,6 +103,10 @@ jobs:
         run: |
           NEW_VERSION=${{ steps.version.outputs.new_version }}
           npm version $NEW_VERSION --no-git-tag-version
+
+          # Ensure no platform-specific dependencies were accidentally saved
+          npm uninstall @rollup/rollup-linux-x64-gnu @oxlint/linux-x64-gnu --no-save 2>/dev/null || true
+
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
           git add package.json package-lock.json
