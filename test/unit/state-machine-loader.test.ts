@@ -8,7 +8,7 @@ import { StateMachineLoader } from '../../src/state-machine-loader.js';
 // Mock global URL constructor
 global.URL = vi.fn().mockImplementation(() => ({
   pathname: '/mock/src/state-machine-loader.ts',
-})) as any;
+})) as typeof URL;
 
 // Mock import.meta.url
 vi.stubGlobal('import.meta', {
@@ -130,7 +130,7 @@ describe('StateMachineLoader', () => {
       });
 
       // Mock fs.readFileSync to return valid YAML content
-      vi.mocked(fs.readFileSync).mockReturnValue('valid yaml content' as any);
+      vi.mocked(fs.readFileSync).mockReturnValue('valid yaml content');
 
       const result = stateMachineLoader.loadStateMachine('project');
 
@@ -148,7 +148,7 @@ describe('StateMachineLoader', () => {
       vi.mocked(fs.existsSync).mockReturnValue(false);
 
       // Mock fs.readFileSync to return valid YAML content
-      vi.mocked(fs.readFileSync).mockReturnValue('valid yaml content' as any);
+      vi.mocked(fs.readFileSync).mockReturnValue('valid yaml content');
 
       const result = stateMachineLoader.loadStateMachine('project');
 
@@ -169,7 +169,7 @@ describe('StateMachineLoader', () => {
   describe('loadFromFile', () => {
     it('should load and validate state machine from file', () => {
       // Mock fs.readFileSync to return valid YAML content
-      vi.mocked(fs.readFileSync).mockReturnValue('valid yaml content' as any);
+      vi.mocked(fs.readFileSync).mockReturnValue('valid yaml content');
 
       const result = stateMachineLoader.loadFromFile('test-file.yaml');
 
@@ -193,7 +193,7 @@ describe('StateMachineLoader', () => {
   describe('getTransitionInstructions', () => {
     beforeEach(() => {
       // Load state machine
-      vi.mocked(fs.readFileSync).mockReturnValue('valid yaml content' as any);
+      vi.mocked(fs.readFileSync).mockReturnValue('valid yaml content');
       stateMachineLoader.loadFromFile('test-file.yaml');
     });
 

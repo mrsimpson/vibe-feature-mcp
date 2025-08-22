@@ -34,7 +34,7 @@ describe('ProjectDocsManager', () => {
       validateOptions: vi.fn(),
       loadTemplate: vi.fn(),
       getAvailableTemplates: vi.fn(),
-    } as any;
+    } as Partial<TemplateManager>;
 
     projectDocsManager = new ProjectDocsManager();
     // @ts-ignore - accessing private property for testing
