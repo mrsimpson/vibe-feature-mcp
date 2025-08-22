@@ -29,12 +29,23 @@ jobs:
         run: |
           # Install platform dependencies for Linux (temporary, not saved to package.json)
           echo "Installing oxlint platform dependency..."
-          npm install @oxlint/linux-x64-gnu --no-save || {
-            echo "Failed to install oxlint platform dependency, trying alternative approach..."
-            rm -rf node_modules package-lock.json
-            npm install
-            npm install @oxlint/linux-x64-gnu --no-save || echo "Still failed, but continuing..."
-          }
+
+          # Try multiple approaches to ensure oxlint platform dependency is available
+          npm install @oxlint/linux-x64-gnu --no-save || echo "First attempt failed"
+
+          # Check if the module exists
+          echo "Checking for oxlint platform module..."
+          find node_modules -name "*oxlint*" -type d || echo "No oxlint directories found"
+
+          # Try installing as a regular dependency temporarily
+          echo "Trying alternative installation method..."
+          npm install @oxlint/linux-x64-gnu || echo "Alternative method failed"
+
+          # List what's actually in the oxlint directory
+          echo "Contents of oxlint node_modules:"
+          ls -la node_modules/oxlint/ || echo "oxlint directory not found"
+          ls -la node_modules/@oxlint/ || echo "@oxlint directory not found"
+
           echo "Installing Rollup platform dependency..."
           npm install @rollup/rollup-linux-x64-gnu --no-save || echo "Failed to install Rollup platform dependency, continuing..."
 
