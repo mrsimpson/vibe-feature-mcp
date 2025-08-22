@@ -5,6 +5,7 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { TestAccess } from '../utils/test-access.js';
 import { ProjectDocsManager } from '../../src/project-docs-manager.js';
 import { TemplateManager } from '../../src/template-manager.js';
 import { mkdir, writeFile, rmdir, readFile } from 'node:fs/promises';
@@ -37,8 +38,11 @@ describe('ProjectDocsManager', () => {
     } as Partial<TemplateManager>;
 
     projectDocsManager = new ProjectDocsManager();
-    // @ts-ignore - accessing private property for testing
-    projectDocsManager.templateManager = mockTemplateManager;
+    TestAccess.injectMock(
+      projectDocsManager,
+      'templateManager',
+      mockTemplateManager
+    );
   });
 
   afterEach(async () => {

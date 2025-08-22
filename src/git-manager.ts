@@ -32,7 +32,7 @@ export class GitManager {
 
       logger.debug('Detected git branch', { projectPath, branch });
       return branch;
-    } catch {
+    } catch (_error) {
       logger.debug('Failed to get git branch, using "default" as branch name', {
         projectPath,
       });

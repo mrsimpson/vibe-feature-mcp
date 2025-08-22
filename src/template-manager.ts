@@ -67,7 +67,7 @@ export class TemplateManager {
       const packagePath = require.resolve('responsible-vibe-mcp/package.json');
       const packageDir = dirname(packagePath);
       strategies.push(join(packageDir, 'resources/templates'));
-    } catch {
+    } catch (_error) {
       // Ignore if package not found
     }
 
@@ -81,7 +81,7 @@ export class TemplateManager {
         require('node:fs').accessSync(strategy);
         logger.debug('Using templates path', { path: strategy });
         return strategy;
-      } catch {
+      } catch (_error) {
         // Continue to next strategy
       }
     }
@@ -152,7 +152,7 @@ export class TemplateManager {
         if (stats.isDirectory()) {
           return await this.loadDirectoryTemplate(templatePath);
         }
-      } catch {
+      } catch (_error) {
         // Not a directory, continue to file check
       }
 

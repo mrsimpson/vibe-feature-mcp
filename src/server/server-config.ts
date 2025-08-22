@@ -9,6 +9,8 @@ import { z } from 'zod';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { ResourceTemplate } from '@modelcontextprotocol/sdk/server/mcp.js';
 
+import { DEFAULT_WORKFLOW_NAME } from '../constants.js';
+
 import { Database } from '../database.js';
 import { ConversationManager } from '../conversation-manager.js';
 import { TransitionEngine } from '../transition-engine.js';
@@ -333,7 +335,7 @@ export async function registerMcpTools(
       inputSchema: {
         workflow: z
           .enum(buildWorkflowEnum(context.workflowManager.getWorkflowNames()))
-          .default('waterfall')
+          .default(DEFAULT_WORKFLOW_NAME)
           .describe(
             generateWorkflowDescription(
               context.workflowManager.getAvailableWorkflows()

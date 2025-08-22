@@ -8,6 +8,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { createRequire } from 'node:module';
 import { createLogger } from './logger.js';
+import { DEFAULT_WORKFLOW_NAME } from './constants.js';
 import { StateMachineLoader } from './state-machine-loader.js';
 import { YamlStateMachine } from './state-machine-types.js';
 
@@ -104,7 +105,7 @@ export class WorkflowManager {
   ): YamlStateMachine {
     // If no workflow specified, default to waterfall
     if (!workflowName) {
-      workflowName = 'waterfall';
+      workflowName = DEFAULT_WORKFLOW_NAME;
     }
 
     // If workflow name is 'custom', try to load custom workflow
@@ -172,7 +173,7 @@ export class WorkflowManager {
             strategies.push(path.join(currentDir, 'resources/workflows'));
             break;
           }
-        } catch {
+        } catch (_error) {
           // Ignore JSON parse errors and continue searching
         }
       }
@@ -234,7 +235,7 @@ export class WorkflowManager {
                 strategies.push(...possiblePaths);
               }
             }
-          } catch {
+          } catch (_error) {
             // Ignore errors reading cache directories
           }
         }
@@ -256,7 +257,7 @@ export class WorkflowManager {
       const packagePath = require.resolve('responsible-vibe-mcp/package.json');
       const packageDir = path.dirname(packagePath);
       strategies.push(path.join(packageDir, 'resources/workflows'));
-    } catch {
+    } catch (_error) {
       // require.resolve might fail in some environments, that's okay
     }
 

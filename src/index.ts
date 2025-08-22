@@ -181,7 +181,7 @@ async function showVersion(): Promise<void> {
     const packageJsonPath = join(__dirname, '..', 'package.json');
     const packageJson = JSON.parse(await readFile(packageJsonPath, 'utf-8'));
     console.log(`responsible-vibe-mcp v${packageJson.version}`);
-  } catch {
+  } catch (_error) {
     console.log('responsible-vibe-mcp (version unknown)');
   }
 }

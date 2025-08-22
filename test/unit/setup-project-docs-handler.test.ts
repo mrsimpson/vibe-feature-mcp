@@ -13,6 +13,7 @@ import {
   vi,
   Mocked,
 } from 'vitest';
+import { TestAccess } from '../utils/test-access.js';
 import { SetupProjectDocsHandler } from '../../src/server/tool-handlers/setup-project-docs.js';
 import { ProjectDocsManager } from '../../src/project-docs-manager.js';
 import { TemplateManager } from '../../src/template-manager.js';
@@ -56,8 +57,11 @@ describe('SetupProjectDocsHandler', () => {
 
     // Create handler and inject mock
     handler = new SetupProjectDocsHandler();
-    // @ts-ignore - accessing private property for testing
-    handler.projectDocsManager = mockProjectDocsManager;
+    TestAccess.injectMock(
+      handler,
+      'projectDocsManager',
+      mockProjectDocsManager
+    );
 
     // Mock context
     mockContext = {

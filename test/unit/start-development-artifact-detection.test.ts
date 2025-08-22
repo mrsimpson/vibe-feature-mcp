@@ -6,6 +6,7 @@
  */
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { TestAccess } from '../utils/test-access.js';
 import { StartDevelopmentHandler } from '../../src/server/tool-handlers/start-development.js';
 import { join } from 'node:path';
 import {
@@ -42,8 +43,11 @@ describe('StartDevelopmentHandler - Dynamic Artifact Detection', () => {
 
     // Create handler and inject mock
     handler = new StartDevelopmentHandler();
-    // @ts-ignore - accessing private property for testing
-    handler.projectDocsManager = mockProjectDocsManager;
+    TestAccess.injectMock(
+      handler,
+      'projectDocsManager',
+      mockProjectDocsManager
+    );
 
     // Create basic mock context
     mockContext = MockContextFactory.createBasicContext(testProjectPath);

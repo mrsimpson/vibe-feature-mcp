@@ -5,6 +5,7 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { TestAccess } from '../utils/test-access.js';
 import { TemplateManager } from '../../src/template-manager.js';
 import { mkdir, writeFile, rmdir } from 'node:fs/promises';
 import { join } from 'node:path';
@@ -67,8 +68,7 @@ describe('TemplateManager', () => {
 
     // Mock the templatesPath in TemplateManager
     templateManager = new TemplateManager();
-    // @ts-ignore - accessing private property for testing
-    templateManager.templatesPath = testTemplatesPath;
+    TestAccess.injectMock(templateManager, 'templatesPath', testTemplatesPath);
   });
 
   afterEach(async () => {

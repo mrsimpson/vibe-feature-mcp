@@ -5,6 +5,7 @@
  */
 
 import { describe, it, expect, beforeEach, Mocked, vi } from 'vitest';
+import { TestAccess } from '../utils/test-access.js';
 import { InstructionGenerator } from '../../src/instruction-generator.js';
 import { PlanManager } from '../../src/plan-manager.js';
 import { ProjectDocsManager } from '../../src/project-docs-manager.js';
@@ -57,8 +58,11 @@ describe('InstructionGenerator', () => {
 
     // Create instruction generator and inject mocks
     instructionGenerator = new InstructionGenerator(mockPlanManager);
-    // @ts-ignore - accessing private property for testing
-    instructionGenerator.projectDocsManager = mockProjectDocsManager;
+    TestAccess.injectMock(
+      instructionGenerator,
+      'projectDocsManager',
+      mockProjectDocsManager
+    );
 
     // Mock conversation context
     mockConversationContext = {

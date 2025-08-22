@@ -7,6 +7,7 @@
 
 import { homedir } from 'node:os';
 import { createLogger } from '../logger.js';
+import { DEFAULT_WORKFLOW_NAME } from '../constants.js';
 import { HandlerResult } from './types.js';
 
 const logger = createLogger('ServerHelpers');
@@ -109,8 +110,8 @@ export function createConversationNotFoundResult(): HandlerResult<never> {
   return createErrorResult(
     'No development conversation has been started for this project. Please use the start_development tool first to initialize development with a workflow.',
     {
-      suggestion: 'start_development({ workflow: "waterfall" })',
-      availableWorkflows: ['waterfall', 'epcc', 'bugfix', 'custom'],
+      suggestion: `start_development({ workflow: "${DEFAULT_WORKFLOW_NAME}" })`,
+      availableWorkflows: [DEFAULT_WORKFLOW_NAME, 'epcc', 'bugfix', 'custom'],
     }
   );
 }

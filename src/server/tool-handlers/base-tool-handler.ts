@@ -122,7 +122,7 @@ export abstract class ConversationRequiredToolHandler<
 
     try {
       conversationContext = await this.getConversationContext(context);
-    } catch {
+    } catch (_error) {
       // Return a special error result that the response renderer can handle
       throw new Error('CONVERSATION_NOT_FOUND');
     }

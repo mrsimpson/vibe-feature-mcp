@@ -67,7 +67,7 @@ export class ProjectDocsManager {
       // For files, preserve the original extension
       const ext = extname(sourcePath);
       return ext || '.md'; // Default to .md if no extension
-    } catch {
+    } catch (_error) {
       return '.md'; // Default if we can't stat the source
     }
   }
@@ -149,7 +149,7 @@ export class ProjectDocsManager {
       try {
         await access(path);
         return true;
-      } catch {
+      } catch (_error) {
         return false;
       }
     };
@@ -181,7 +181,7 @@ export class ProjectDocsManager {
             }
           }
         }
-      } catch {
+      } catch (_error) {
         // Directory might not exist yet
       }
 
@@ -515,7 +515,7 @@ export class ProjectDocsManager {
     try {
       const stats = await lstat(documentPath);
       return stats.isSymbolicLink();
-    } catch {
+    } catch (_error) {
       return false;
     }
   }

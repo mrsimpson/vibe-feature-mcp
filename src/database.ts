@@ -29,6 +29,30 @@ type SqliteColumnInfo = {
   pk: number;
 };
 
+// Database row validation utilities
+function validateString(value: SqliteParam, fieldName: string): string {
+  if (typeof value === 'string') {
+    return value;
+  }
+  throw new Error(
+    `Database field '${fieldName}' expected string but got ${typeof value}: ${value}`
+  );
+}
+
+function parseJsonSafely(value: SqliteParam, fieldName: string): unknown {
+  if (!value) {
+    return undefined;
+  }
+  const stringValue = validateString(value, fieldName);
+  try {
+    return JSON.parse(stringValue);
+  } catch (error) {
+    throw new Error(
+      `Failed to parse JSON in field '${fieldName}': ${error instanceof Error ? error.message : String(error)}`
+    );
+  }
+}
+
 export class Database {
   private db: sqlite3.Database | null = null;
   private dbPath: string;
@@ -201,20 +225,24 @@ export class Database {
       }
 
       const state: ConversationState = {
-        conversationId: row.conversation_id as string,
-        projectPath: row.project_path as string,
-        gitBranch: row.git_branch as string,
-        currentPhase: row.current_phase as DevelopmentPhase,
-        planFilePath: row.plan_file_path as string,
-        workflowName: (row.workflow_name as string) || 'waterfall',
-        gitCommitConfig: row.git_commit_config
-          ? JSON.parse(row.git_commit_config as string)
-          : undefined,
+        conversationId: validateString(row.conversation_id, 'conversation_id'),
+        projectPath: validateString(row.project_path, 'project_path'),
+        gitBranch: validateString(row.git_branch, 'git_branch'),
+        currentPhase: validateString(
+          row.current_phase,
+          'current_phase'
+        ) as DevelopmentPhase,
+        planFilePath: validateString(row.plan_file_path, 'plan_file_path'),
+        workflowName: validateString(row.workflow_name, 'workflow_name'),
+        gitCommitConfig: parseJsonSafely(
+          row.git_commit_config,
+          'git_commit_config'
+        ),
         requireReviewsBeforePhaseTransition: Boolean(
           row.require_reviews_before_phase_transition
         ),
-        createdAt: row.created_at as string,
-        updatedAt: row.updated_at as string,
+        createdAt: validateString(row.created_at, 'created_at'),
+        updatedAt: validateString(row.updated_at, 'updated_at'),
       };
 
       logger.debug('Conversation state retrieved', {
@@ -292,20 +320,24 @@ export class Database {
     }
 
     return {
-      conversationId: row.conversation_id as string,
-      projectPath: row.project_path as string,
-      gitBranch: row.git_branch as string,
-      currentPhase: row.current_phase as DevelopmentPhase,
-      planFilePath: row.plan_file_path as string,
-      workflowName: (row.workflow_name as string) || 'waterfall',
-      gitCommitConfig: row.git_commit_config
-        ? JSON.parse(row.git_commit_config as string)
-        : undefined,
+      conversationId: validateString(row.conversation_id, 'conversation_id'),
+      projectPath: validateString(row.project_path, 'project_path'),
+      gitBranch: validateString(row.git_branch, 'git_branch'),
+      currentPhase: validateString(
+        row.current_phase,
+        'current_phase'
+      ) as DevelopmentPhase,
+      planFilePath: validateString(row.plan_file_path, 'plan_file_path'),
+      workflowName: validateString(row.workflow_name, 'workflow_name'),
+      gitCommitConfig: parseJsonSafely(
+        row.git_commit_config,
+        'git_commit_config'
+      ),
       requireReviewsBeforePhaseTransition: Boolean(
         row.require_reviews_before_phase_transition
       ),
-      createdAt: row.created_at as string,
-      updatedAt: row.updated_at as string,
+      createdAt: validateString(row.created_at, 'created_at'),
+      updatedAt: validateString(row.updated_at, 'updated_at'),
     };
   }
 
@@ -372,13 +404,16 @@ export class Database {
       );
 
       const logs: InteractionLog[] = rows.map(row => ({
-        id: row.id as number | undefined,
-        conversationId: row.conversation_id as string,
-        toolName: row.tool_name as string,
-        inputParams: row.input_params as string,
-        responseData: row.response_data as string,
-        currentPhase: row.current_phase as DevelopmentPhase,
-        timestamp: row.timestamp as string,
+        id: typeof row.id === 'number' ? row.id : undefined,
+        conversationId: validateString(row.conversation_id, 'conversation_id'),
+        toolName: validateString(row.tool_name, 'tool_name'),
+        inputParams: validateString(row.input_params, 'input_params'),
+        responseData: validateString(row.response_data, 'response_data'),
+        currentPhase: validateString(
+          row.current_phase,
+          'current_phase'
+        ) as DevelopmentPhase,
+        timestamp: validateString(row.timestamp, 'timestamp'),
       }));
 
       logger.debug('Retrieved interaction logs', {
