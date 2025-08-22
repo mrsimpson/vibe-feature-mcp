@@ -1,8 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import {
-  TempProject,
-  createTempProjectWithDefaultStateMachine,
-} from '../../utils/temp-files';
+import { createTempProjectWithDefaultStateMachine } from '../../utils/temp-files';
 import {
   DirectServerInterface,
   createSuiteIsolatedE2EScenario,
@@ -24,7 +21,6 @@ vi.unmock('fs/promises');
  */
 describe('Core Functionality', () => {
   let client: DirectServerInterface;
-  let _tempProject: TempProject;
   let cleanup: () => Promise<void>;
 
   beforeEach(async () => {
@@ -33,7 +29,6 @@ describe('Core Functionality', () => {
       tempProjectFactory: createTempProjectWithDefaultStateMachine,
     });
     client = scenario.client;
-    _tempProject = scenario.tempProject;
     cleanup = scenario.cleanup;
 
     // Initialize development with default workflow before each test

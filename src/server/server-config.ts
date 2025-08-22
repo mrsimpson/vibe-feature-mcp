@@ -38,50 +38,6 @@ import {
 const logger = createLogger('ServerConfig');
 
 /**
- * Build dynamic enum for template options
- */
-// function buildTemplateEnum(templates: string[]): [string, ...string[]] {
-//   if (templates.length === 0) {
-//     return ['freestyle']; // Fallback if no templates found
-//   }
-//   return [templates[0], ...templates.slice(1)];
-// }
-
-/**
- * Generate template descriptions for MCP tool schema
- */
-function _generateTemplateDescription(
-  templates: string[],
-  type: string
-): string {
-  if (templates.length === 0) {
-    return `${type} documentation template format`;
-  }
-
-  const descriptions = templates
-    .map(template => {
-      // Try to provide meaningful descriptions based on template names
-      switch (template) {
-        case 'arc42':
-          return 'arc42 (comprehensive software architecture template)';
-        case 'ears':
-          return 'ears (WHEN...THEN format)';
-        case 'comprehensive':
-          return 'comprehensive (full implementation guide with testing strategy)';
-        case 'freestyle':
-          return 'freestyle (flexible format)';
-        case 'none':
-          return 'none (placeholder - use plan file instead)';
-        default:
-          return `${template} (${template} format)`;
-      }
-    })
-    .join(', ');
-
-  return `${type} documentation template format. Options: ${descriptions}`;
-}
-
-/**
  * Server component container
  * Holds all the initialized server components
  */

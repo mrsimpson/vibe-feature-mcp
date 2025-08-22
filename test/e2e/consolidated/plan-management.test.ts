@@ -146,13 +146,8 @@ describe('Plan Management', () => {
 
   describe('Plan File Updates', () => {
     it('should update plan file across phase transitions', async () => {
-      // Start conversation
-      const _start = await client.callTool('whats_next', {
-        user_input: 'start project',
-      });
-
       // Get initial plan content
-      const initialPlan = await client.readResource('plan://current');
+      const initialPlan = await client.readResource<>('plan://current');
       const initialContent = initialPlan.contents[0].text;
 
       // Transition to design

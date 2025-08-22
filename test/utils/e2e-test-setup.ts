@@ -13,6 +13,7 @@ import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { mkdirSync, rmSync, existsSync } from 'node:fs';
 import type { ServerContext } from '../../src/server/types.js';
+import { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
 
 // Disable fs mocking for E2E tests
 vi.unmock('fs');
@@ -354,7 +355,7 @@ export function parseToolResponse(result: unknown): unknown {
 /**
  * Assert that a tool call was successful and return the response
  */
-export function assertToolSuccess(result: unknown): unknown {
+export function assertToolSuccess(result: unknown): CallToolResult {
   // Parse result if it's a string
   const parsed = typeof result === 'string' ? JSON.parse(result) : result;
 

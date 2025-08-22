@@ -246,10 +246,6 @@ Once you've defined these criteria, we can begin development. Throughout the pro
       conversationSummary,
     } = context;
 
-    // Get workflow name from conversation state
-    const _conversationState =
-      await this.conversationManager?.getConversationState(conversationId);
-
     // Load the appropriate workflow for this project/conversation
 
     logger.debug('Analyzing phase transition', {

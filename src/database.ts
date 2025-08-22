@@ -13,7 +13,11 @@ import { dirname } from 'node:path';
 import { join } from 'node:path';
 import { createLogger } from './logger.js';
 import type { DevelopmentPhase } from './state-machine.js';
-import type { ConversationState, InteractionLog } from './types.js';
+import type {
+  ConversationState,
+  InteractionLog,
+  GitCommitConfig,
+} from './types.js';
 
 const logger = createLogger('Database');
 
@@ -51,6 +55,20 @@ function parseJsonSafely(value: SqliteParam, fieldName: string): unknown {
       `Failed to parse JSON in field '${fieldName}': ${error instanceof Error ? error.message : String(error)}`
     );
   }
+}
+
+function mapRowToInteractionLog(row: SqliteRow): InteractionLog {
+  return {
+    id: typeof row.id === 'number' ? row.id : undefined,
+    conversationId: validateString(row.conversationId, 'conversationId'),
+    toolName: validateString(row.toolName, 'toolName'),
+    inputParams: validateString(row.inputParams, 'inputParams'),
+    responseData: validateString(row.responseData, 'responseData'),
+    currentPhase: validateString(row.currentPhase, 'currentPhase'),
+    timestamp: validateString(row.timestamp, 'timestamp'),
+    isReset: typeof row.isReset === 'number' ? Boolean(row.isReset) : undefined,
+    resetAt: row.resetAt ? validateString(row.resetAt, 'resetAt') : undefined,
+  };
 }
 
 export class Database {
@@ -237,7 +255,7 @@ export class Database {
         gitCommitConfig: parseJsonSafely(
           row.git_commit_config,
           'git_commit_config'
-        ),
+        ) as GitCommitConfig | undefined,
         requireReviewsBeforePhaseTransition: Boolean(
           row.require_reviews_before_phase_transition
         ),
@@ -332,7 +350,7 @@ export class Database {
       gitCommitConfig: parseJsonSafely(
         row.git_commit_config,
         'git_commit_config'
-      ),
+      ) as GitCommitConfig | undefined,
       requireReviewsBeforePhaseTransition: Boolean(
         row.require_reviews_before_phase_transition
       ),
@@ -475,9 +493,9 @@ export class Database {
       );
 
       if (conversationTables.length > 0) {
-        const conversationTableInfo = await this.getAllRows(
+        const conversationTableInfo = (await this.getAllRows(
           'PRAGMA table_info(conversation_states)'
-        );
+        )) as SqliteColumnInfo[];
         const hasWorkflowName = conversationTableInfo.some(
           (col: SqliteColumnInfo) => col.name === 'workflow_name'
         );
@@ -567,15 +585,17 @@ export class Database {
         [conversationId]
       );
 
-      const logs: InteractionLog[] = rows.map(row => ({
-        id: row.id,
-        conversationId: row.conversation_id,
-        toolName: row.tool_name,
-        inputParams: row.input_params,
-        responseData: row.response_data,
-        currentPhase: row.current_phase,
-        timestamp: row.timestamp,
-      }));
+      const logs: InteractionLog[] = rows.map(row =>
+        mapRowToInteractionLog({
+          id: row.id,
+          conversationId: row.conversation_id,
+          toolName: row.tool_name,
+          inputParams: row.input_params,
+          responseData: row.response_data,
+          currentPhase: row.current_phase,
+          timestamp: row.timestamp,
+        })
+      );
 
       logger.debug('Retrieved active interaction logs', {
         conversationId,
@@ -607,17 +627,19 @@ export class Database {
         [conversationId]
       );
 
-      const logs: InteractionLog[] = rows.map(row => ({
-        id: row.id,
-        conversationId: row.conversation_id,
-        toolName: row.tool_name,
-        inputParams: row.input_params,
-        responseData: row.response_data,
-        currentPhase: row.current_phase,
-        timestamp: row.timestamp,
-        isReset: row.is_reset || false,
-        resetAt: row.reset_at,
-      }));
+      const logs: InteractionLog[] = rows.map(row =>
+        mapRowToInteractionLog({
+          id: row.id,
+          conversationId: row.conversation_id,
+          toolName: row.tool_name,
+          inputParams: row.input_params,
+          responseData: row.response_data,
+          currentPhase: row.current_phase,
+          timestamp: row.timestamp,
+          isReset: row.is_reset,
+          resetAt: row.reset_at,
+        })
+      );
 
       logger.debug('Retrieved all interaction logs including reset', {
         conversationId,

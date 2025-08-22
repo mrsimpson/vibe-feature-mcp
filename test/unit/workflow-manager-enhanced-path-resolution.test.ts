@@ -155,9 +155,6 @@ states:
 
   describe('Strategy 3: Common npm installation paths', () => {
     it('should find workflows in local node_modules', () => {
-      // Simulate local node_modules installation
-      const _projectRoot = process.cwd();
-
       // Note: We can't actually create files in the real node_modules during tests,
       // but we can verify the path resolution logic works
       const workflowManager = new WorkflowManager();
