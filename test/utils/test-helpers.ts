@@ -9,6 +9,7 @@ import { execSync } from 'node:child_process';
 import { join } from 'node:path';
 import { vi, expect } from 'vitest';
 import { ResponsibleVibeMCPServer } from '../../src/server/index.js';
+import type { ServerContext } from '../../src/server/types.js';
 import { TempProject } from './temp-files.js';
 
 /**
@@ -103,7 +104,10 @@ export class MockDocsHelper {
  * Mock context factory for unit tests
  */
 export class MockContextFactory {
-  static createBasicContext(projectPath: string, overrides: any = {}) {
+  static createBasicContext(
+    projectPath: string,
+    overrides: Partial<ServerContext> = {}
+  ) {
     return {
       projectPath,
       workflowManager: {
@@ -223,18 +227,18 @@ export const TEST_WORKFLOWS = {
  * Common test assertions
  */
 export class TestAssertions {
-  static expectValidResult(result: any): void {
+  static expectValidResult(result: unknown): void {
     expect(result).toBeTypeOf('object');
     expect(result.phase).toBeDefined();
     expect(result.instructions).toBeDefined();
   }
 
-  static expectArtifactSetupPhase(result: any): void {
+  static expectArtifactSetupPhase(result: unknown): void {
     expect(result.phase).toBe('artifact-setup');
     expect(result.instructions).toContain('Referenced Variables');
   }
 
-  static expectNormalPhase(result: any, expectedPhase: string): void {
+  static expectNormalPhase(result: unknown, expectedPhase: string): void {
     expect(result.phase).toBe(expectedPhase);
     expect(result.instructions).toBeDefined();
   }

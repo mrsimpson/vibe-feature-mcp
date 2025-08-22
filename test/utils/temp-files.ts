@@ -281,7 +281,9 @@ export function createTempProjectWithDefaultStateMachine(
 /**
  * Helper to safely parse JSON responses from server, handling error cases
  */
-export function safeParseServerResponse(content: any[]): any {
+export function safeParseServerResponse(
+  content: Array<{ text?: string }>
+): unknown {
   if (!content || content.length === 0) {
     throw new Error('No content in server response');
   }
