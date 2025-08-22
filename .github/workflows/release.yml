@@ -28,7 +28,14 @@ jobs:
       - name: Install platform-specific dependencies
         run: |
           # Install platform dependencies for Linux (temporary, not saved to package.json)
-          npm install @oxlint/linux-x64-gnu --no-save || echo "Failed to install oxlint platform dependency, continuing..."
+          echo "Installing oxlint platform dependency..."
+          npm install @oxlint/linux-x64-gnu --no-save || {
+            echo "Failed to install oxlint platform dependency, trying alternative approach..."
+            rm -rf node_modules package-lock.json
+            npm install
+            npm install @oxlint/linux-x64-gnu --no-save || echo "Still failed, but continuing..."
+          }
+          echo "Installing Rollup platform dependency..."
           npm install @rollup/rollup-linux-x64-gnu --no-save || echo "Failed to install Rollup platform dependency, continuing..."
 
       - name: Check formatting
