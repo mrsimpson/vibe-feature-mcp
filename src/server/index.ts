@@ -6,7 +6,7 @@
  */
 
 import { setMcpServerForLogging, createLogger } from '../logger.js';
-import { ServerConfig, HandlerResult } from './types.js';
+import { ServerConfig } from './types.js';
 import {
   initializeServerComponents,
   registerMcpTools,

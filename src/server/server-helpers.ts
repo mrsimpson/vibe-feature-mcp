@@ -88,11 +88,13 @@ export async function safeExecute<T>(
  * Throws an error if any required arguments are missing
  */
 export function validateRequiredArgs(
-  args: any,
+  args: unknown,
   requiredFields: string[]
 ): void {
   const missingFields = requiredFields.filter(
-    field => args[field] === undefined || args[field] === null
+    field =>
+      (args as Record<string, unknown>)[field] === undefined ||
+      (args as Record<string, unknown>)[field] === null
   );
 
   if (missingFields.length > 0) {
