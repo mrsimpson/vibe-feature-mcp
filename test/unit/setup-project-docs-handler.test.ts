@@ -69,7 +69,7 @@ describe('SetupProjectDocsHandler', () => {
     // Clean up test directory
     try {
       await rmdir(testProjectPath, { recursive: true });
-    } catch (error) {
+    } catch {
       // Ignore cleanup errors
     }
   });

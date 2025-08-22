@@ -47,7 +47,7 @@ export class PlanManager {
         exists: true,
         content,
       };
-    } catch (error) {
+    } catch {
       return {
         path: planFilePath,
         exists: false,

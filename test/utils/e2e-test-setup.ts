@@ -62,7 +62,7 @@ export class TestSuiteIsolation {
     for (const cleanup of callbacks) {
       try {
         cleanup();
-      } catch (error) {
+      } catch {
         console.warn(`Cleanup callback failed for suite ${suiteName}:`, error);
       }
     }
@@ -72,7 +72,7 @@ export class TestSuiteIsolation {
     if (suiteDir && existsSync(suiteDir)) {
       try {
         rmSync(suiteDir, { recursive: true, force: true });
-      } catch (error) {
+      } catch {
         console.warn(`Failed to remove suite directory ${suiteDir}:`, error);
       }
     }
@@ -129,7 +129,7 @@ export class DirectServerInterface {
         default:
           throw new Error(`Unknown tool: ${name}`);
       }
-    } catch (error) {
+    } catch {
       // Return errors as objects instead of throwing them
       // This matches the expected behavior in tests
       return {
@@ -198,7 +198,7 @@ export class DirectServerInterface {
     let planContent: string;
     try {
       planContent = await planManager.getPlanFileContent(planFilePath);
-    } catch (error) {
+    } catch {
       // If plan file doesn't exist yet, return a default message
       planContent = `# Development Plan\n\nPlan file will be created when development begins.\n\nConversation ID: ${conversationContext.conversationId}`;
     }
@@ -332,7 +332,7 @@ export function parseToolResponse(result: any): any {
   if (typeof result === 'string') {
     try {
       return JSON.parse(result);
-    } catch (error) {
+    } catch {
       return { error: result };
     }
   }

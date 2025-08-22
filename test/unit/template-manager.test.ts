@@ -75,7 +75,7 @@ describe('TemplateManager', () => {
     // Clean up test directory
     try {
       await rmdir(testTemplatesPath, { recursive: true });
-    } catch (error) {
+    } catch {
       // Ignore cleanup errors
     }
   });

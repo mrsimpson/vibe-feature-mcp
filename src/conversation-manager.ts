@@ -339,7 +339,7 @@ export class ConversationManager {
       logger.debug('Detected git branch', { projectPath, branch });
 
       return branch;
-    } catch (error) {
+    } catch {
       logger.debug('Failed to get git branch, using "default" as branch name', {
         projectPath,
       });

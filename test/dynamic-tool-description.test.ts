@@ -39,7 +39,7 @@ describe('Dynamic Tool Description', () => {
     // Remove temp directory
     try {
       rmSync(tempDir, { recursive: true, force: true });
-    } catch (error) {
+    } catch {
       // Ignore cleanup errors
     }
   });

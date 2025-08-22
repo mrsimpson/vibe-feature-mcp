@@ -181,7 +181,7 @@ export class ProjectDocsManager {
             }
           }
         }
-      } catch (error) {
+      } catch {
         // Directory might not exist yet
       }
 

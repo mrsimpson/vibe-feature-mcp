@@ -82,24 +82,20 @@ vi.mock('../../src/workflow-manager', () => ({
       initial_state: 'ideation',
       states: { ideation: { description: 'Ideation state', transitions: [] } },
     }),
-    getAvailableWorkflows: vi
-      .fn()
-      .mockReturnValue([
-        {
-          name: 'waterfall',
-          displayName: 'Waterfall',
-          description: 'Classic waterfall workflow',
-        },
-      ]),
-    getAvailableWorkflowsForProject: vi
-      .fn()
-      .mockReturnValue([
-        {
-          name: 'waterfall',
-          displayName: 'Waterfall',
-          description: 'Classic waterfall workflow',
-        },
-      ]),
+    getAvailableWorkflows: vi.fn().mockReturnValue([
+      {
+        name: 'waterfall',
+        displayName: 'Waterfall',
+        description: 'Classic waterfall workflow',
+      },
+    ]),
+    getAvailableWorkflowsForProject: vi.fn().mockReturnValue([
+      {
+        name: 'waterfall',
+        displayName: 'Waterfall',
+        description: 'Classic waterfall workflow',
+      },
+    ]),
   })),
 }));
 
@@ -305,7 +301,7 @@ phases:
         // Clean up test files
         try {
           await fs.rm(tempDir, { recursive: true, force: true });
-        } catch (error) {
+        } catch {
           // Ignore cleanup errors
         }
       }

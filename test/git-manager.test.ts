@@ -15,7 +15,7 @@ describe('GitManager', () => {
     // Clean up any existing test directory
     try {
       rmSync(testDir, { recursive: true, force: true });
-    } catch (error) {
+    } catch {
       // Ignore if directory doesn't exist
     }
 
@@ -46,7 +46,7 @@ describe('GitManager', () => {
     // Clean up test directory
     try {
       rmSync(testDir, { recursive: true, force: true });
-    } catch (error) {
+    } catch {
       // Ignore cleanup errors
     }
   });

@@ -29,7 +29,7 @@ describe('Directory Linking and Extension Preservation', () => {
     // Clean up test directory
     try {
       await rm(testProjectPath, { recursive: true });
-    } catch (error) {
+    } catch {
       // Ignore cleanup errors
     }
   });

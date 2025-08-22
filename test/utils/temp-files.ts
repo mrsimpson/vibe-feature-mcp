@@ -298,7 +298,7 @@ export function safeParseServerResponse(content: any[]): any {
 
   try {
     return JSON.parse(text);
-  } catch (error) {
+  } catch {
     throw new Error(
       `Failed to parse server response as JSON: ${text.substring(0, 100)}...`
     );
