@@ -75,9 +75,10 @@ export class ResetDevelopmentHandler extends BaseToolHandler<
       message: resetResult.message,
     };
 
-    // Also add the properties that tests expect (for backward compatibility)
-    (result as any).resetItems = resetResult.resetItems;
-    (result as any).conversationId = resetResult.conversationId;
+    // Add conversationId for backward compatibility with tests
+    (
+      result as ResetDevelopmentResult & { conversationId: string }
+    ).conversationId = resetResult.conversationId;
 
     this.logger.info('Reset development completed successfully', {
       resetItems: result.resetItems,

@@ -55,4 +55,6 @@ export interface ConversationContext {
   currentPhase: string;
   planFilePath: string;
   workflowName: string;
+  gitCommitConfig?: GitCommitConfig;
+  requireReviewsBeforePhaseTransition?: boolean;
 }

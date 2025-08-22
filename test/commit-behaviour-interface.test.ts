@@ -5,6 +5,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { StartDevelopmentHandler } from '../src/server/tool-handlers/start-development.js';
 import * as GitManagerModule from '../src/git-manager.js';
+import type { ServerContext } from '../src/server/types.js';
 
 // Spy on GitManager methods
 const isGitRepositorySpy = vi.spyOn(
@@ -57,7 +58,7 @@ describe('Commit Behaviour Interface', () => {
         workflow: 'minor',
         commit_behaviour: 'step',
       },
-      mockContext as any
+      mockContext as ServerContext
     );
 
     // Verify the handler processed the commit_behaviour parameter
@@ -111,7 +112,7 @@ describe('Commit Behaviour Interface', () => {
         workflow: 'minor',
         commit_behaviour: 'phase',
       },
-      mockContext as any
+      mockContext as ServerContext
     );
 
     expect(
@@ -163,7 +164,7 @@ describe('Commit Behaviour Interface', () => {
         workflow: 'minor',
         commit_behaviour: 'end',
       },
-      mockContext as any
+      mockContext as ServerContext
     );
 
     expect(
@@ -215,7 +216,7 @@ describe('Commit Behaviour Interface', () => {
         workflow: 'minor',
         commit_behaviour: 'none',
       },
-      mockContext as any
+      mockContext as ServerContext
     );
 
     expect(

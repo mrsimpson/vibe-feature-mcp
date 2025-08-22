@@ -12,6 +12,7 @@ import { TempProject } from './temp-files.js';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { mkdirSync, rmSync, existsSync } from 'node:fs';
+import type { ServerContext } from '../../src/server/types.js';
 
 // Disable fs mocking for E2E tests
 vi.unmock('fs');
@@ -225,7 +226,10 @@ export class DirectServerInterface {
     const handler = new SystemPromptResourceHandler();
 
     // Create a minimal context - system prompt doesn't need full server context
-    const result = await handler.handle(new URL('system-prompt://'), {} as any);
+    const result = await handler.handle(
+      new URL('system-prompt://'),
+      {} as ServerContext
+    );
 
     return {
       contents: [
@@ -263,7 +267,7 @@ export class DirectServerInterface {
   /**
    * Get a prompt (if we add prompt support later)
    */
-  async getPrompt(name: string, arguments_: any = {}): Promise<unknown> {
+  async getPrompt(name: string, arguments_: unknown = {}): Promise<unknown> {
     // For now, just return a placeholder
     return {
       description: `Prompt for ${name}`,

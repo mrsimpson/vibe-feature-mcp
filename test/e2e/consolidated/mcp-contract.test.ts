@@ -373,9 +373,9 @@ describe('MCP Contract Validation', () => {
       const results = await Promise.all(promises);
 
       // All requests should succeed
-      results.forEach(result => {
+      for (const result of results) {
         expect(result).toBeDefined();
-      });
+      }
 
       // Tool results should have content
       expect(results[0].content).toBeDefined();

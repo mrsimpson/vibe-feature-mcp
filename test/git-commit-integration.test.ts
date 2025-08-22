@@ -25,10 +25,10 @@ describe('Git Commit Integration', () => {
       const expectedOptions = ['step', 'phase', 'end', 'none'];
 
       // These are the options that should be available in the MCP tool description
-      expectedOptions.forEach(option => {
+      for (const option of expectedOptions) {
         expect(typeof option).toBe('string');
         expect(option.length).toBeGreaterThan(0);
-      });
+      }
     });
 
     it('should have meaningful option descriptions', () => {
@@ -40,11 +40,11 @@ describe('Git Commit Integration', () => {
         none: 'no automatic commits',
       };
 
-      Object.entries(optionDescriptions).forEach(([option, description]) => {
+      for (const [option, description] of Object.entries(optionDescriptions)) {
         expect(typeof option).toBe('string');
         expect(typeof description).toBe('string');
         expect(description.length).toBeGreaterThan(10);
-      });
+      }
     });
   });
 
@@ -81,9 +81,9 @@ describe('Git Commit Integration', () => {
 
       // Both git and non-git projects should have access to all options
       // (the difference is in the guidance, not the available options)
-      allOptions.forEach(option => {
+      for (const option of allOptions) {
         expect(allOptions).toContain(option);
-      });
+      }
 
       expect(allOptions).toHaveLength(4);
     });

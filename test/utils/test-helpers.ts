@@ -83,9 +83,9 @@ export class MockDocsHelper {
     const docsDir = join(projectPath, '.vibe', 'docs');
     mkdirSync(docsDir, { recursive: true });
 
-    Object.entries(MOCK_DOCS).forEach(([docType, content]) => {
+    for (const [docType, content] of Object.entries(MOCK_DOCS)) {
       writeFileSync(join(docsDir, `${docType}.md`), content);
-    });
+    }
   }
 
   static addToTempProject(tempProject: TempProject): void {

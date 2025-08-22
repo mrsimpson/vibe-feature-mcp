@@ -39,7 +39,9 @@ export class ResponsibleVibeMCPServer {
   private components: ServerComponents | null = null;
 
   constructor(private config: ServerConfig = {}) {
-    logger.debug('ResponsibleVibeMCPServer created', config);
+    logger.debug('ResponsibleVibeMCPServer created', {
+      config: JSON.stringify(config),
+    });
   }
 
   /**

@@ -25,7 +25,7 @@ export interface LogContext {
   conversationId?: string;
   phase?: string;
   operation?: string;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 // Global MCP server reference for log notifications

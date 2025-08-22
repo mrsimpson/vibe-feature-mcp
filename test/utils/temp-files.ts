@@ -187,12 +187,12 @@ export class TempProject {
     }
 
     // Create additional files
-    Object.entries(additionalFiles).forEach(([filePath, content]) => {
+    for (const [filePath, content] of Object.entries(additionalFiles)) {
       const fullPath = join(this.projectPath, filePath);
       const dir = fullPath.substring(0, fullPath.lastIndexOf('/'));
       mkdirSync(dir, { recursive: true });
       writeFileSync(fullPath, content);
-    });
+    }
   }
 
   /**
@@ -234,11 +234,11 @@ export class TempProject {
    * Clean up the temporary project
    */
   cleanup(): void {
-    this.cleanupPaths.forEach(path => {
+    for (const path of this.cleanupPaths) {
       if (existsSync(path)) {
         rmSync(path, { recursive: true, force: true });
       }
-    });
+    }
   }
 }
 

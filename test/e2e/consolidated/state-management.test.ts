@@ -324,9 +324,9 @@ states:
       const results = await Promise.all(promises);
 
       // All should succeed (though final state may vary)
-      results.forEach(result => {
+      for (const result of results) {
         expect(result).toBeTruthy();
-      });
+      }
 
       // Final state should be consistent
       const stateResource = await client.readResource('state://current');

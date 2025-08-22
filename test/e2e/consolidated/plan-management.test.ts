@@ -147,7 +147,7 @@ describe('Plan Management', () => {
   describe('Plan File Updates', () => {
     it('should update plan file across phase transitions', async () => {
       // Start conversation
-      const start = await client.callTool('whats_next', {
+      const _start = await client.callTool('whats_next', {
         user_input: 'start project',
       });
 
@@ -219,9 +219,9 @@ describe('Plan Management', () => {
       const results = await Promise.all(promises);
 
       // All operations should succeed
-      results.forEach(result => {
+      for (const result of results) {
         expect(result).toBeTruthy();
-      });
+      }
 
       // Plan file should still be accessible and valid
       const planResource = await client.readResource('plan://current');

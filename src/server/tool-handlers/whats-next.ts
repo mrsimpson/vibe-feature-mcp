@@ -7,6 +7,7 @@
 
 import { ConversationRequiredToolHandler } from './base-tool-handler.js';
 import { ServerContext } from '../types.js';
+import type { ConversationContext } from '../../types.js';
 
 /**
  * Arguments for the whats_next tool
@@ -42,7 +43,7 @@ export class WhatsNextHandler extends ConversationRequiredToolHandler<
   protected async executeWithConversation(
     args: WhatsNextArgs,
     context: ServerContext,
-    conversationContext: any
+    conversationContext: ConversationContext
   ): Promise<WhatsNextResult> {
     const {
       context: requestContext = '',

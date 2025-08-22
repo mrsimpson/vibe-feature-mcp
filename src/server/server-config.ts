@@ -98,7 +98,9 @@ export interface ServerComponents {
 export async function initializeServerComponents(
   config: ServerConfig = {}
 ): Promise<ServerComponents> {
-  logger.debug('Initializing server components', config);
+  logger.debug('Initializing server components', {
+    config: JSON.stringify(config),
+  });
 
   // Set project path with support for environment variable
   const projectPath = normalizeProjectPath(

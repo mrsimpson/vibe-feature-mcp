@@ -8,6 +8,7 @@
 import { ConversationRequiredToolHandler } from './base-tool-handler.js';
 import { ServerContext } from '../types.js';
 import { validateRequiredArgs } from '../server-helpers.js';
+import type { ConversationContext } from '../../types.js';
 
 /**
  * Arguments for the proceed_to_phase tool
@@ -40,7 +41,7 @@ export class ProceedToPhaseHandler extends ConversationRequiredToolHandler<
   protected async executeWithConversation(
     args: ProceedToPhaseArgs,
     context: ServerContext,
-    conversationContext: any
+    conversationContext: ConversationContext
   ): Promise<ProceedToPhaseResult> {
     // Validate required arguments
     validateRequiredArgs(args, ['target_phase', 'review_state']);

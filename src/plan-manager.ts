@@ -165,7 +165,7 @@ export class PlanManager {
 `;
 
     // Generate simple sections for each phase
-    phases.forEach((phase, _index) => {
+    for (const phase of phases) {
       if (phase !== initialPhase) {
         content += `## ${this.capitalizePhase(phase)}
 ### Tasks
@@ -176,7 +176,7 @@ export class PlanManager {
 
 `;
       }
-    });
+    }
 
     content += `## Key Decisions
 *Important decisions will be documented here as they are made*

@@ -250,10 +250,10 @@ export class ResumeWorkflowHandler extends ConversationRequiredToolHandler<
         ),
       };
     } catch (error) {
-      this.logger.warn(
-        'Could not determine state machine info',
-        error as Error
-      );
+      const err = error as Error;
+      this.logger.warn('Could not determine state machine info', {
+        error: err.message,
+      });
       return {
         name: 'unknown',
         description: 'Could not load workflow',
@@ -332,10 +332,10 @@ export class ResumeWorkflowHandler extends ConversationRequiredToolHandler<
         );
       }
     } catch (error) {
-      this.logger.warn(
-        'Could not generate state machine recommendations',
-        error as Error
-      );
+      const err = error as Error;
+      this.logger.warn('Could not generate state machine recommendations', {
+        error: err.message,
+      });
       // Basic fallback
       recommendations.phase_guidance = `Current phase: ${conversationContext.currentPhase}`;
       recommendations.immediate_actions.push(
