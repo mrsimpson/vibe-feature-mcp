@@ -13,6 +13,7 @@ import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { GitCommitConfig } from '../../types.js';
 import { GitManager } from '../../git-manager.js';
+import type { YamlStateMachine } from '../../state-machine-types.js';
 import { ProjectDocsManager } from '../../project-docs-manager.js';
 
 /**
@@ -32,7 +33,7 @@ export interface StartDevelopmentResult {
   instructions: string;
   plan_file_path: string;
   conversation_id: string;
-  workflow: any; // State machine object
+  workflow: YamlStateMachine;
   workflowDocumentationUrl?: string;
 }
 
@@ -118,7 +119,7 @@ export class StartDevelopmentHandler extends BaseToolHandler<
         instructions: `You're currently on the ${currentBranch} branch. It's recommended to create a feature branch for development. Propose a branch creation by suggesting a branch command to the user call start_development again.\n\nSuggested command: \`git checkout -b ${suggestedBranchName}\`\n\nPlease create a new branch and then call start_development again to begin development.`,
         plan_file_path: '',
         conversation_id: '',
-        workflow: {},
+        workflow: {} as YamlStateMachine,
       };
 
       this.logger.debug(
@@ -304,7 +305,7 @@ export class StartDevelopmentHandler extends BaseToolHandler<
         instructions: setupGuidance,
         plan_file_path: '',
         conversation_id: '',
-        workflow: {},
+        workflow: {} as YamlStateMachine,
       };
     } catch (error) {
       this.logger.warn(

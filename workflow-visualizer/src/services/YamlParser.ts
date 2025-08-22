@@ -13,7 +13,7 @@ export class YamlParser {
    */
   public parseWorkflow(yamlContent: string): YamlStateMachine {
     try {
-      const parsed = yaml.load(yamlContent) as any;
+      const parsed = yaml.load(yamlContent) as unknown;
 
       if (!parsed) {
         throw this.createValidationError('Empty YAML content');
@@ -37,7 +37,7 @@ export class YamlParser {
   /**
    * Validate the structure of a parsed workflow object
    */
-  private validateWorkflowStructure(parsed: any): YamlStateMachine {
+  private validateWorkflowStructure(parsed: unknown): YamlStateMachine {
     // Check required top-level fields
     this.validateRequiredField(parsed, 'name', 'string');
     this.validateRequiredField(parsed, 'description', 'string');
@@ -69,7 +69,7 @@ export class YamlParser {
   /**
    * Validate states object structure
    */
-  private validateStates(statesObj: any): Record<string, YamlState> {
+  private validateStates(statesObj: unknown): Record<string, YamlState> {
     if (!statesObj || typeof statesObj !== 'object') {
       throw this.createValidationError('States must be an object');
     }
@@ -83,7 +83,7 @@ export class YamlParser {
         );
       }
 
-      const state = stateData as any;
+      const state = stateData as unknown;
 
       // Validate required state fields
       this.validateRequiredField(
@@ -125,7 +125,7 @@ export class YamlParser {
    * Validate transitions array structure
    */
   private validateTransitions(
-    transitionsArray: any,
+    transitionsArray: unknown,
     stateName: string
   ): YamlTransition[] {
     if (!Array.isArray(transitionsArray)) {
@@ -134,7 +134,7 @@ export class YamlParser {
       );
     }
 
-    return transitionsArray.map((transition: any, index: number) => {
+    return transitionsArray.map((transition: unknown, index: number) => {
       if (!transition || typeof transition !== 'object') {
         throw this.createValidationError(
           `Transition ${index} in state "${stateName}" must be an object`
@@ -193,7 +193,7 @@ export class YamlParser {
    * Validate that a required field exists and has the correct type
    */
   private validateRequiredField(
-    obj: any,
+    obj: unknown,
     fieldName: string,
     expectedType: string,
     context: string = 'Workflow'

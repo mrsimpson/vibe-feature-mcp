@@ -300,7 +300,8 @@ class WorkflowVisualizerApp {
    * Render workflow metadata in side panel
    */
   private renderMetadataDetails(): void {
-    const workflow = this.appState.currentWorkflow!;
+    const workflow = this.appState.currentWorkflow;
+    if (!workflow) return;
     const metadata = workflow.metadata;
 
     // Update header
@@ -373,7 +374,8 @@ class WorkflowVisualizerApp {
    * Render selected element details in side panel
    */
   private renderSelectedElementDetails(): void {
-    const element = this.appState.selectedElement!;
+    const element = this.appState.selectedElement;
+    if (!element) return;
 
     if (element.type === 'state') {
       this.renderStateDetailsWithHeader(element.id, element.data);
@@ -389,7 +391,8 @@ class WorkflowVisualizerApp {
     stateId: string,
     stateData: YamlState
   ): void {
-    const workflow = this.appState.currentWorkflow!;
+    const workflow = this.appState.currentWorkflow;
+    if (!workflow) return;
     const isInitial = stateId === workflow.initial_state;
 
     // Update header with back button
