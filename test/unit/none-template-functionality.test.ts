@@ -6,10 +6,9 @@
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { ProjectDocsManager } from '../../src/project-docs-manager.js';
-import { join } from 'path';
-import { tmpdir } from 'os';
-import { mkdir, writeFile, rm, readFile } from 'fs/promises';
-import { mkdir, rmdir } from 'fs/promises';
+import { join } from 'node:path';
+import { tmpdir } from 'node:os';
+import { mkdir, rmdir, readFile } from 'node:fs/promises';
 
 describe('None Template Functionality', () => {
   let testProjectPath: string;
@@ -120,7 +119,7 @@ describe('None Template Functionality', () => {
       // Create a test README file
       const readmePath = join(testProjectPath, 'README.md');
       await mkdir(testProjectPath, { recursive: true });
-      const fs = await import('fs/promises');
+      const fs = await import('node:fs/promises');
       await fs.writeFile(
         readmePath,
         '# Test Project\n\nThis is a test project.'

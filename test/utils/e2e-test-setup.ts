@@ -350,7 +350,7 @@ export function parseToolResponse(result: unknown): unknown {
 /**
  * Assert that a tool call was successful and return the response
  */
-export function assertToolSuccess(result: unknown): any {
+export function assertToolSuccess(result: unknown): unknown {
   // Parse result if it's a string
   const parsed = typeof result === 'string' ? JSON.parse(result) : result;
 

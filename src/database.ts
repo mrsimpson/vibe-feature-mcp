@@ -17,6 +17,18 @@ import type { ConversationState, InteractionLog } from './types.js';
 
 const logger = createLogger('Database');
 
+// SQLite parameter types
+type SqliteParam = string | number | boolean | null | undefined | Buffer;
+type SqliteRow = Record<string, SqliteParam>;
+type SqliteColumnInfo = {
+  cid: number;
+  name: string;
+  type: string;
+  notnull: number;
+  dflt_value: SqliteParam;
+  pk: number;
+};
+
 export class Database {
   private db: sqlite3.Database | null = null;
   private dbPath: string;
@@ -106,7 +118,7 @@ export class Database {
   /**
    * Helper method to run queries with promises
    */
-  private runQuery(sql: string, params: any[] = []): Promise<void> {
+  private runQuery(sql: string, params: SqliteParam[] = []): Promise<void> {
     return new Promise((resolve, reject) => {
       if (!this.db) {
         reject(new Error('Database not initialized'));
@@ -126,7 +138,7 @@ export class Database {
   /**
    * Helper method to get single row with promises
    */
-  private getRow(sql: string, params: any[] = []): Promise<any> {
+  private getRow(sql: string, params: SqliteParam[] = []): Promise<any> {
     return new Promise((resolve, reject) => {
       if (!this.db) {
         reject(new Error('Database not initialized'));
@@ -146,7 +158,7 @@ export class Database {
   /**
    * Helper method to get multiple rows with promises
    */
-  private getAllRows(sql: string, params: any[] = []): Promise<any[]> {
+  private getAllRows(sql: string, params: SqliteParam[] = []): Promise<any[]> {
     return new Promise((resolve, reject) => {
       if (!this.db) {
         reject(new Error('Database not initialized'));
@@ -395,10 +407,10 @@ export class Database {
           'PRAGMA table_info(interaction_logs)'
         );
         const hasIsReset = tableInfo.some(
-          (col: any) => col.name === 'is_reset'
+          (col: SqliteColumnInfo) => col.name === 'is_reset'
         );
         const hasResetAt = tableInfo.some(
-          (col: any) => col.name === 'reset_at'
+          (col: SqliteColumnInfo) => col.name === 'reset_at'
         );
 
         if (!hasIsReset) {
@@ -426,13 +438,14 @@ export class Database {
           'PRAGMA table_info(conversation_states)'
         );
         const hasWorkflowName = conversationTableInfo.some(
-          (col: any) => col.name === 'workflow_name'
+          (col: SqliteColumnInfo) => col.name === 'workflow_name'
         );
         const hasGitCommitConfig = conversationTableInfo.some(
-          (col: any) => col.name === 'git_commit_config'
+          (col: SqliteColumnInfo) => col.name === 'git_commit_config'
         );
         const hasRequireReviews = conversationTableInfo.some(
-          (col: any) => col.name === 'require_reviews_before_phase_transition'
+          (col: SqliteColumnInfo) =>
+            col.name === 'require_reviews_before_phase_transition'
         );
 
         if (!hasWorkflowName) {
