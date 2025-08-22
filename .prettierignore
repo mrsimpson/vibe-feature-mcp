@@ -1,0 +1,35 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+dist/
+build/
+
+# Generated files
+*.tgz
+*.log
+
+# Development artifacts
+.vibe/
+.git/
+
+# Documentation build
+docs/node_modules/
+docs/.vitepress/dist/
+
+# Workflow visualizer build
+workflow-visualizer/dist/
+workflow-visualizer/node_modules/
+
+# Lock files
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# IDE files
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
