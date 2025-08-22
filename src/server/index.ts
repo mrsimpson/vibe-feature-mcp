@@ -149,7 +149,7 @@ export class ResponsibleVibeMCPServer {
       throw new Error(result.error || 'Handler execution failed');
     }
 
-    return result;
+    return result.data;
   }
 
   /**
@@ -157,7 +157,7 @@ export class ResponsibleVibeMCPServer {
    */
   public async handleProceedToPhase(
     args: ProceedToPhaseArgs
-  ): Promise<HandlerResult<ProceedToPhaseResult>> {
+  ): Promise<ProceedToPhaseResult> {
     if (!this.components) {
       throw new Error('Server not initialized. Call initialize() first.');
     }
@@ -172,7 +172,7 @@ export class ResponsibleVibeMCPServer {
       throw new Error(result.error || 'Handler execution failed');
     }
 
-    return result as HandlerResult<ProceedToPhaseResult>;
+    return result.data as ProceedToPhaseResult;
   }
 
   /**
@@ -180,7 +180,7 @@ export class ResponsibleVibeMCPServer {
    */
   public async handleStartDevelopment(
     args: StartDevelopmentArgs
-  ): Promise<HandlerResult<StartDevelopmentResult>> {
+  ): Promise<StartDevelopmentResult> {
     if (!this.components) {
       throw new Error('Server not initialized. Call initialize() first.');
     }
@@ -195,7 +195,7 @@ export class ResponsibleVibeMCPServer {
       throw new Error(result.error || 'Handler execution failed');
     }
 
-    return result as HandlerResult<StartDevelopmentResult>;
+    return result.data as StartDevelopmentResult;
   }
 
   /**
@@ -203,7 +203,7 @@ export class ResponsibleVibeMCPServer {
    */
   public async handleResumeWorkflow(
     args: ResumeWorkflowArgs
-  ): Promise<HandlerResult<ResumeWorkflowResult>> {
+  ): Promise<ResumeWorkflowResult> {
     if (!this.components) {
       throw new Error('Server not initialized. Call initialize() first.');
     }
@@ -218,7 +218,7 @@ export class ResponsibleVibeMCPServer {
       throw new Error(result.error || 'Handler execution failed');
     }
 
-    return result as HandlerResult<ResumeWorkflowResult>;
+    return result.data as ResumeWorkflowResult;
   }
 
   /**
@@ -226,7 +226,7 @@ export class ResponsibleVibeMCPServer {
    */
   public async handleResetDevelopment(
     args: ResetDevelopmentArgs
-  ): Promise<HandlerResult<ResetDevelopmentResult>> {
+  ): Promise<ResetDevelopmentResult> {
     if (!this.components) {
       throw new Error('Server not initialized. Call initialize() first.');
     }
@@ -241,7 +241,7 @@ export class ResponsibleVibeMCPServer {
       throw new Error(result.error || 'Handler execution failed');
     }
 
-    return result as HandlerResult<ResetDevelopmentResult>;
+    return result.data as ResetDevelopmentResult;
   }
 
   /**

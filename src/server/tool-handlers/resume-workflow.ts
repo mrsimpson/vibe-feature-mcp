@@ -70,7 +70,7 @@ export interface ResumeWorkflowResult {
   plan_status: {
     exists: boolean;
     path: string;
-    analysis?: PlanAnalysis;
+    analysis?: PlanAnalysis | null;
   };
   system_prompt?: string | null;
   recommendations: {
@@ -110,7 +110,7 @@ export class ResumeWorkflowHandler extends ConversationRequiredToolHandler<
     const planAnalysis =
       planInfo.exists && planInfo.content
         ? this.analyzePlanFile(planInfo.content)
-        : undefined;
+        : null;
 
     // Get current state machine information
     const stateMachineInfo = await this.getStateMachineInfo(
@@ -270,7 +270,7 @@ export class ResumeWorkflowHandler extends ConversationRequiredToolHandler<
    */
   private generateRecommendations(
     conversationContext: ConversationContext,
-    planAnalysis: PlanAnalysis | undefined,
+    planAnalysis: PlanAnalysis | null,
     context: ServerContext
   ): WorkflowRecommendations {
     const recommendations = {

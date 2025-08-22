@@ -67,7 +67,7 @@ export class TestSuiteIsolation {
     for (const cleanup of callbacks) {
       try {
         cleanup();
-      } catch {
+      } catch (error) {
         console.warn(`Cleanup callback failed for suite ${suiteName}:`, error);
       }
     }
@@ -77,7 +77,7 @@ export class TestSuiteIsolation {
     if (suiteDir && existsSync(suiteDir)) {
       try {
         rmSync(suiteDir, { recursive: true, force: true });
-      } catch {
+      } catch (error) {
         console.warn(`Failed to remove suite directory ${suiteDir}:`, error);
       }
     }
@@ -134,7 +134,7 @@ export class DirectServerInterface {
         default:
           throw new Error(`Unknown tool: ${name}`);
       }
-    } catch {
+    } catch (error) {
       // Return errors as objects instead of throwing them
       // This matches the expected behavior in tests
       return {
