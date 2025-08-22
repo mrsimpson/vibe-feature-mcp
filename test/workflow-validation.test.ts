@@ -54,19 +54,19 @@ describe('Workflow Validation', () => {
       expect(loadedWorkflows.length).toBe(expectedWorkflowCount);
 
       // Each workflow file should correspond to a loaded workflow
-      workflowFiles.forEach(file => {
+      for (const file of workflowFiles) {
         const workflowName = file.replace(/\.(yaml|yml)$/, '');
         expect(loadedWorkflowNames).toContain(workflowName);
-      });
+      }
     });
 
     it('should have valid workflow files in resources directory', () => {
       expect(workflowFiles.length).toBeGreaterThan(0);
 
       // Check that all files have valid extensions
-      workflowFiles.forEach(file => {
+      for (const file of workflowFiles) {
         expect(file.endsWith('.yaml') || file.endsWith('.yml')).toBe(true);
-      });
+      }
     });
   });
 
@@ -80,7 +80,7 @@ describe('Workflow Validation', () => {
     });
 
     it('should have required fields for each workflow', () => {
-      workflows.forEach(workflow => {
+      for (const workflow of workflows) {
         expect(workflow).toBeDefined();
         expect(workflow.name).toBeDefined();
         expect(typeof workflow.name).toBe('string');
@@ -89,11 +89,11 @@ describe('Workflow Validation', () => {
         expect(workflow.phases).toBeDefined();
         expect(Array.isArray(workflow.phases)).toBe(true);
         expect(workflow.phases.length).toBeGreaterThan(0);
-      });
+      }
     });
 
     it('should have valid state machines for each workflow', () => {
-      workflows.forEach(workflow => {
+      for (const workflow of workflows) {
         // Get the state machine for this workflow
         const stateMachine = workflowManager.getWorkflow(workflow.name);
 
@@ -103,26 +103,26 @@ describe('Workflow Validation', () => {
         expect(stateMachine!.initial_state).toBeDefined();
         expect(stateMachine!.states).toBeDefined();
         expect(typeof stateMachine!.states).toBe('object');
-      });
+      }
     });
 
     it('should have initial state defined in states', () => {
-      workflows.forEach(workflow => {
+      for (const workflow of workflows) {
         const stateMachine = workflowManager.getWorkflow(workflow.name);
 
         expect(stateMachine!.states[stateMachine!.initial_state]).toBeDefined();
-      });
+      }
     });
 
     it('should have all phases represented as states', () => {
-      workflows.forEach(workflow => {
+      for (const workflow of workflows) {
         const stateMachine = workflowManager.getWorkflow(workflow.name);
 
         // Every phase should exist as a state
-        workflow.phases.forEach((phase: string) => {
+        for (const phase of workflow.phases) {
           expect(stateMachine!.states[phase]).toBeDefined();
-        });
-      });
+        }
+      }
     });
   });
 
@@ -155,12 +155,12 @@ describe('Workflow Validation', () => {
 
         const stateConfig = stateMachine.states[currentState];
         if (stateConfig.transitions) {
-          stateConfig.transitions.forEach((transition: YamlTransition) => {
+          for (const transition of stateConfig.transitions) {
             if (transition.to && !reachableStates.has(transition.to)) {
               reachableStates.add(transition.to);
               queue.push(transition.to);
             }
-          });
+          }
         }
       }
 
@@ -172,7 +172,7 @@ describe('Workflow Validation', () => {
     }
 
     it('should have all states reachable from initial state', () => {
-      workflows.forEach(workflow => {
+      for (const workflow of workflows) {
         const stateMachine = workflowManager.getWorkflow(workflow.name);
         const analysis = analyzeStateReachability(stateMachine!);
 
@@ -180,49 +180,49 @@ describe('Workflow Validation', () => {
 
         // All states should be reachable
         expect(analysis.reachableStates.length).toBe(analysis.allStates.length);
-      });
+      }
     });
 
     it('should have valid transition targets', () => {
-      workflows.forEach(workflow => {
+      for (const workflow of workflows) {
         const stateMachine = workflowManager.getWorkflow(workflow.name);
 
-        Object.entries(stateMachine!.states).forEach(
-          ([_stateName, stateConfig]: [string, YamlState]) => {
-            if (stateConfig.transitions) {
-              stateConfig.transitions.forEach((transition: YamlTransition) => {
-                if (transition.to) {
-                  // Target state must exist
-                  expect(stateMachine!.states[transition.to]).toBeDefined();
-                }
-              });
+        for (const [_stateName, stateConfig] of Object.entries(
+          stateMachine!.states
+        ) as [string, YamlState][]) {
+          if (stateConfig.transitions) {
+            for (const transition of stateConfig.transitions) {
+              if (transition.to) {
+                // Target state must exist
+                expect(stateMachine!.states[transition.to]).toBeDefined();
+              }
             }
           }
-        );
-      });
+        }
+      }
     });
 
     it('should have meaningful transition triggers', () => {
-      workflows.forEach(workflow => {
+      for (const workflow of workflows) {
         const stateMachine = workflowManager.getWorkflow(workflow.name);
 
-        Object.entries(stateMachine!.states).forEach(
-          ([_stateName, stateConfig]: [string, YamlState]) => {
-            if (stateConfig.transitions) {
-              stateConfig.transitions.forEach((transition: YamlTransition) => {
-                // Each transition should have a trigger
-                expect(transition.trigger).toBeDefined();
-                expect(typeof transition.trigger).toBe('string');
-                expect(transition.trigger.length).toBeGreaterThan(0);
+        for (const [_stateName, stateConfig] of Object.entries(
+          stateMachine!.states
+        ) as [string, YamlState][]) {
+          if (stateConfig.transitions) {
+            for (const transition of stateConfig.transitions) {
+              // Each transition should have a trigger
+              expect(transition.trigger).toBeDefined();
+              expect(typeof transition.trigger).toBe('string');
+              expect(transition.trigger.length).toBeGreaterThan(0);
 
-                // Trigger should be meaningful (not just whitespace)
-                expect(transition.trigger.trim()).toBe(transition.trigger);
-                expect(transition.trigger.trim().length).toBeGreaterThan(0);
-              });
+              // Trigger should be meaningful (not just whitespace)
+              expect(transition.trigger.trim()).toBe(transition.trigger);
+              expect(transition.trigger.trim().length).toBeGreaterThan(0);
             }
           }
-        );
-      });
+        }
+      }
     });
   });
 
@@ -236,35 +236,35 @@ describe('Workflow Validation', () => {
     });
 
     it('should have meaningful descriptions for all states', () => {
-      workflows.forEach(workflow => {
+      for (const workflow of workflows) {
         const stateMachine = workflowManager.getWorkflow(workflow.name);
 
-        Object.entries(stateMachine!.states).forEach(
-          ([_stateName, stateConfig]: [string, YamlState]) => {
-            expect(stateConfig.description).toBeDefined();
-            expect(typeof stateConfig.description).toBe('string');
-            expect(stateConfig.description.length).toBeGreaterThan(10); // Meaningful description
-          }
-        );
-      });
+        for (const [_stateName, stateConfig] of Object.entries(
+          stateMachine!.states
+        ) as [string, YamlState][]) {
+          expect(stateConfig.description).toBeDefined();
+          expect(typeof stateConfig.description).toBe('string');
+          expect(stateConfig.description.length).toBeGreaterThan(10); // Meaningful description
+        }
+      }
     });
 
     it('should have default instructions for all states', () => {
-      workflows.forEach(workflow => {
+      for (const workflow of workflows) {
         const stateMachine = workflowManager.getWorkflow(workflow.name);
 
-        Object.entries(stateMachine!.states).forEach(
-          ([_stateName, stateConfig]: [string, YamlState]) => {
-            expect(stateConfig.default_instructions).toBeDefined();
-            expect(typeof stateConfig.default_instructions).toBe('string');
-            expect(stateConfig.default_instructions.length).toBeGreaterThan(20); // Substantial instructions
-          }
-        );
-      });
+        for (const [_stateName, stateConfig] of Object.entries(
+          stateMachine!.states
+        ) as [string, YamlState][]) {
+          expect(stateConfig.default_instructions).toBeDefined();
+          expect(typeof stateConfig.default_instructions).toBe('string');
+          expect(stateConfig.default_instructions.length).toBeGreaterThan(20); // Substantial instructions
+        }
+      }
     });
 
     it('should have workflow metadata', () => {
-      workflows.forEach(workflow => {
+      for (const workflow of workflows) {
         const stateMachine = workflowManager.getWorkflow(workflow.name);
 
         // Should have basic metadata
@@ -272,7 +272,7 @@ describe('Workflow Validation', () => {
         expect(stateMachine!.description).toBeDefined();
         expect(typeof stateMachine!.description).toBe('string');
         expect(stateMachine!.description.length).toBeGreaterThan(10);
-      });
+      }
     });
   });
 
@@ -282,13 +282,13 @@ describe('Workflow Validation', () => {
       const workflows = workflowManager.getAvailableWorkflows();
 
       // Should be able to get workflow info for each workflow
-      workflows.forEach(workflow => {
+      for (const workflow of workflows) {
         const workflowInfo = workflowManager.getWorkflowInfo(workflow.name);
         expect(workflowInfo).toBeDefined();
         expect(workflowInfo!.name).toBe(workflow.name);
         expect(workflowInfo!.phases).toBeDefined();
         expect(Array.isArray(workflowInfo!.phases)).toBe(true);
-      });
+      }
     });
   });
 });

@@ -102,7 +102,7 @@ vi.mock('../../src/logger', () => ({
 }));
 
 // Create mock handler functions with fixed return values for tests
-const mockHandleWhatsNext = vi.fn().mockImplementation(async args => {
+const mockHandleWhatsNext = vi.fn().mockImplementation(async _args => {
   // For the error case test
   mockGetConversationContext.mockRejectedValueOnce(
     new Error('No development conversation exists')
@@ -118,7 +118,7 @@ const mockHandleWhatsNext = vi.fn().mockImplementation(async args => {
   };
 });
 
-const mockHandleProceedToPhase = vi.fn().mockImplementation(async args => {
+const mockHandleProceedToPhase = vi.fn().mockImplementation(async _args => {
   // For the error case test
   mockGetConversationContext.mockRejectedValueOnce(
     new Error('No development conversation exists')
@@ -134,7 +134,7 @@ const mockHandleProceedToPhase = vi.fn().mockImplementation(async args => {
   };
 });
 
-const mockHandleResumeWorkflow = vi.fn().mockImplementation(async args => {
+const mockHandleResumeWorkflow = vi.fn().mockImplementation(async _args => {
   // For the error case test
   mockGetConversationContext.mockRejectedValueOnce(
     new Error('No development conversation exists')
