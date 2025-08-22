@@ -147,7 +147,7 @@ describe('Plan Management', () => {
   describe('Plan File Updates', () => {
     it('should update plan file across phase transitions', async () => {
       // Get initial plan content
-      const initialPlan = await client.readResource<>('plan://current');
+      const initialPlan = await client.readResource('plan://current');
       const initialContent = initialPlan.contents[0].text;
 
       // Transition to design

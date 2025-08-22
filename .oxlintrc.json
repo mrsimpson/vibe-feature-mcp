@@ -3,20 +3,20 @@
   "plugins": ["typescript", "unicorn"],
   "rules": {
     "typescript/no-unused-vars": [
-      "warn",
+      "error",
       {
         "argsIgnorePattern": "^_",
         "varsIgnorePattern": "^_",
         "caughtErrorsIgnorePattern": "^_"
       }
     ],
-    "typescript/no-explicit-any": "warn",
+    "typescript/no-explicit-any": "error",
     "typescript/prefer-as-const": "error",
-    "typescript/no-non-null-assertion": "warn",
+    "typescript/no-non-null-assertion": "error",
     "unicorn/prefer-node-protocol": "error",
-    "unicorn/prefer-module": "warn",
-    "unicorn/no-array-for-each": "warn",
-    "unicorn/prefer-top-level-await": "warn"
+    "unicorn/prefer-module": "error",
+    "unicorn/no-array-for-each": "error",
+    "unicorn/prefer-top-level-await": "error"
   },
   "overrides": [
     {
