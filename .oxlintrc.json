@@ -11,6 +11,14 @@
     "unicorn/no-array-for-each": "warn",
     "unicorn/prefer-top-level-await": "warn"
   },
+  "overrides": [
+    {
+      "files": ["test/**/*.ts", "**/*.test.ts", "**/*.spec.ts"],
+      "rules": {
+        "typescript/no-non-null-assertion": "off"
+      }
+    }
+  ],
   "env": {
     "node": true,
     "es2022": true

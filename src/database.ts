@@ -19,7 +19,6 @@ const logger = createLogger('Database');
 
 // SQLite parameter types
 type SqliteParam = string | number | boolean | null | undefined | Buffer;
-type SqliteRow = Record<string, SqliteParam>;
 type SqliteColumnInfo = {
   cid: number;
   name: string;
